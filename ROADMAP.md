@@ -17,22 +17,39 @@
 
 ---
 
+## Development Workflow: Milestone-Driven with Test Gates
+
+This project follows a **Setup-first** methodology:
+
+1. **Setup First**: Test infrastructure + walking skeleton BEFORE any feature work
+2. **Milestone Gates**: Full test suite runs at the end of each milestone step; next step BLOCKED until tests pass
+3. **Latest Dependencies**: All dependencies verified at latest stable versions
+4. **CI Green Required**: GitHub Actions must pass before proceeding
+
+| Milestone | Gate Requirement |
+|-----------|------------------|
+| v0.1.0 Setup Complete | CI green, walking skeleton test passes |
+| Each Milestone Step Complete | Full test suite passes, coverage ≥80% |
+| Release | All tests pass, no lint errors |
+
+---
+
 ## Version Milestones
 
 ### v0.1.0 - MVP Core
 
 **Theme:** Preview by default with edit mode toggle
-**Phases Included:** Setup, Foundational, US1 (Preview), US2 (Edit Mode)
+**Includes:** Setup, Foundational, US1 (Preview), US2 (Edit Mode)
 **Task Count:** 65 tasks
 
 #### Features
 
 | Priority | Feature | User Story | Status |
 |----------|---------|------------|--------|
-| P0 | **Test & Build Infrastructure** | Setup | Planned |
+| P0 | **Setup: Test Infrastructure** | Setup | ✅ Complete |
 | P0 | **Core Types & Services** | Foundational | Planned |
-| P1 | **Preview by Default** | US1 | Planned |
-| P2 | **Edit Mode Toggle** | US2 | Planned |
+| P0 | **Preview by Default** | US1 | Planned |
+| P0 | **Edit Mode Toggle** | US2 | Planned |
 
 #### Capabilities
 
@@ -61,14 +78,14 @@
 ### v0.2.0 - Formatting Toolbar
 
 **Theme:** Visual formatting tools for markdown editing
-**Phases Included:** US3 (Formatting Toolbar)
+**Includes:** US3 (Formatting Toolbar)
 **Task Count:** 19 tasks
 
 #### Features
 
 | Priority | Feature | User Story | Status |
 |----------|---------|------------|--------|
-| P3 | **Formatting Toolbar** | US3 | Planned |
+| P1 | **Formatting Toolbar** | US3 | Planned |
 
 #### Capabilities
 
@@ -86,15 +103,15 @@
 ### v0.3.0 - Access & UX
 
 **Theme:** Multiple ways to access formatting
-**Phases Included:** US4 (Context Menu), US5 (Keyboard Shortcuts)
+**Includes:** US4 (Context Menu), US5 (Keyboard Shortcuts)
 **Task Count:** 19 tasks (US4: 10, US5: 9)
 
 #### Features
 
 | Priority | Feature | User Story | Status |
 |----------|---------|------------|--------|
-| P4 | **Context Menu** | US4 | Planned |
-| P5 | **Keyboard Shortcuts** | US5 | Planned |
+| P2 | **Context Menu** | US4 | Planned |
+| P2 | **Keyboard Shortcuts** | US5 | Planned |
 
 #### Capabilities
 
@@ -111,14 +128,14 @@
 ### v0.4.0 - Configuration
 
 **Theme:** User customization options
-**Phases Included:** US6 (Configuration)
+**Includes:** US6 (Configuration)
 **Task Count:** 12 tasks
 
 #### Features
 
 | Priority | Feature | User Story | Status |
 |----------|---------|------------|--------|
-| P6 | **Extension Configuration** | US6 | Planned |
+| P2 | **Extension Configuration** | US6 | Planned |
 
 #### Capabilities
 
@@ -134,7 +151,7 @@
 ### v1.0.0 - Stable Release
 
 **Theme:** Production-ready release
-**Phases Included:** Testing, Polish
+**Includes:** Testing, Polish
 **Task Count:** 24 tasks (Testing: 7, Polish: 17)
 
 #### Features
@@ -214,51 +231,68 @@
 
 ## Task Summary
 
-| Phase | Tasks | Parallel | Description |
-|-------|:-----:|:--------:|-------------|
-| Phase 1: Setup | 11 | 7 | Test scaffolding, dependencies, configuration |
-| Phase 2: Foundational | 14 | 8 | Types, core services, test fixtures, l10n |
-| Phase 3: US1 (Preview) | 17 | 6 | Preview by default implementation |
-| Phase 4: US2 (Edit Mode) | 23 | 10 | Split view editing, pane tracking, focus |
-| Phase 5: US3 (Toolbar) | 19 | 10 | Formatting toolbar and operations |
-| Phase 6: US4 (Context Menu) | 10 | 4 | Right-click menu with submenus |
-| Phase 7: US5 (Shortcuts) | 9 | 4 | Keyboard shortcuts (scoped) |
-| Phase 8: US6 (Config) | 12 | 5 | User settings and configuration |
-| Phase 9: Testing | 7 | 1 | Quality verification and coverage |
-| Phase 10: Polish | 17 | 8 | Documentation, accessibility, marketplace |
+| Milestone | Tasks | Notes | Gate |
+|-----------|:-----:|-------|:----:|
+| v0.1.0 | 65 | Setup + Foundational + US1 + US2 | 🧪 MVP Gate |
+| v0.2.0 | 19 | US3 | 🧪 Tests Pass |
+| v0.3.0 | 19 | US4 + US5 | 🧪 Tests Pass |
+| v0.4.0 | 12 | US6 | 🧪 Tests Pass |
+| v1.0.0 | 24 | Testing + Polish | 🧪 Release Gate |
 
 **Total**: 139 tasks | **Parallel Opportunities**: 63 tasks | **MVP**: 65 tasks
+
+**⚠️ Milestone Gate Rule**: Next milestone step is BLOCKED until current step gate passes. No exceptions.
 
 ---
 
 ## Dependency Flow
 
 ```
-Setup (11) --> Foundational (14)
-                    |
-                    v
-            US1: Preview (17) [P1]
-                    |
-                    v
-            US2: Edit Mode (23) [P2]
-                    |
-                    v
-            US3: Toolbar (19) [P3]
-                    |
-        +-----------+-----------+
-        |           |           |
-        v           v           v
-    US4 (10)    US5 (9)    US6 (12)
-    [P4]        [P5]        [P6]
-        |           |           |
-        +-----------+-----------+
-                    |
-                    v
-            Testing (7) + Polish (17)
-                    |
-                    v
-                  v1.0.0
+Setup (11) ──🧪──> Foundational (14)
+    [CI Green]              |
+                            v
+                    🧪 Tests Pass
+                            |
+                            v
+                    US1: Preview (17) [P0]
+                            |
+                            v
+                    🧪 Tests Pass
+                            |
+                            v
+                    US2: Edit Mode (23) [P0]
+                            |
+                            v
+                    🧪 MVP Gate (v0.1.0)
+                            |
+                            v
+                    US3: Toolbar (19) [P1]
+                            |
+                            v
+                    🧪 Tests Pass
+                            |
+            +---------------+---------------+
+            |               |               |
+            v               v               v
+        US4 (10)        US5 (9)        US6 (12)
+        [P2]            [P2]            [P2]
+            |               |               |
+            v               v               v
+        🧪 Tests      🧪 Tests      🧪 Tests
+            |               |               |
+            +---------------+---------------+
+                            |
+                            v
+                    Testing (7) + Polish (17)
+                            |
+                            v
+                    🧪 Release Gate (v1.0.0)
+                            |
+                            v
+                          v1.0.0
 ```
+
+**Legend**: 🧪 = Milestone Test Gate (BLOCKING)
 
 ---
 
@@ -266,24 +300,37 @@ Setup (11) --> Foundational (14)
 
 | User Story | Priority | Tasks | Version | Dependency |
 |------------|:--------:|:-----:|:-------:|------------|
-| US1: Preview by Default | P1 | 17 | v0.1.0 | Foundational |
-| US2: Edit Mode Toggle | P2 | 23 | v0.1.0 | US1 |
-| US3: Formatting Toolbar | P3 | 19 | v0.2.0 | US2 |
-| US4: Context Menu | P4 | 10 | v0.3.0 | US3 |
-| US5: Keyboard Shortcuts | P5 | 9 | v0.3.0 | US3 |
-| US6: Configuration | P6 | 12 | v0.4.0 | Foundational |
+| US1: Preview by Default | P0 | 17 | v0.1.0 | Foundational |
+| US2: Edit Mode Toggle | P0 | 23 | v0.1.0 | US1 |
+| US3: Formatting Toolbar | P1 | 19 | v0.2.0 | US2 |
+| US4: Context Menu | P2 | 10 | v0.3.0 | US3 |
+| US5: Keyboard Shortcuts | P2 | 9 | v0.3.0 | US3 |
+| US6: Configuration | P2 | 12 | v0.4.0 | Foundational |
 
 ---
 
 ## Implementation Notes
 
-- **[P]** marks tasks that can run in parallel within their phase
-- **MVP** = Setup + Foundational + US1 + US2 (65 tasks)
+- **Setup FIRST**: Test infrastructure must be complete before any feature work
+- **[P]** marks tasks that can run in parallel within their milestone step
+- **MVP** = v0.1.0 Setup + Foundational + US1 + US2 (65 tasks)
+- **Milestone Gates**: Each milestone step ends with test gate; next step BLOCKED if tests fail
 - US4, US5, US6 can proceed in parallel once US3 is complete
 - Testing and Polish tasks span all user stories
 - Command prefix: `markdownReader.*`
 - Context keys: `markdownReader.editMode`, `markdownReader.enabled`, `markdownReader.isMarkdown`
 
+### Setup Checklist (ALWAYS FIRST)
+
+- [x] Test scaffolding (`tests/unit/`, `tests/integration/`, `tests/fixtures/`)
+- [x] Dependencies at latest stable versions (verified online)
+- [x] CI/CD pipeline (`.github/workflows/ci.yml`)
+- [x] Walking skeleton (extension activates, empty test passes)
+- [x] Coverage gates configured (80% overall)
+
+**v0.1.0 Setup is complete when**: CI is green ✅
+
 ---
 
-*Roadmap v1.1 (rolling) - No time estimates per project constitution*
+*Roadmap v1.2 (rolling) - No time estimates per project constitution*
+*Updated with milestone methodology and test gates*

@@ -2,6 +2,63 @@
 
 Visual representations of the project roadmap for the Markdown Reader VS Code extension.
 
+**Development Workflow**: Setup First → Milestone-Driven with Test Gates
+
+---
+
+## Milestone Gate Flow
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#4A90A4',
+  'primaryTextColor': '#fff',
+  'secondaryColor': '#81C784',
+  'tertiaryColor': '#FFB74D'
+}}}%%
+
+flowchart TD
+    S0[🚀 v0.1.0 Setup<br/>Test Infrastructure + Walking Skeleton]
+    G0{🧪 Gate: CI Green?}
+    P1[v0.1.0 Foundational]
+    G1{🧪 Gate: Tests Pass?}
+    P2[v0.1.0 US1 Preview]
+    G2{🧪 Gate: Tests Pass?}
+    P3[v0.1.0 US2 Edit Mode]
+    G3{🧪 Gate: Tests Pass?}
+    MVP[✅ v0.1.0 MVP Complete!]
+    P4[v0.2.0+ Features]
+    G4{🧪 Gate: Tests Pass?}
+    REL[🎉 v1.0.0 Release]
+
+    S0 --> G0
+    G0 -->|Yes| P1
+    G0 -->|No| S0
+    P1 --> G1
+    G1 -->|Yes| P2
+    G1 -->|No| P1
+    P2 --> G2
+    G2 -->|Yes| P3
+    G2 -->|No| P2
+    P3 --> G3
+    G3 -->|Yes| MVP
+    G3 -->|No| P3
+    MVP --> P4
+    P4 --> G4
+    G4 -->|Yes| REL
+    G4 -->|No| P4
+
+    style S0 fill:#ff6b6b,color:#fff
+    style MVP fill:#81C784,color:#fff
+    style REL fill:#81C784,color:#fff
+    style G0 fill:#FFB74D
+    style G1 fill:#FFB74D
+    style G2 fill:#FFB74D
+    style G3 fill:#FFB74D
+    style G4 fill:#FFB74D
+```
+
+**Key**: 🧪 = Test Gate (BLOCKING) | ❌ = Fix before proceeding
+
 ---
 
 ## Timeline Evolution
@@ -17,20 +74,30 @@ Visual representations of the project roadmap for the Markdown Reader VS Code ex
 timeline
     title Markdown Reader Evolution
 
+    section v0.1.0 - Setup
+        Setup      : Test scaffolding (unit, integration, fixtures)
+                   : Dependencies at latest stable versions
+                   : CI/CD pipeline (GitHub Actions)
+                   : Walking skeleton (extension activates)
+                   : Coverage gates (80% threshold)
+                   : 🧪 GATE: CI must be green
+
     section v0.1.0 - MVP Core (65 tasks)
-        Foundation : Test scaffolding & dependencies
-                   : Types (ViewMode, FileState, Config)
+        Foundation : Types (ViewMode, FileState, Config)
                    : StateService & ConfigService
                    : L10n infrastructure
+                   : 🧪 GATE: Tests must pass
         Preview    : File open interception
                    : ValidationService (size, binary, diff)
                    : PreviewService (markdown.showPreview)
                    : Large file handling with opt-out
+                   : 🧪 GATE: Tests must pass
         Edit Mode  : Enter/Exit/Toggle commands
                    : Split view (editor + live preview)
                    : Done button in title bar
                    : Pane tracking & focus management
                    : Unsaved changes prompt
+                   : 🧪 GATE: Tests must pass (MVP!)
 
     section v0.2.0 - Formatting (19 tasks)
         Toolbar    : FormattingService
@@ -78,15 +145,16 @@ timeline
 }}}%%
 
 flowchart TD
-    subgraph setup ["Phase 1: Setup"]
+    subgraph setup ["v0.1.0: Setup"]
         T001[Test Scaffolding]
         T002[Dependencies]
         T003[npm Scripts]
         T007[Extension Manifest]
         T009[TS Strict Config]
+        G0{🧪 CI Green?}
     end
 
-    subgraph foundation ["Phase 2: Foundational"]
+    subgraph foundation ["v0.1.0: Foundational"]
         T012[ViewMode & FileState Types]
         T015[StateService]
         T016[ConfigService]
@@ -94,7 +162,7 @@ flowchart TD
         T139[L10n Infrastructure]
     end
 
-    subgraph us1 ["Phase 3: US1 - Preview"]
+    subgraph us1 ["v0.1.0: US1 - Preview"]
         style us1 fill:#81C784
         T028[ValidationService]
         T029[PreviewService]
@@ -103,7 +171,7 @@ flowchart TD
         T038[Binary Detection]
     end
 
-    subgraph us2 ["Phase 4: US2 - Edit Mode"]
+    subgraph us2 ["v0.1.0: US2 - Edit Mode"]
         style us2 fill:#81C784
         T045[enterEditMode]
         T046[exitEditMode]
@@ -113,34 +181,34 @@ flowchart TD
         T134[Focus Handling]
     end
 
-    subgraph us3 ["Phase 5: US3 - Toolbar"]
+    subgraph us3 ["v0.2.0: US3 - Toolbar"]
         style us3 fill:#4A90A4
         T059[FormattingService]
         T064[Format Commands]
         T069[Toolbar Menu Items]
     end
 
-    subgraph us4 ["Phase 6: US4 - Context Menu"]
+    subgraph us4 ["v0.3.0: US4 - Context Menu"]
         style us4 fill:#4A90A4
         T076[Submenus]
         T077[Editor Context Menu]
     end
 
-    subgraph us5 ["Phase 7: US5 - Shortcuts"]
+    subgraph us5 ["v0.3.0: US5 - Shortcuts"]
         style us5 fill:#4A90A4
         T086[Keybindings]
         T088[Ctrl+B Bold]
         T089[Ctrl+I Italic]
     end
 
-    subgraph us6 ["Phase 8: US6 - Config"]
+    subgraph us6 ["v0.4.0: US6 - Config"]
         style us6 fill:#FFB74D
         T097[Configuration Schema]
         T101[ConfigService.reload]
         T102[onDidChangeConfiguration]
     end
 
-    subgraph polish ["Phase 10: Polish"]
+    subgraph polish ["v1.0.0: Polish"]
         style polish fill:#FFB74D
         T114[ARIA Labels]
         T116[JSDoc Comments]
@@ -151,8 +219,8 @@ flowchart TD
     T001 --> T002
     T002 --> T007
     T007 --> T009
-
-    T009 --> T012
+    T009 --> G0
+    G0 -->|Pass| T012
     T012 --> T015
     T012 --> T016
     T015 --> T017
@@ -195,6 +263,9 @@ flowchart TD
     T116 --> T117
     T117 --> T119
 
+    style G0 fill:#FFB74D
+    style setup fill:#ff6b6b,color:#fff
+
     linkStyle default stroke:#666,stroke-width:1px
 ```
 
@@ -206,17 +277,17 @@ flowchart TD
 %%{init: {'theme': 'base'}}%%
 
 pie showData
-    title Tasks by Phase (139 total)
-    "Setup (11)" : 11
-    "Foundational (14)" : 14
-    "US1 Preview (17)" : 17
-    "US2 Edit Mode (23)" : 23
-    "US3 Toolbar (19)" : 19
-    "US4 Context Menu (10)" : 10
-    "US5 Shortcuts (9)" : 9
-    "US6 Config (12)" : 12
-    "Testing (7)" : 7
-    "Polish (17)" : 17
+    title Tasks by Milestone Step (139 total)
+    "v0.1.0 Setup (11)" : 11
+    "v0.1.0 Foundational (14)" : 14
+    "v0.1.0 US1 Preview (17)" : 17
+    "v0.1.0 US2 Edit Mode (23)" : 23
+    "v0.2.0 Toolbar (19)" : 19
+    "v0.3.0 Context Menu (10)" : 10
+    "v0.3.0 Shortcuts (9)" : 9
+    "v0.4.0 Config (12)" : 12
+    "v1.0.0 Testing (7)" : 7
+    "v1.0.0 Polish (17)" : 17
 ```
 
 ---
@@ -552,7 +623,7 @@ graph TD
 %%{init: {'theme': 'base'}}%%
 
 flowchart LR
-    subgraph Phase1 ["Phase 1: Setup"]
+    subgraph Setup ["v0.1.0: Setup"]
         direction TB
         T001[T001: Test scaffolding]
         T002[T002: Dependencies]
@@ -571,8 +642,9 @@ flowchart LR
     end
 
     T001 --> T002 --> T003 --> T004 --> parallel1
+    parallel1 --> G0{🧪 CI Green?}
 
-    subgraph Phase2 ["Phase 2: Foundational"]
+    subgraph Foundational ["v0.1.0: Foundational"]
         direction TB
         subgraph parallel2a ["Types (parallel)"]
             T012[T012: state.ts]
@@ -592,13 +664,17 @@ flowchart LR
         end
     end
 
-    parallel1 --> parallel2a
+    G0 -->|Pass| parallel2a
     parallel2a --> parallel2b
     parallel2b --> parallel2c
+
+    style Setup fill:#ff6b6b,color:#fff
+    style G0 fill:#FFB74D
 ```
 
 ---
 
 *These diagrams are best viewed with Mermaid-compatible markdown renderers (GitHub, GitLab, VS Code with Mermaid extension).*
 
-*Roadmap Diagrams v1.1 - Synced with tasks.md (139 tasks)*
+*Roadmap Diagrams v1.2 - milestone methodology with test gates*
+*Synced with tasks.md (139 tasks, 65 MVP)*
