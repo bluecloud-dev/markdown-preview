@@ -18,33 +18,38 @@ Dependency-ordered tasks organized by user story. Testing and tooling land first
 - Task IDs are stable identifiers and may not be strictly sequential by phase.
 - Extension name: "Markdown Reader" (display name), command prefix: `markdownReader.*`
 
-**Milestones**: v0.1.0 (MVP Core), v0.2.0 (Formatting Toolbar), v0.3.0 (Access & Shortcuts), v0.4.0 (Configuration), v1.0.0 (Stable & Polished) (scheduled for v1: 139)
+**Milestones**: Sprint 0 (Test Infrastructure), v0.1.0 (MVP Core), v0.2.0 (Formatting Toolbar), v0.3.0 (Access & Shortcuts), v0.4.0 (Configuration), v1.0.0 (Stable & Polished) (scheduled for v1: 143)
 
 ## Implementation Strategy
 
-MVP = User Story 1 (Preview by Default) + User Story 2 (Edit Mode). Add US3 through US6 incrementally. Keep tests green each step.
+MVP (release) = Sprint 0 + User Story 1 (Preview by Default) + User Story 2 (Edit Mode). Add US3 through US6 incrementally. Keep tests green each step.
+
+## Milestone Closeout Requirement
+
+- At the end of each milestone, update README.md so Features/Commands list only what is available in the release (no milestone/version mentions) and reflect current settings and known limitations.
+- At the end of each milestone, update CHANGELOG.md with the milestone changes.
 
 ## Task Dependency Graph
 
 ```
-Setup (v0.1.0)
+Sprint 0 (Test Infrastructure)
   ↓
 Foundational (v0.1.0)
   ↓
-US1 (Preview by Default) [P1] ← Core feature, others depend on this (v0.1.0)
+US1 (Preview by Default) [P0] ← Core feature, others depend on this (v0.1.0)
   ↓ (needs preview mode to toggle from)
-US2 (Edit Mode) [P2] (v0.1.0)
+US2 (Edit Mode) [P0] (v0.1.0)
   ↓ (needs edit mode for formatting)
-US3 (Formatting Toolbar) [P3] (v0.2.0)
+US3 (Formatting Toolbar) [P1] (v0.2.0)
   ↓ (reuses format commands)
-  ├── US4 (Context Menu) [P4] ←┐
-  ├── US5 (Keyboard Shortcuts) [P5] ← Can run in parallel
-  └── US6 (Configuration) [P6] ←┘ (can also start after Foundational)
+  ├── US4 (Context Menu) [P2] ←┐
+  ├── US5 (Keyboard Shortcuts) [P2] ← Can run in parallel
+  └── US6 (Configuration) [P2] ←┘ (can also start after Foundational)
 ```
 
 ## Parallel Execution Opportunities
 
-- **Setup (v0.1.0)**: T005-T011 can proceed in parallel after T001-T004.
+- **Sprint 0**: T005-T011 can proceed in parallel after T001-T004.
 - **Foundational (v0.1.0)**: Types (T012-T014) in parallel; L10n setup (T139) in parallel with fixtures (T018-T019); Tests (T021-T022) in parallel.
 - **US1 Tests (v0.1.0)**: All test tasks (T023-T027) can run in parallel.
 - **US3 Formatting (v0.2.0)**: Service implementations (T059-T062) can run in parallel.
@@ -53,7 +58,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
-## v0.1.0 - MVP Core - Preview by Default with Edit Mode
+## Sprint 0 - Test Infrastructure
 
 ### Setup (Test Infrastructure)
 
@@ -70,6 +75,8 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [X] T011 [P] Verify `.github/workflows/ci.yml` and `.github/workflows/release.yml` include required gates: lint, unit tests, integration tests (xvfb), coverage gate (>=80%), no-telemetry guard, VSIX build artifact; release is tag-based and publishes VSIX
 
 ---
+
+## v0.1.0 - MVP Core - Preview by Default with Edit Mode
 
 ### Foundational
 
@@ -92,14 +99,14 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
-### User Story 1 - Preview Markdown by Default [P1] MVP
+### User Story 1 - Preview Markdown by Default [P0] MVP
 
 **Story Goal**: Markdown files open in rendered preview mode by default.
 **Independent Test**: Install extension, click any .md file in explorer, verify it opens in preview mode.
 
 ### Tests (Write First - Must Fail Before Implementation)
 
-- [ ] T023 [P] [US1] Create `tests/integration/preview-mode.test.ts` with test: "opens markdown file in preview mode by default"
+- [ ] T023 [P] [US1] Create `tests/integration/preview-mode.test.ts` with test: "opens markdown file in preview mode by default" and shows a one-time welcome/tutorial message on first open
 - [ ] T024 [P] [US1] Add test: "respects VS Code's native markdown preview rendering"
 - [ ] T025 [P] [US1] Add test: "file opened via Quick Open (Ctrl+P) opens in preview mode"
 - [ ] T026 [P] [US1] Add test: "preview mode shows no additional UI elements"
@@ -114,7 +121,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] T031 [US1] Implement large file handling (>1MB) per FR-041: skip auto-preview, open in text editor, show non-modal info message with [Open Preview Anyway] and [Don't Show Again for This File]; persist per-file choice in `context.workspaceState` and skip future prompts when "Don't Show Again" is selected; localize strings via `vscode.l10n` (FR-041)
 - [ ] T032 [US1] Create `src/handlers/markdown-file-handler.ts` with MarkdownFileHandler class
 - [ ] T033 [US1] Implement `handleDocumentOpen()` in MarkdownFileHandler: check validation, close text editor, show preview
-- [ ] T034 [US1] Register `onDidOpenTextDocument` event listener in `src/extension.ts`
+- [ ] T034 [US1] Register `onDidOpenTextDocument` event listener in `src/extension.ts` and show a one-time, non-blocking welcome message with optional US1 tutorial link (store dismissal in `context.globalState`)
 - [ ] T035 [US1] Implement exclude pattern matching using minimatch in ConfigService
 - [ ] T036 [US1] Handle edge cases: untitled files → edit mode, diff views → skip interception
 - [ ] T037 [US1] Set context key `markdownReader.isMarkdown` via setContext for markdown files
@@ -130,7 +137,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
-### User Story 2 - Switch to Edit Mode [P2]
+### User Story 2 - Switch to Edit Mode [P0]
 
 **Story Goal**: Users can toggle to Edit Mode (split view with text editor left, live preview right).
 **Independent Test**: Open markdown in preview, run "Markdown Reader: Enter Edit Mode" from Command Palette (or Ctrl+Shift+V), verify split view appears.
@@ -182,11 +189,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Close text editor pane → exits edit mode (preview only)
 - [ ] Each file maintains independent edit/preview state
 
+- [ ] T142 Release closeout (v0.1.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+
 ---
 
 ## v0.2.0 - Formatting Toolbar
 
-### User Story 3 - Format Text with Toolbar [P3]
+### User Story 3 - Format Text with Toolbar [P1]
 
 **Story Goal**: Formatting toolbar visible in edit mode with common actions.
 **Independent Test**: Enter edit mode, select text, click Bold button, verify text wrapped with **.
@@ -229,11 +238,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Edit mode → no selection → click Bold → placeholder inserted or word wrapped
 - [ ] Preview mode → toolbar icons NOT visible
 
+- [ ] T143 Release closeout (v0.2.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+
 ---
 
 ## v0.3.0 - Access & Shortcuts
 
-### User Story 4 - Format Text with Context Menu [P4]
+### User Story 4 - Format Text with Context Menu [P2]
 
 **Story Goal**: Right-click context menu with Format submenu.
 **Independent Test**: Enter edit mode, right-click, verify Format submenu appears.
@@ -263,7 +274,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
-### User Story 5 - Use Keyboard Shortcuts [P5]
+### User Story 5 - Use Keyboard Shortcuts [P2]
 
 **Story Goal**: Keyboard shortcuts for mode switching and formatting.
 **Independent Test**: Edit mode, select text, press Ctrl+B, verify text becomes bold.
@@ -290,11 +301,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Edit mode → select text → Ctrl+I → text becomes italic
 - [ ] Outside markdown edit mode → Ctrl+B → toggles sidebar (VS Code default)
 
+- [ ] T144 Release closeout (v0.3.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+
 ---
 
 ## v0.4.0 - Configuration
 
-### User Story 6 - Configure Extension Behavior [P6]
+### User Story 6 - Configure Extension Behavior [P2]
 
 **Story Goal**: Users can configure exclude patterns and enable/disable extension.
 **Independent Test**: Set exclude pattern for node_modules, open markdown there, verify text editor.
@@ -322,6 +335,8 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Disable extension globally → all .md files open in text editor
 - [ ] Disable for workspace only → affects only that workspace
 - [ ] Re-enable extension → preview-by-default resumes
+
+- [ ] T145 Release closeout (v0.4.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
 
 ---
 
@@ -363,13 +378,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 ### Documentation
 
 - [ ] T116 [P] Add JSDoc comments to all public functions (NFR-008)
-- [ ] T117 [P] Create README.md with installation, feature overview + screenshots/GIFs, keyboard shortcuts table, configuration options table, known limitations, contributing guide link, and license
-- [ ] T118 [P] Create CHANGELOG.md following Keep a Changelog format
+- [ ] T117 [P] Release closeout (v1.0.0): update README.md with installation, feature overview + screenshots/GIFs, keyboard shortcuts table, configuration options table, known limitations, contributing guide link, and license; ensure Features/Commands list only released functionality (no milestone/version mentions) and add a README "Changelog" section linking to CHANGELOG.md
+- [ ] T118 [P] Release closeout (v1.0.0): update CHANGELOG.md following Keep a Changelog format
 
 ### Marketplace Readiness
 
 - [ ] T119 Add extension icon (128x128 PNG) and marketplace metadata in package.json (FR-043)
-- [ ] T120 Add categories ["Other"], keywords, repository URL, license (MIT)
+- [ ] T120 Add categories ["Other"], keywords, repository field (GitHub URL), license (MIT)
 - [ ] T121 Performance optimization: debounce rapid events in MarkdownFileHandler
 - [ ] T122 Implement error handling + observability: create Output Channel "Markdown Reader" and log failures/conflicts; implement preview-failure UX with [Open in Editor]; no silent failures; localize user-facing strings via `vscode.l10n` (FR-046, FR-049, FR-052)
 - [ ] T123 Validate against quickstart.md scenarios (US1-US6 + edge cases + error paths + accessibility announcements); confirm behavior matches spec acceptance scenarios
@@ -381,14 +396,15 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ### By Milestone
 
-| Milestone | Tasks | Notes |
-|-----------|-------|-------|
-| v0.1.0 | 65 | Setup + Foundational + US1 + US2 |
-| v0.2.0 | 19 | US3 |
-| v0.3.0 | 19 | US4 + US5 |
-| v0.4.0 | 12 | US6 |
+| Step | Tasks | Notes |
+|------|-------|-------|
+| Sprint 0 | 11 | Setup |
+| v0.1.0 | 55 | Foundational + US1 + US2 |
+| v0.2.0 | 20 | US3 |
+| v0.3.0 | 20 | US4 + US5 |
+| v0.4.0 | 13 | US6 |
 | v1.0.0 | 24 | Testing + Polish |
-| **Total** | **139** | |
+| **Total** | **143** | |
 
 ### By User Story
 
@@ -402,14 +418,16 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 | US6 (Configuration) | 12 | No |
 | Setup + Foundational | 25 | Required |
 | Testing + Polish | 24 | Required |
+| Release Closeout | 4 | Required |
 
-### MVP Milestone (v0.1.0)
+### MVP (Sprint 0 + v0.1.0)
 
 - Setup: T001-T011
 - Foundational: T012-T022, T125-T126, T139
 - US1 (Preview): T023-T038, T127
 - US2 (Edit Mode): T039-T052, T128-T134, T140-T141
-- **Total MVP tasks**: 65
+- Release closeout: T142
+- **Total MVP tasks**: 66
 
 ---
 
@@ -417,7 +435,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 - [P] tasks = different files, no dependencies, can run in parallel
 - [Story] label maps task to specific user story for traceability
-- Tooling/release tasks (T006, T010, T011, T123, T124) are operational and not tied to a specific requirement
+- Tooling/release tasks (T010, T011, T123, T124) are operational and not tied to a specific requirement; T006 maps to NFR-011
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing (TDD approach per NFR-007)
 - Commit after each task or logical group
