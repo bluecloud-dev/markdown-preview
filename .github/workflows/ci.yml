@@ -39,13 +39,13 @@ jobs:
       - name: TypeScript build
         run: npm run compile
 
-      - name: Unit tests with coverage
-        run: npm run coverage
-
       - name: Install xvfb
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
+
+      - name: Unit tests with coverage
+        run: xvfb-run -a npm run coverage
 
       - name: VS Code integration tests
         run: xvfb-run -a npm run test:integration
