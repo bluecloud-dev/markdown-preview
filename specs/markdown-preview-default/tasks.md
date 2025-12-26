@@ -14,11 +14,11 @@ Dependency-ordered tasks organized by user story. Testing and tooling land first
 - Use `specs/markdown-preview-default/quickstart.md` as the scenario checklist.
 
 **Notes**:
-- Plan "Phase 0/1" refer to documentation gates; this file starts at implementation Phase 1.
+- Plan research/design refer to documentation gates; this file starts at implementation setup.
 - Task IDs are stable identifiers and may not be strictly sequential by phase.
 - Extension name: "Markdown Reader" (display name), command prefix: `markdownReader.*`
 
-**Phases**: Setup, Foundational, US1-US6, Testing, Polish (scheduled for v1: 139)
+**Milestones**: v0.1.0 (MVP Core), v0.2.0 (Formatting Toolbar), v0.3.0 (Access & Shortcuts), v0.4.0 (Configuration), v1.0.0 (Stable & Polished) (scheduled for v1: 139)
 
 ## Implementation Strategy
 
@@ -27,33 +27,35 @@ MVP = User Story 1 (Preview by Default) + User Story 2 (Edit Mode). Add US3 thro
 ## Task Dependency Graph
 
 ```
-Setup (Phase 1)
+Setup (v0.1.0)
   ↓
-Foundational (Phase 2)
+Foundational (v0.1.0)
   ↓
-US1 (Preview by Default) [P1] ← Core feature, others depend on this
+US1 (Preview by Default) [P1] ← Core feature, others depend on this (v0.1.0)
   ↓ (needs preview mode to toggle from)
-US2 (Edit Mode) [P2]
+US2 (Edit Mode) [P2] (v0.1.0)
   ↓ (needs edit mode for formatting)
-US3 (Formatting Toolbar) [P3]
+US3 (Formatting Toolbar) [P3] (v0.2.0)
   ↓ (reuses format commands)
   ├── US4 (Context Menu) [P4] ←┐
   ├── US5 (Keyboard Shortcuts) [P5] ← Can run in parallel
-  └── US6 (Configuration) [P6] ←┘ (can also start after Phase 2)
+  └── US6 (Configuration) [P6] ←┘ (can also start after Foundational)
 ```
 
 ## Parallel Execution Opportunities
 
-- **Phase 1 (Setup)**: T005-T011 can proceed in parallel after T001-T004.
-- **Phase 2 (Foundational)**: Types (T012-T014) in parallel; L10n setup (T139) in parallel with fixtures (T018-T019); Tests (T021-T022) in parallel.
-- **US1 Tests**: All test tasks (T023-T027) can run in parallel.
-- **US3 Formatting**: Service implementations (T059-T062) can run in parallel.
-- **US4, US5, US6**: Can proceed in parallel once US3 is complete (share format commands).
-- **Polish**: Documentation tasks (T116-T118) can run in parallel.
+- **Setup (v0.1.0)**: T005-T011 can proceed in parallel after T001-T004.
+- **Foundational (v0.1.0)**: Types (T012-T014) in parallel; L10n setup (T139) in parallel with fixtures (T018-T019); Tests (T021-T022) in parallel.
+- **US1 Tests (v0.1.0)**: All test tasks (T023-T027) can run in parallel.
+- **US3 Formatting (v0.2.0)**: Service implementations (T059-T062) can run in parallel.
+- **US4/US5/US6 (v0.3.0/v0.4.0)**: Can proceed in parallel once US3 is complete (share format commands).
+- **Polish (v1.0.0)**: Documentation tasks (T116-T118) can run in parallel.
 
 ---
 
-## Phase 1: Setup (Test Environment First)
+## v0.1.0 - MVP Core - Preview by Default with Edit Mode
+
+### Setup (Test Infrastructure)
 
 - [X] T001 Create test scaffolding (`tests/unit`, `tests/integration`, `tests/fixtures`) and add `tests/run-test.ts` for VS Code test runner
 - [X] T002 Install dependencies in `package.json` (dependencies: minimatch; devDependencies: mocha, chai, @types/chai, @vscode/test-electron, nyc, sinon, ts-node, esbuild, eslint, @typescript-eslint/parser, @typescript-eslint/eslint-plugin, eslint-plugin-unicorn, prettier, typescript, @types/vscode, @types/node, @types/minimatch)
@@ -69,13 +71,15 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 2: Foundational
+### Foundational
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
 - [ ] T012 [P] Create `ViewMode` enum and `FileState` interface in `src/types/state.ts`
 - [ ] T013 [P] Create `ExtensionConfiguration` interface in `src/types/config.ts`
 - [ ] T014 [P] Create `FormattingAction`, `FormattingType`, `FormattingConfig` types in `src/types/formatting.ts`
+- [ ] T021 [P] Create `tests/unit/state-service.test.ts` with tests for state management
+- [ ] T022 [P] Create `tests/unit/config-service.test.ts` with tests for configuration access
 - [ ] T015 Create `StateService` skeleton in `src/services/state-service.ts` (Map<string, FileState>); keep behavior minimal until unit tests exist (T021)
 - [ ] T016 Create `ConfigService` skeleton in `src/services/config-service.ts` (getEnabled, getExcludePatterns, getMaxFileSize, isExcluded); keep behavior minimal until unit tests exist (T022)
 - [ ] T017 Create extension entry point skeleton in `src/extension.ts` with activate/deactivate and disposable array
@@ -83,14 +87,12 @@ US3 (Formatting Toolbar) [P3]
 - [ ] T019 [P] Create `tests/fixtures/git-conflict.md` with conflict markers for edge case testing
 - [ ] T020 Wire up Mocha + @vscode/test-electron harness (bootstrap, TS transpile strategy, and runner entrypoints) to support scripts created in T003
 - [ ] T139 [P] Set up l10n infrastructure: create `package.nls.json` with default English strings, add `l10n` directory structure for future translations, and export `t()` helper from `src/utils/l10n.ts` wrapping `vscode.l10n.t()` for consistent usage across the codebase (prerequisite for T031, T038, T115, T122, T132, T134, T135)
-- [ ] T021 [P] Create `tests/unit/state-service.test.ts` with tests for state management
-- [ ] T022 [P] Create `tests/unit/config-service.test.ts` with tests for configuration access
 - [ ] T125 Implement StateService behavior to satisfy `tests/unit/state-service.test.ts` (T021) (FR-042)
 - [ ] T126 Implement ConfigService behavior to satisfy `tests/unit/config-service.test.ts` (T022) (FR-035-FR-038, FR-041)
 
 ---
 
-## Phase 3: User Story 1 - Preview Markdown by Default [P1] MVP
+### User Story 1 - Preview Markdown by Default [P1] MVP
 
 **Story Goal**: Markdown files open in rendered preview mode by default.
 **Independent Test**: Install extension, click any .md file in explorer, verify it opens in preview mode.
@@ -128,7 +130,7 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 4: User Story 2 - Switch to Edit Mode [P2]
+### User Story 2 - Switch to Edit Mode [P2]
 
 **Story Goal**: Users can toggle to Edit Mode (split view with text editor left, live preview right).
 **Independent Test**: Open markdown in preview, run "Markdown Reader: Enter Edit Mode" from Command Palette (or Ctrl+Shift+V), verify split view appears.
@@ -182,7 +184,9 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 5: User Story 3 - Format Text with Toolbar [P3]
+## v0.2.0 - Formatting Toolbar
+
+### User Story 3 - Format Text with Toolbar [P3]
 
 **Story Goal**: Formatting toolbar visible in edit mode with common actions.
 **Independent Test**: Enter edit mode, select text, click Bold button, verify text wrapped with **.
@@ -227,7 +231,9 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 6: User Story 4 - Format Text with Context Menu [P4]
+## v0.3.0 - Access & Shortcuts
+
+### User Story 4 - Format Text with Context Menu [P4]
 
 **Story Goal**: Right-click context menu with Format submenu.
 **Independent Test**: Enter edit mode, right-click, verify Format submenu appears.
@@ -257,7 +263,7 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 7: User Story 5 - Use Keyboard Shortcuts [P5]
+### User Story 5 - Use Keyboard Shortcuts [P5]
 
 **Story Goal**: Keyboard shortcuts for mode switching and formatting.
 **Independent Test**: Edit mode, select text, press Ctrl+B, verify text becomes bold.
@@ -286,7 +292,9 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 8: User Story 6 - Configure Extension Behavior [P6]
+## v0.4.0 - Configuration
+
+### User Story 6 - Configure Extension Behavior [P6]
 
 **Story Goal**: Users can configure exclude patterns and enable/disable extension.
 **Independent Test**: Set exclude pattern for node_modules, open markdown there, verify text editor.
@@ -317,7 +325,9 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 9: Testing & Quality
+## v1.0.0 - Stable & Polished
+
+### Testing & Quality
 
 ### Test Infrastructure
 
@@ -334,7 +344,7 @@ US3 (Formatting Toolbar) [P3]
 
 ---
 
-## Phase 10: Polish & Cross-Cutting Concerns
+### Polish & Cross-Cutting Concerns
 
 ### Edge Cases
 
@@ -369,21 +379,16 @@ US3 (Formatting Toolbar) [P3]
 
 ## Task Summary
 
-### By Phase
+### By Milestone
 
-| Phase | Tasks | Parallel |
-|-------|-------|----------|
-| Phase 1: Setup | 11 | 7 |
-| Phase 2: Foundational | 14 | 8 |
-| Phase 3: US1 (Preview) | 17 | 6 |
-| Phase 4: US2 (Edit Mode) | 23 | 10 |
-| Phase 5: US3 (Toolbar) | 19 | 10 |
-| Phase 6: US4 (Context Menu) | 10 | 4 |
-| Phase 7: US5 (Shortcuts) | 9 | 4 |
-| Phase 8: US6 (Config) | 12 | 5 |
-| Phase 9: Testing | 7 | 1 |
-| Phase 10: Polish | 17 | 8 |
-| **Total** | **139** | **63** |
+| Milestone | Tasks | Notes |
+|-----------|-------|-------|
+| v0.1.0 | 65 | Setup + Foundational + US1 + US2 |
+| v0.2.0 | 19 | US3 |
+| v0.3.0 | 19 | US4 + US5 |
+| v0.4.0 | 12 | US6 |
+| v1.0.0 | 24 | Testing + Polish |
+| **Total** | **139** | |
 
 ### By User Story
 
@@ -398,12 +403,12 @@ US3 (Formatting Toolbar) [P3]
 | Setup + Foundational | 25 | Required |
 | Testing + Polish | 24 | Required |
 
-### MVP Milestone
+### MVP Milestone (v0.1.0)
 
-- Phase 1 (Setup): T001-T011
-- Phase 2 (Foundational): T012-T022, T125-T126, T139
-- Phase 3 (US1 Preview): T023-T038, T127
-- Phase 4 (US2 Edit Mode): T039-T052, T128-T134, T140-T141
+- Setup: T001-T011
+- Foundational: T012-T022, T125-T126, T139
+- US1 (Preview): T023-T038, T127
+- US2 (Edit Mode): T039-T052, T128-T134, T140-T141
 - **Total MVP tasks**: 65
 
 ---
