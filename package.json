@@ -18,7 +18,7 @@
     "commands": []
   },
   "scripts": {
-    "compile": "tsc -p .",
+    "compile": "tsc -p . && tsc -p tsconfig.tests.json",
     "lint": "eslint . --ext .ts",
     "test": "npm run test:integration",
     "test:integration": "node ./out/tests/run-test.js",
