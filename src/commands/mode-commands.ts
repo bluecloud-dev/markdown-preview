@@ -8,8 +8,7 @@ const getActiveMarkdownEditor = (): vscode.TextEditor | undefined =>
   vscode.window.visibleTextEditors.find((editor) => editor.document.languageId === 'markdown');
 
 export const enterEditMode = async (
-  previewService: PreviewService,
-  stateService: StateService
+  previewService: PreviewService
 ): Promise<void> => {
   const editor = getActiveMarkdownEditor();
   if (!editor) {
@@ -20,8 +19,7 @@ export const enterEditMode = async (
 };
 
 export const exitEditMode = async (
-  previewService: PreviewService,
-  stateService: StateService
+  previewService: PreviewService
 ): Promise<void> => {
   const editor = getActiveMarkdownEditor();
   if (!editor) {
@@ -42,9 +40,9 @@ export const toggleEditMode = async (
 
   const state = stateService.getState(editor.document.uri);
   if (state.mode === ViewMode.Edit) {
-    await exitEditMode(previewService, stateService);
+    await exitEditMode(previewService);
     return;
   }
 
-  await enterEditMode(previewService, stateService);
+  await enterEditMode(previewService);
 };

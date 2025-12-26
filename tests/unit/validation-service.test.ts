@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
@@ -10,31 +13,45 @@ describe('ValidationService', () => {
 
   it('detects markdown documents', () => {
     const service = new ValidationService();
-    const doc = { languageId: 'markdown', uri: vscode.Uri.file('/tmp/test.md') } as vscode.TextDocument;
+    const document = {
+      languageId: 'markdown',
+      uri: vscode.Uri.file('/tmp/test.md'),
+    } as vscode.TextDocument;
 
-    expect(service.isMarkdownFile(doc)).to.equal(true);
+    expect(service.isMarkdownFile(document)).to.equal(true);
   });
 
   it('detects diff views', () => {
     const service = new ValidationService();
-    const doc = { uri: vscode.Uri.parse('git:/tmp/test.md') } as vscode.TextDocument;
+    const document = { uri: vscode.Uri.parse('git:/tmp/test.md') } as vscode.TextDocument;
 
-    expect(service.isDiffView(doc)).to.equal(true);
+    expect(service.isDiffView(document)).to.equal(true);
   });
 
   it('flags large files using fs.stat', async () => {
     const service = new ValidationService();
-    sinon.stub(vscode.workspace.fs, 'stat').resolves({ size: 2_000_000 } as vscode.FileStat);
-
-    const result = await service.isLargeFile(vscode.Uri.file('/tmp/large.md'), 1_048_576);
+    const largePath = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'tests',
+      'fixtures',
+      'large-file.md'
+    );
+    const result = await service.isLargeFile(vscode.Uri.file(largePath), 1_048_576);
     expect(result).to.equal(true);
   });
 
   it('flags binary files based on null bytes', async () => {
     const service = new ValidationService();
-    sinon.stub(vscode.workspace.fs, 'readFile').resolves(new Uint8Array([0, 1, 2]));
+    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'markdown-reader-'));
+    const binaryPath = path.join(temporaryDirectory, 'binary.md');
+    fs.writeFileSync(binaryPath, Buffer.from([0, 1, 2, 3]));
 
-    const result = await service.isBinaryFile(vscode.Uri.file('/tmp/binary.md'));
+    const result = await service.isBinaryFile(vscode.Uri.file(binaryPath));
+    fs.unlinkSync(binaryPath);
+    fs.rmdirSync(temporaryDirectory);
     expect(result).to.equal(true);
   });
 });

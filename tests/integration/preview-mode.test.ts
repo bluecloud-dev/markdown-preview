@@ -18,10 +18,16 @@ const createMemento = (): vscode.Memento => {
     update: async (key: string, value: unknown): Promise<void> => {
       store.set(key, value);
     },
+    keys: () => [...store.keys()],
   } as vscode.Memento;
 };
 
 describe('Preview mode integration', () => {
+  beforeEach(() => {
+    const l10nStub = sinon.stub(vscode.l10n, 't') as sinon.SinonStub;
+    l10nStub.callsFake((message: string) => message);
+  });
+
   afterEach(() => {
     sinon.restore();
   });
@@ -55,9 +61,7 @@ describe('Preview mode integration', () => {
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
-    const infoStub = sinon
-      .stub(vscode.window, 'showInformationMessage')
-      .resolves(undefined);
+    const infoStub = sinon.stub(vscode.window, 'showInformationMessage').resolves();
     sinon.stub(vscode.env, 'openExternal').resolves(true);
 
     const handler = new MarkdownFileHandler(
@@ -68,20 +72,20 @@ describe('Preview mode integration', () => {
       globalState
     );
 
-    const doc = {
+    const document = {
       languageId: 'markdown',
       uri: vscode.Uri.file('/tmp/sample.md'),
       isUntitled: false,
     } as vscode.TextDocument;
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(true);
     expect(infoStub.calledOnce).to.equal(true);
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(infoStub.calledOnce).to.equal(true);
   });
@@ -115,9 +119,11 @@ describe('Preview mode integration', () => {
     );
 
     sinon.stub(vscode.commands, 'executeCommand').resolves();
-    const infoStub = sinon
-      .stub(vscode.window, 'showInformationMessage')
-      .resolves("Don't Show Again for This File");
+    const infoStub = sinon.stub(
+      vscode.window,
+      'showInformationMessage'
+    ) as sinon.SinonStub;
+    infoStub.resolves("Don't Show Again for This File");
 
     const handler = new MarkdownFileHandler(
       previewService,
@@ -127,19 +133,19 @@ describe('Preview mode integration', () => {
       globalState
     );
 
-    const doc = {
+    const document = {
       languageId: 'markdown',
       uri: vscode.Uri.file('/tmp/large.md'),
       isUntitled: false,
     } as vscode.TextDocument;
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(infoStub.calledOnce).to.equal(true);
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(infoStub.calledOnce).to.equal(true);
   });
@@ -173,7 +179,7 @@ describe('Preview mode integration', () => {
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
-    sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
+    sinon.stub(vscode.window, 'showInformationMessage').resolves();
     sinon.stub(vscode.env, 'openExternal').resolves(true);
 
     const handler = new MarkdownFileHandler(
@@ -184,14 +190,14 @@ describe('Preview mode integration', () => {
       globalState
     );
 
-    const doc = {
+    const document = {
       languageId: 'markdown',
       uri: vscode.Uri.file('/tmp/quick-open.md'),
       isUntitled: false,
     } as vscode.TextDocument;
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(true);
     expect(executeStub.calledWith('markdown.showPreviewToSide')).to.equal(false);
@@ -224,7 +230,7 @@ describe('Preview mode integration', () => {
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
-    sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
+    sinon.stub(vscode.window, 'showInformationMessage').resolves();
     sinon.stub(vscode.env, 'openExternal').resolves(true);
 
     const handler = new MarkdownFileHandler(
@@ -235,14 +241,14 @@ describe('Preview mode integration', () => {
       createMemento()
     );
 
-    const doc = {
+    const document = {
       languageId: 'markdown',
       uri: vscode.Uri.file('/tmp/quick-open.md'),
       isUntitled: false,
     } as vscode.TextDocument;
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(true);
   });
@@ -274,7 +280,7 @@ describe('Preview mode integration', () => {
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
-    sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
+    sinon.stub(vscode.window, 'showInformationMessage').resolves();
     sinon.stub(vscode.env, 'openExternal').resolves(true);
 
     const handler = new MarkdownFileHandler(
@@ -285,14 +291,14 @@ describe('Preview mode integration', () => {
       createMemento()
     );
 
-    const doc = {
+    const document = {
       languageId: 'markdown',
       uri: vscode.Uri.file('/tmp/no-ui.md'),
       isUntitled: false,
     } as vscode.TextDocument;
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreviewToSide')).to.equal(false);
     expect(executeStub.calledWith('workbench.action.splitEditor')).to.equal(false);

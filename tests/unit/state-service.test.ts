@@ -8,7 +8,7 @@ describe('StateService', () => {
   let clock: sinon.SinonFakeTimers;
 
   beforeEach(() => {
-    clock = sinon.useFakeTimers({ now: 1_000 });
+    clock = sinon.useFakeTimers({ now: 1000 });
   });
 
   afterEach(() => {
@@ -24,7 +24,7 @@ describe('StateService', () => {
 
     expect(state.uri).to.equal(uri.toString());
     expect(state.mode).to.equal(ViewMode.Preview);
-    expect(state.lastModeChange).to.equal(1_000);
+    expect(state.lastModeChange).to.equal(1000);
   });
 
   it('updates mode and timestamp', () => {
@@ -33,12 +33,12 @@ describe('StateService', () => {
     const contextStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
 
     service.getState(uri);
-    clock.tick(1_000);
+    clock.tick(1000);
     service.setMode(uri, ViewMode.Edit);
 
     const updated = service.getState(uri);
     expect(updated.mode).to.equal(ViewMode.Edit);
-    expect(updated.lastModeChange).to.equal(2_000);
+    expect(updated.lastModeChange).to.equal(2000);
     expect(
       contextStub.calledWith('setContext', 'markdownReader.editMode', true)
     ).to.equal(true);
@@ -53,9 +53,9 @@ describe('StateService', () => {
     service.setMode(uri, ViewMode.Edit);
     service.clear(uri);
 
-    clock.tick(1_000);
+    clock.tick(1000);
     const reset = service.getState(uri);
     expect(reset.mode).to.equal(ViewMode.Preview);
-    expect(reset.lastModeChange).to.equal(2_000);
+    expect(reset.lastModeChange).to.equal(2000);
   });
 });

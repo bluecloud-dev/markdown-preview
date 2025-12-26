@@ -20,10 +20,16 @@ const createMemento = (): vscode.Memento => {
     update: async (key: string, value: unknown): Promise<void> => {
       store.set(key, value);
     },
+    keys: () => [...store.keys()],
   } as vscode.Memento;
 };
 
 describe('Edit mode integration', () => {
+  beforeEach(() => {
+    const l10nStub = sinon.stub(vscode.l10n, 't') as sinon.SinonStub;
+    l10nStub.callsFake((message: string) => message);
+  });
+
   afterEach(() => {
     sinon.restore();
   });
@@ -123,9 +129,11 @@ describe('Edit mode integration', () => {
   });
 
   it('toggleEditMode switches between modes', async () => {
+    const enterStub = sinon.stub().resolves();
+    const exitStub = sinon.stub().resolves();
     const previewService = {
-      enterEditMode: sinon.stub().resolves(),
-      exitEditMode: sinon.stub().resolves(),
+      enterEditMode: enterStub,
+      exitEditMode: exitStub,
     } as unknown as PreviewService;
     const stateService = new StateService();
 
@@ -137,11 +145,11 @@ describe('Edit mode integration', () => {
     sinon.stub(vscode.commands, 'executeCommand').resolves();
 
     await toggleEditMode(previewService, stateService);
-    expect(previewService.enterEditMode.calledOnce).to.equal(true);
+    expect(enterStub.calledOnce).to.equal(true);
 
     stateService.setMode(editor.document.uri, ViewMode.Edit);
     await toggleEditMode(previewService, stateService);
-    expect(previewService.exitEditMode.calledOnce).to.equal(true);
+    expect(exitStub.calledOnce).to.equal(true);
   });
 
   it('saves cursor position for focus restore', async () => {
@@ -266,25 +274,30 @@ describe('Edit mode integration', () => {
       createMemento()
     );
 
-    const doc = {
+    const saveStub = sinon.stub().resolves(true);
+    const document = {
       uri: vscode.Uri.file('/tmp/edit.md'),
       isDirty: true,
-      save: sinon.stub().resolves(true),
+      save: saveStub,
     } as unknown as vscode.TextDocument;
     const editor = {
-      document: doc,
+      document,
       selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0)),
     } as unknown as vscode.TextEditor;
 
     sinon.stub(vscode.window, 'activeTextEditor').get(() => editor);
     sinon.stub(vscode.commands, 'executeCommand').resolves();
-    sinon.stub(vscode.window, 'showWarningMessage').resolves('Save & Exit');
+    const warningStub = sinon.stub(
+      vscode.window,
+      'showWarningMessage'
+    ) as sinon.SinonStub;
+    warningStub.resolves('Save & Exit');
     sinon.stub(vscode.workspace, 'getConfiguration').returns({
       get: () => 'off',
     } as unknown as vscode.WorkspaceConfiguration);
 
-    await previewService.exitEditMode(doc.uri);
-    expect(doc.save.calledOnce).to.equal(true);
+    await previewService.exitEditMode(document.uri);
+    expect(saveStub.calledOnce).to.equal(true);
   });
 
   it('skips prompt when autosave is enabled', async () => {
@@ -305,24 +318,24 @@ describe('Edit mode integration', () => {
       createMemento()
     );
 
-    const doc = {
+    const document = {
       uri: vscode.Uri.file('/tmp/edit.md'),
       isDirty: true,
       save: sinon.stub().resolves(true),
     } as unknown as vscode.TextDocument;
     const editor = {
-      document: doc,
+      document,
       selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0)),
     } as unknown as vscode.TextEditor;
 
     sinon.stub(vscode.window, 'activeTextEditor').get(() => editor);
-    const warnStub = sinon.stub(vscode.window, 'showWarningMessage').resolves(undefined);
+    const warnStub = sinon.stub(vscode.window, 'showWarningMessage').resolves();
     sinon.stub(vscode.commands, 'executeCommand').resolves();
     sinon.stub(vscode.workspace, 'getConfiguration').returns({
       get: () => 'afterDelay',
     } as unknown as vscode.WorkspaceConfiguration);
 
-    await previewService.exitEditMode(doc.uri);
+    await previewService.exitEditMode(document.uri);
     expect(warnStub.called).to.equal(false);
   });
 
@@ -332,8 +345,8 @@ describe('Edit mode integration', () => {
 
     sinon.stub(vscode.commands, 'executeCommand').resolves();
     stateService.setMode(uri, ViewMode.Edit);
-    const doc = { save: sinon.stub().resolves(true) } as unknown as vscode.TextDocument;
-    await doc.save();
+    const document = { save: sinon.stub().resolves(true) } as unknown as vscode.TextDocument;
+    await document.save();
 
     expect(stateService.getState(uri).mode).to.equal(ViewMode.Edit);
   });
@@ -375,14 +388,14 @@ describe('Edit mode integration', () => {
       createMemento()
     );
 
-    const doc = {
+    const document = {
       languageId: 'markdown',
       uri,
       isUntitled: false,
     } as vscode.TextDocument;
 
     await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(doc);
+      .handleDocumentOpen(document);
 
     expect(stateService.getState(uri).mode).to.equal(ViewMode.Edit);
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);

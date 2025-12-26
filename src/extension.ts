@@ -26,14 +26,13 @@ export function activate(context: vscode.ExtensionContext): void {
     context.globalState
   );
   fileHandler.register();
-  disposables.push(fileHandler);
-
   disposables.push(
+    fileHandler,
     vscode.commands.registerCommand('markdownReader.enterEditMode', () =>
-      enterEditMode(previewService, stateService)
+      enterEditMode(previewService)
     ),
     vscode.commands.registerCommand('markdownReader.exitEditMode', () =>
-      exitEditMode(previewService, stateService)
+      exitEditMode(previewService)
     ),
     vscode.commands.registerCommand('markdownReader.toggleEditMode', () =>
       toggleEditMode(previewService, stateService)

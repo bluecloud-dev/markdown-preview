@@ -31,7 +31,9 @@ describe('ConfigService', () => {
   it('matches exclude patterns using minimatch', () => {
     const getStub = sinon.stub();
     getStub.withArgs('enabled', true).returns(true);
-    getStub.withArgs('excludePatterns', ['**/node_modules/**']).returns(['**/node_modules/**']);
+    getStub
+      .withArgs('excludePatterns', ['**/node_modules/**', '**/.git/**'])
+      .returns(['**/node_modules/**']);
     getStub.withArgs('maxFileSize', 1_048_576).returns(1_048_576);
 
     const config = { get: getStub } as unknown as vscode.WorkspaceConfiguration;
