@@ -1,37 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Document shape - narrower, centered at x=64 -->
-  <!-- Width: 70px (from x=29 to x=99), center = 64 -->
-  <path d="M29 18 Q29 10 37 10 L79 10 L99 30 L99 74 Q99 82 91 82 L37 82 Q29 82 29 74 Z" 
-        fill="none" 
-        stroke="#42a5f5" 
-        stroke-width="5" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"/>
-  
-  <!-- Folded corner with smooth curve -->
-  <path d="M79 10 L79 22 Q79 30 87 30 L99 30" 
-        fill="none" 
-        stroke="#42a5f5" 
-        stroke-width="5" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"/>
-  
-  <!-- Magnifying glass - centered in document at x=64 -->
-  <g transform="translate(58, 44)">
-    <!-- Glass circle -->
-    <circle cx="0" cy="0" r="14" fill="none" stroke="#42a5f5" stroke-width="5"/>
-    <!-- Handle - starts from edge of circle -->
-    <line x1="12" y1="12" x2="24" y2="24" stroke="#42a5f5" stroke-width="5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="g" x1="16" y1="16" x2="112" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#54D2FF"/>
+      <stop offset="1" stop-color="#1F7BFF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="12" y="12" width="104" height="104" rx="20" fill="none" stroke="url(#g)" stroke-width="4"/>
+
+  <g stroke="url(#g)" stroke-width="4" stroke-linecap="round">
+    <path d="M28 40 H56" opacity="0.95"/>
+    <path d="M28 52 H56" opacity="0.85"/>
+    <path d="M28 64 H56" opacity="0.70"/>
+    <path d="M28 76 H56" opacity="0.55"/>
   </g>
-  
-  <!-- Bottom label box - pill shape, centered -->
-  <rect x="10" y="92" width="108" height="26" rx="13" 
-        fill="none" 
-        stroke="#42a5f5" 
-        stroke-width="5" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"/>
-  
-  <!-- MD PREVIEW text -->
-  <text x="64" y="111" text-anchor="middle" font-family="Noto Sans Mono, monospace" font-size="13" font-weight="bold" fill="#42a5f5">MD PREVIEW</text>
+
+  <path d="M64 32 V96" stroke="url(#g)" stroke-width="4" stroke-linecap="round" opacity="0.35"/>
+
+  <g stroke="url(#g)" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M90 48 C80 48 74 56 70 60 C74 64 80 72 90 72 C100 72 106 64 110 60 C106 56 100 48 90 48"/>
+    <circle cx="90" cy="60" r="6" fill="url(#g)"/>
+  </g>
+
+  <path d="M90 80 l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="url(#g)" opacity="0.75"/>
 </svg>
