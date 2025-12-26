@@ -1,4 +1,5 @@
-import * as path from 'path';
+/* eslint-disable no-console, unicorn/no-process-exit, unicorn/prefer-module, unicorn/prefer-top-level-await, unicorn/import-style */
+import * as path from 'node:path';
 import { runTests } from '@vscode/test-electron';
 
 async function main(): Promise<void> {

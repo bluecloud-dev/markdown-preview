@@ -32,5 +32,18 @@
         "case": "kebabCase"
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "tests/**/*.ts"
+      ],
+      "env": {
+        "mocha": true
+      },
+      "rules": {
+        "unicorn/prefer-module": "off"
+      }
+    }
+  ]
 }
