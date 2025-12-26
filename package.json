@@ -1,0 +1,74 @@
+{
+  "name": "markdown-reader",
+  "displayName": "Markdown Reader",
+  "version": "0.0.0",
+  "description": "Open markdown files in preview mode by default.",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": []
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "lint": "eslint . --ext .ts",
+    "test": "npm run test:integration",
+    "test:integration": "node ./out/tests/run-test.js",
+    "coverage": "nyc npm run test:integration",
+    "package": "vsce package",
+    "prepublish": "npm run compile",
+    "check:no-telemetry": "node scripts/check-no-telemetry.js"
+  },
+  "dependencies": {
+    "minimatch": "^9.0.5"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/minimatch": "^5.1.2",
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "@vscode/test-electron": "^2.4.1",
+    "chai": "^4.4.1",
+    "esbuild": "^0.21.4",
+    "eslint": "^8.57.0",
+    "eslint-plugin-unicorn": "^51.0.1",
+    "mocha": "^10.4.0",
+    "nyc": "^15.1.0",
+    "prettier": "^3.2.5",
+    "sinon": "^17.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "nyc": {
+    "all": true,
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "tests/**",
+      "out/**"
+    ],
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "check-coverage": true,
+    "branches": 80,
+    "lines": 80,
+    "functions": 80,
+    "statements": 80
+  }
+}
