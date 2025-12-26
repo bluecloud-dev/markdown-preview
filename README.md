@@ -1,7 +1,7 @@
 # Markdown Reader
 
 <p align="center">
-  <img src="assests/hero.png" alt="Markdown Reader hero banner" width="840">
+  <img src="assets/hero.png" alt="Markdown Reader hero banner" width="840">
 </p>
 
 <p align="center">

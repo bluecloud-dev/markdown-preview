@@ -10,7 +10,7 @@
   "categories": [
     "Other"
   ],
-  "icon": "assests/icon.png",
+  "icon": "assets/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/ayhammouda/markdown-preview-default.git"
