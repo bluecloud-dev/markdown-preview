@@ -26,7 +26,7 @@
 
 ## Status
 
-Preview-by-default and edit mode are available for a focused read/write loop.
+Preview-by-default, edit mode, and formatting toolbar actions are available for a focused read/write loop.
 
 ## Table of Contents
 
@@ -49,6 +49,7 @@ Preview-by-default and edit mode are available for a focused read/write loop.
 - Skip auto-preview for large files (>1MB) with opt-in preview and per-file opt-out.
 - Detect binary markdown files and fall back to the text editor with a warning.
 - Enter edit mode to get a split view (editor left, preview right) with a Done button.
+- Format text in edit mode with toolbar actions for bold, italic, strikethrough, lists, code, links, and headings.
 
 ## :clipboard: Requirements
 
@@ -65,6 +66,17 @@ Preview-by-default and edit mode are available for a focused read/write loop.
 - **Markdown Preview: Enter Edit Mode** — open split editor (text left, preview right)
 - **Markdown Preview: Exit Edit Mode** — return to preview-only mode
 - **Markdown Preview: Toggle Edit Mode** — switch between modes (`Ctrl+Shift+V`)
+- **Markdown Preview: Bold** — wrap selection with `**`
+- **Markdown Preview: Italic** — wrap selection with `_`
+- **Markdown Preview: Strikethrough** — wrap selection with `~~`
+- **Markdown Preview: Bullet List** — toggle `- ` prefix
+- **Markdown Preview: Numbered List** — toggle `1. ` prefix
+- **Markdown Preview: Inline Code** — wrap selection with backticks
+- **Markdown Preview: Code Block** — wrap selection with triple backticks
+- **Markdown Preview: Link** — prompt for URL and wrap selection
+- **Markdown Preview: Heading 1** — toggle `# ` prefix
+- **Markdown Preview: Heading 2** — toggle `## ` prefix
+- **Markdown Preview: Heading 3** — toggle `### ` prefix
 
 ## :gear: Settings
 

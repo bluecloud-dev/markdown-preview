@@ -16,7 +16,7 @@ export class PreviewService {
   ) {}
 
   async shouldShowPreview(document: vscode.TextDocument): Promise<boolean> {
-    const config = this.configService.getConfig();
+    const config = this.configService.getConfig(document.uri);
 
     if (!config.enabled) {
       return false;

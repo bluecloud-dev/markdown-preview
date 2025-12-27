@@ -9,41 +9,32 @@ const DEFAULT_CONFIG: ExtensionConfiguration = {
 };
 
 export class ConfigService {
-  private config: ExtensionConfiguration;
-
-  constructor() {
-    this.config = this.loadConfig();
+  getEnabled(resource?: vscode.Uri): boolean {
+    return this.loadConfig(resource).enabled;
   }
 
-  reload(): void {
-    this.config = this.loadConfig();
+  getExcludePatterns(resource?: vscode.Uri): string[] {
+    return this.loadConfig(resource).excludePatterns;
   }
 
-  getEnabled(): boolean {
-    return this.config.enabled;
+  getMaxFileSize(resource?: vscode.Uri): number {
+    return this.loadConfig(resource).maxFileSize;
   }
 
-  getExcludePatterns(): string[] {
-    return this.config.excludePatterns;
-  }
-
-  getMaxFileSize(): number {
-    return this.config.maxFileSize;
-  }
-
-  getConfig(): ExtensionConfiguration {
-    return { ...this.config };
+  getConfig(resource?: vscode.Uri): ExtensionConfiguration {
+    return this.loadConfig(resource);
   }
 
   isExcluded(uri: vscode.Uri): boolean {
     const filePath = vscode.workspace.asRelativePath(uri, false);
-    return this.config.excludePatterns.some((pattern) =>
+    const config = this.loadConfig(uri);
+    return config.excludePatterns.some((pattern) =>
       minimatch(filePath, pattern, { dot: true, nocase: true })
     );
   }
 
-  private loadConfig(): ExtensionConfiguration {
-    const config = vscode.workspace.getConfiguration('markdownReader');
+  private loadConfig(resource?: vscode.Uri): ExtensionConfiguration {
+    const config = vscode.workspace.getConfiguration('markdownReader', resource);
     return {
       enabled: config.get('enabled', DEFAULT_CONFIG.enabled),
       excludePatterns: config.get('excludePatterns', DEFAULT_CONFIG.excludePatterns),
