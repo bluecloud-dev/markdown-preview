@@ -11,7 +11,7 @@ Build a VS Code extension that opens markdown files in rendered preview mode by 
 
 **Language/Version**: TypeScript 5.x (strict mode, ES2022 target, CommonJS module)
 **Primary Dependencies**: VS Code Extension API (^1.85.0), minimatch (for glob pattern matching)
-**Storage**: In-memory Map for live per-file state; persist only user choices in `context.workspaceState` (e.g., per-file large-file opt-out) and `context.globalState` (e.g., one-time onboarding dismissal)
+**Storage**: In-memory Map for live per-file state; persist only user choices in `context.workspaceState` (e.g., per-file large-file opt-out) and `context.globalState` (e.g., one-time welcome/tutorial dismissal for US1)
 **Testing**: Mocha + Sinon + Chai + @vscode/test-electron, nyc for coverage (80% minimum; 100% for formatting operations)
 **Target Platform**: VS Code Extension Host (Node.js runtime)
 **Project Type**: Single VS Code extension
@@ -113,9 +113,13 @@ No constitution violations requiring justification. Design follows all principle
 
 ## Milestones
 
+### Sprint 0 - Test Infrastructure
+
+Includes Setup (test scaffolding, dependencies, CI, walking skeleton).
+
 ### v0.1.0 - MVP Core - Preview by Default with Edit Mode
 
-Includes Setup, Foundational, US1 (Preview), US2 (Edit Mode).
+Includes Foundational, US1 (Preview), US2 (Edit Mode).
 
 ### v0.2.0 - Formatting Toolbar
 
@@ -132,6 +136,8 @@ Includes US6 (Configuration).
 ### v1.0.0 - Stable & Polished
 
 Includes Testing and Polish.
+
+**Milestone Completion Requirement**: At the end of each milestone, update README.md to reflect the current project state and update CHANGELOG.md with milestone changes.
 
 ## Documentation Outputs
 

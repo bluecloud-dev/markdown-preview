@@ -43,3 +43,9 @@ coverage/
 # Logs
 logs/
 *.log
+.claude
+.codex
+.vscode-test
+specs
+AGENTS.md
+CLAUDE.md

@@ -26,7 +26,7 @@
 
 ## Status
 
-Sprint 0 infrastructure is in place; this release does not ship user-facing features yet.
+Preview-by-default and edit mode are available for a focused read/write loop.
 
 ## Table of Contents
 
@@ -44,7 +44,11 @@ Sprint 0 infrastructure is in place; this release does not ship user-facing feat
 
 ## :star: Features
 
-- No user-facing features yet (infrastructure-only release).
+- Open markdown files in preview mode by default (Explorer, Quick Open, and file links).
+- Show a one-time welcome message with an optional quick-start link.
+- Skip auto-preview for large files (>1MB) with opt-in preview and per-file opt-out.
+- Detect binary markdown files and fall back to the text editor with a warning.
+- Enter edit mode to get a split view (editor left, preview right) with a Done button.
 
 ## :clipboard: Requirements
 
@@ -52,19 +56,26 @@ Sprint 0 infrastructure is in place; this release does not ship user-facing feat
 
 ## :zap: Quick Start
 
-This release focuses on infrastructure. No user-facing functionality is available yet. Use the Contributing section to run tests and validate the setup locally.
+1. Open any `.md` file to see the preview immediately.
+2. Run **Markdown Reader: Enter Edit Mode** (or `Ctrl+Shift+V`) to open a split editor.
+3. Click **Done** or run **Markdown Reader: Exit Edit Mode** to return to preview-only mode.
 
 ## :keyboard: Commands
 
-No commands are available yet.
+- **Markdown Reader: Enter Edit Mode** — open split editor (text left, preview right)
+- **Markdown Reader: Exit Edit Mode** — return to preview-only mode
+- **Markdown Reader: Toggle Edit Mode** — switch between modes (`Ctrl+Shift+V`)
 
 ## :gear: Settings
 
-No settings are available yet.
+- `markdownReader.enabled` (default: `true`) — enable preview-by-default behavior
+- `markdownReader.excludePatterns` (default: `["**/node_modules/**", "**/.git/**"]`) — paths to ignore
+- `markdownReader.maxFileSize` (default: `1048576`) — bytes threshold for large-file handling
 
 ## :bulb: How It Works
 
-Implementation details will be documented once user-facing features are released.
+- Uses VS Code's native markdown preview for rendering and live updates.
+- Auto-preview is skipped for untitled files, diff views, excluded paths, and large files.
 
 ## :lock: Privacy
 
@@ -73,7 +84,8 @@ Implementation details will be documented once user-facing features are released
 
 ## :wrench: Troubleshooting
 
-Troubleshooting steps will be documented once user-facing features ship.
+- If a file opens in preview and you want to edit, run **Enter Edit Mode** or disable the extension.
+- Split ratio and layout are controlled by VS Code; the extension cannot force a 50/50 ratio.
 
 ## :handshake: Contributing
 

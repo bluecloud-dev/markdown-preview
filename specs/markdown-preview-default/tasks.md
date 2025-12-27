@@ -18,33 +18,38 @@ Dependency-ordered tasks organized by user story. Testing and tooling land first
 - Task IDs are stable identifiers and may not be strictly sequential by phase.
 - Extension name: "Markdown Reader" (display name), command prefix: `markdownReader.*`
 
-**Milestones**: v0.1.0 (MVP Core), v0.2.0 (Formatting Toolbar), v0.3.0 (Access & Shortcuts), v0.4.0 (Configuration), v1.0.0 (Stable & Polished) (scheduled for v1: 139)
+**Milestones**: Sprint 0 (Test Infrastructure), v0.1.0 (MVP Core), v0.2.0 (Formatting Toolbar), v0.3.0 (Access & Shortcuts), v0.4.0 (Configuration), v1.0.0 (Stable & Polished) (scheduled for v1: 143)
 
 ## Implementation Strategy
 
-MVP = User Story 1 (Preview by Default) + User Story 2 (Edit Mode). Add US3 through US6 incrementally. Keep tests green each step.
+MVP (release) = Sprint 0 + User Story 1 (Preview by Default) + User Story 2 (Edit Mode). Add US3 through US6 incrementally. Keep tests green each step.
+
+## Milestone Closeout Requirement
+
+- At the end of each milestone, update README.md so Features/Commands list only what is available in the release (no milestone/version mentions) and reflect current settings and known limitations.
+- At the end of each milestone, update CHANGELOG.md with the milestone changes.
 
 ## Task Dependency Graph
 
 ```
-Setup (v0.1.0)
+Sprint 0 (Test Infrastructure)
   ↓
 Foundational (v0.1.0)
   ↓
-US1 (Preview by Default) [P1] ← Core feature, others depend on this (v0.1.0)
+US1 (Preview by Default) [P0] ← Core feature, others depend on this (v0.1.0)
   ↓ (needs preview mode to toggle from)
-US2 (Edit Mode) [P2] (v0.1.0)
+US2 (Edit Mode) [P0] (v0.1.0)
   ↓ (needs edit mode for formatting)
-US3 (Formatting Toolbar) [P3] (v0.2.0)
+US3 (Formatting Toolbar) [P1] (v0.2.0)
   ↓ (reuses format commands)
-  ├── US4 (Context Menu) [P4] ←┐
-  ├── US5 (Keyboard Shortcuts) [P5] ← Can run in parallel
-  └── US6 (Configuration) [P6] ←┘ (can also start after Foundational)
+  ├── US4 (Context Menu) [P2] ←┐
+  ├── US5 (Keyboard Shortcuts) [P2] ← Can run in parallel
+  └── US6 (Configuration) [P2] ←┘ (can also start after Foundational)
 ```
 
 ## Parallel Execution Opportunities
 
-- **Setup (v0.1.0)**: T005-T011 can proceed in parallel after T001-T004.
+- **Sprint 0**: T005-T011 can proceed in parallel after T001-T004.
 - **Foundational (v0.1.0)**: Types (T012-T014) in parallel; L10n setup (T139) in parallel with fixtures (T018-T019); Tests (T021-T022) in parallel.
 - **US1 Tests (v0.1.0)**: All test tasks (T023-T027) can run in parallel.
 - **US3 Formatting (v0.2.0)**: Service implementations (T059-T062) can run in parallel.
@@ -53,7 +58,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
-## v0.1.0 - MVP Core - Preview by Default with Edit Mode
+## Sprint 0 - Test Infrastructure
 
 ### Setup (Test Infrastructure)
 
@@ -71,54 +76,56 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
+## v0.1.0 - MVP Core - Preview by Default with Edit Mode
+
 ### Foundational
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T012 [P] Create `ViewMode` enum and `FileState` interface in `src/types/state.ts`
-- [ ] T013 [P] Create `ExtensionConfiguration` interface in `src/types/config.ts`
-- [ ] T014 [P] Create `FormattingAction`, `FormattingType`, `FormattingConfig` types in `src/types/formatting.ts`
-- [ ] T021 [P] Create `tests/unit/state-service.test.ts` with tests for state management
-- [ ] T022 [P] Create `tests/unit/config-service.test.ts` with tests for configuration access
-- [ ] T015 Create `StateService` skeleton in `src/services/state-service.ts` (Map<string, FileState>); keep behavior minimal until unit tests exist (T021)
-- [ ] T016 Create `ConfigService` skeleton in `src/services/config-service.ts` (getEnabled, getExcludePatterns, getMaxFileSize, isExcluded); keep behavior minimal until unit tests exist (T022)
-- [ ] T017 Create extension entry point skeleton in `src/extension.ts` with activate/deactivate and disposable array
-- [ ] T018 [P] Create test fixtures: `tests/fixtures/sample.md`, `tests/fixtures/large-file.md` (>1MB), `tests/fixtures/with-formatting.md`
-- [ ] T019 [P] Create `tests/fixtures/git-conflict.md` with conflict markers for edge case testing
-- [ ] T020 Wire up Mocha + @vscode/test-electron harness (bootstrap, TS transpile strategy, and runner entrypoints) to support scripts created in T003
-- [ ] T139 [P] Set up l10n infrastructure: create `package.nls.json` with default English strings, add `l10n` directory structure for future translations, and export `t()` helper from `src/utils/l10n.ts` wrapping `vscode.l10n.t()` for consistent usage across the codebase (prerequisite for T031, T038, T115, T122, T132, T134, T135)
-- [ ] T125 Implement StateService behavior to satisfy `tests/unit/state-service.test.ts` (T021) (FR-042)
-- [ ] T126 Implement ConfigService behavior to satisfy `tests/unit/config-service.test.ts` (T022) (FR-035-FR-038, FR-041)
+- [x] T012 [P] Create `ViewMode` enum and `FileState` interface in `src/types/state.ts`
+- [x] T013 [P] Create `ExtensionConfiguration` interface in `src/types/config.ts`
+- [x] T014 [P] Create `FormattingAction`, `FormattingType`, `FormattingConfig` types in `src/types/formatting.ts`
+- [x] T021 [P] Create `tests/unit/state-service.test.ts` with tests for state management
+- [x] T022 [P] Create `tests/unit/config-service.test.ts` with tests for configuration access
+- [x] T015 Create `StateService` skeleton in `src/services/state-service.ts` (Map<string, FileState>); keep behavior minimal until unit tests exist (T021)
+- [x] T016 Create `ConfigService` skeleton in `src/services/config-service.ts` (getEnabled, getExcludePatterns, getMaxFileSize, isExcluded); keep behavior minimal until unit tests exist (T022)
+- [x] T017 Create extension entry point skeleton in `src/extension.ts` with activate/deactivate and disposable array
+- [x] T018 [P] Create test fixtures: `tests/fixtures/sample.md`, `tests/fixtures/large-file.md` (>1MB), `tests/fixtures/with-formatting.md`
+- [x] T019 [P] Create `tests/fixtures/git-conflict.md` with conflict markers for edge case testing
+- [x] T020 Wire up Mocha + @vscode/test-electron harness (bootstrap, TS transpile strategy, and runner entrypoints) to support scripts created in T003
+- [x] T139 [P] Set up l10n infrastructure: create `package.nls.json` with default English strings, add `l10n` directory structure for future translations, and export `t()` helper from `src/utils/l10n.ts` wrapping `vscode.l10n.t()` for consistent usage across the codebase (prerequisite for T031, T038, T115, T122, T132, T134, T135)
+- [x] T125 Implement StateService behavior to satisfy `tests/unit/state-service.test.ts` (T021) (FR-042)
+- [x] T126 Implement ConfigService behavior to satisfy `tests/unit/config-service.test.ts` (T022) (FR-035-FR-038, FR-041)
 
 ---
 
-### User Story 1 - Preview Markdown by Default [P1] MVP
+### User Story 1 - Preview Markdown by Default [P0] MVP
 
 **Story Goal**: Markdown files open in rendered preview mode by default.
 **Independent Test**: Install extension, click any .md file in explorer, verify it opens in preview mode.
 
 ### Tests (Write First - Must Fail Before Implementation)
 
-- [ ] T023 [P] [US1] Create `tests/integration/preview-mode.test.ts` with test: "opens markdown file in preview mode by default"
-- [ ] T024 [P] [US1] Add test: "respects VS Code's native markdown preview rendering"
-- [ ] T025 [P] [US1] Add test: "file opened via Quick Open (Ctrl+P) opens in preview mode"
-- [ ] T026 [P] [US1] Add test: "preview mode shows no additional UI elements"
-- [ ] T127 [P] [US1] Add test: "large files (>1MB) skip auto-preview and show notification actions; per-file opt-out persists via workspaceState" (FR-041)
-- [ ] T027 [P] [US1] Create `tests/unit/validation-service.test.ts` with tests for file validation logic
+- [x] T023 [P] [US1] Create `tests/integration/preview-mode.test.ts` with test: "opens markdown file in preview mode by default" and shows a one-time welcome/tutorial message on first open
+- [x] T024 [P] [US1] Add test: "respects VS Code's native markdown preview rendering"
+- [x] T025 [P] [US1] Add test: "file opened via Quick Open (Ctrl+P) opens in preview mode"
+- [x] T026 [P] [US1] Add test: "preview mode shows no additional UI elements"
+- [x] T127 [P] [US1] Add test: "large files (>1MB) skip auto-preview and show notification actions; per-file opt-out persists via workspaceState" (FR-041)
+- [x] T027 [P] [US1] Create `tests/unit/validation-service.test.ts` with tests for file validation logic
 
 ### Implementation
 
-- [ ] T028 [US1] Create `src/services/validation-service.ts` with ValidationService class (isMarkdownFile, isDiffView, isLargeFile, isBinaryFile methods)
-- [ ] T029 [US1] Create `src/services/preview-service.ts` with PreviewService class (showPreview method using `markdown.showPreview` command)
-- [ ] T030 [US1] Implement `shouldShowPreview()` decision logic in PreviewService
-- [ ] T031 [US1] Implement large file handling (>1MB) per FR-041: skip auto-preview, open in text editor, show non-modal info message with [Open Preview Anyway] and [Don't Show Again for This File]; persist per-file choice in `context.workspaceState` and skip future prompts when "Don't Show Again" is selected; localize strings via `vscode.l10n` (FR-041)
-- [ ] T032 [US1] Create `src/handlers/markdown-file-handler.ts` with MarkdownFileHandler class
-- [ ] T033 [US1] Implement `handleDocumentOpen()` in MarkdownFileHandler: check validation, close text editor, show preview
-- [ ] T034 [US1] Register `onDidOpenTextDocument` event listener in `src/extension.ts`
-- [ ] T035 [US1] Implement exclude pattern matching using minimatch in ConfigService
-- [ ] T036 [US1] Handle edge cases: untitled files → edit mode, diff views → skip interception
-- [ ] T037 [US1] Set context key `markdownReader.isMarkdown` via setContext for markdown files
-- [ ] T038 [US1] Detect binary .md files (check first 8KB for NUL byte or invalid UTF-8 sequences) and fall back to text editor with warning message (localized via `vscode.l10n`): "This file appears to be binary and cannot be previewed"
+- [x] T028 [US1] Create `src/services/validation-service.ts` with ValidationService class (isMarkdownFile, isDiffView, isLargeFile, isBinaryFile methods)
+- [x] T029 [US1] Create `src/services/preview-service.ts` with PreviewService class (showPreview method using `markdown.showPreview` command)
+- [x] T030 [US1] Implement `shouldShowPreview()` decision logic in PreviewService
+- [x] T031 [US1] Implement large file handling (>1MB) per FR-041: skip auto-preview, open in text editor, show non-modal info message with [Open Preview Anyway] and [Don't Show Again for This File]; persist per-file choice in `context.workspaceState` and skip future prompts when "Don't Show Again" is selected; localize strings via `vscode.l10n` (FR-041)
+- [x] T032 [US1] Create `src/handlers/markdown-file-handler.ts` with MarkdownFileHandler class
+- [x] T033 [US1] Implement `handleDocumentOpen()` in MarkdownFileHandler: check validation, close text editor, show preview
+- [x] T034 [US1] Register `onDidOpenTextDocument` event listener in `src/extension.ts` and show a one-time, non-blocking welcome message with optional US1 tutorial link (store dismissal in `context.globalState`)
+- [x] T035 [US1] Implement exclude pattern matching using minimatch in ConfigService
+- [x] T036 [US1] Handle edge cases: untitled files → edit mode, diff views → skip interception
+- [x] T037 [US1] Set context key `markdownReader.isMarkdown` via setContext for markdown files
+- [x] T038 [US1] Detect binary .md files (check first 8KB for NUL byte or invalid UTF-8 sequences) and fall back to text editor with warning message (localized via `vscode.l10n`): "This file appears to be binary and cannot be previewed"
 
 **Manual Test Checklist (US1)**
 - [ ] Click .md file in explorer → opens in preview mode
@@ -130,45 +137,45 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
-### User Story 2 - Switch to Edit Mode [P2]
+### User Story 2 - Switch to Edit Mode [P0]
 
 **Story Goal**: Users can toggle to Edit Mode (split view with text editor left, live preview right).
 **Independent Test**: Open markdown in preview, run "Markdown Reader: Enter Edit Mode" from Command Palette (or Ctrl+Shift+V), verify split view appears.
 
 ### Tests
 
-- [ ] T039 [P] [US2] Create `tests/integration/edit-mode.test.ts` with test: "Enter Edit Mode command opens split view"
-- [ ] T040 [P] [US2] Add test: "Exit Edit Mode command returns to preview-only"
-- [ ] T041 [P] [US2] Add test: "Toggle Edit Mode command switches between modes"
-- [ ] T042 [P] [US2] Add test: "edit mode shows text editor on left, live preview on right"
-- [ ] T043 [P] [US2] Add test: "preview updates automatically as user types"
-- [ ] T044 [P] [US2] Add test: "saving in edit mode does not return to preview mode"
-- [ ] T128 [P] [US2] Add test: "exiting edit mode with unsaved changes prompts to save (Save & Exit / Exit Without Saving / Cancel)" (FR-045)
-- [ ] T129 [P] [US2] Add test: "pane moves/closes preserve expected state (move preview; close preview; close editor)" (FR-006a, FR-006b, FR-006c)
-- [ ] T130 [P] [US2] Add test: "after mode switch, focus moves as specified; scroll position preserved when feasible" (FR-051)
-- [ ] T140 [P] [US2] Add test: "manual open of text editor stays in edit mode (no auto-preview)" (FR-006f)
+- [x] T039 [P] [US2] Create `tests/integration/edit-mode.test.ts` with test: "Enter Edit Mode command opens split view"
+- [x] T040 [P] [US2] Add test: "Exit Edit Mode command returns to preview-only"
+- [x] T041 [P] [US2] Add test: "Toggle Edit Mode command switches between modes"
+- [x] T042 [P] [US2] Add test: "edit mode shows text editor on left, live preview on right"
+- [x] T043 [P] [US2] Add test: "preview updates automatically as user types"
+- [x] T044 [P] [US2] Add test: "saving in edit mode does not return to preview mode"
+- [x] T128 [P] [US2] Add test: "exiting edit mode with unsaved changes prompts to save (Save & Exit / Exit Without Saving / Cancel)" (FR-045)
+- [x] T129 [P] [US2] Add test: "pane moves/closes preserve expected state (move preview; close preview; close editor)" (FR-006a, FR-006b, FR-006c)
+- [x] T130 [P] [US2] Add test: "after mode switch, focus moves as specified; scroll position preserved when feasible" (FR-051)
+- [x] T140 [P] [US2] Add test: "manual open of text editor stays in edit mode (no auto-preview)" (FR-006f)
 
 ### Implementation
 
-- [ ] T045 [US2] Extend PreviewService with `enterEditMode()` method (open text editor in ViewColumn.One, showPreviewToSide in ViewColumn.Two)
-- [ ] T046 [US2] Add `exitEditMode()` method to PreviewService (close text editor, keep preview)
-- [ ] T131 [US2] Research VS Code editor group APIs for split ratio control (FR-006d) and `workbench.editor.splitInGroupLayout` (FR-006e):
+- [x] T045 [US2] Extend PreviewService with `enterEditMode()` method (open text editor in ViewColumn.One, showPreviewToSide in ViewColumn.Two)
+- [x] T046 [US2] Add `exitEditMode()` method to PreviewService (close text editor, keep preview)
+- [x] T131 [US2] Research VS Code editor group APIs for split ratio control (FR-006d) and `workbench.editor.splitInGroupLayout` (FR-006e):
   - If supported: implement split ratio and layout preference
   - If not supported: document limitation in README.md
-- [ ] T132 [US2] Implement unsaved-changes prompt on exit edit mode per FR-045 (check Auto Save + `document.isDirty`; localize strings via `vscode.l10n`) (FR-045)
-- [ ] T133 [US2] Implement pane tracking/close handling for edit mode per FR-006a/006b/006c (update StateService + context keys based on editor/preview presence) (FR-006a, FR-006b, FR-006c)
-- [ ] T141 [US2] Respect explicit text editor opens for markdown files (detect user intent; skip auto-preview and keep edit mode until user exits) (FR-006f)
-- [ ] T134 [US2] Implement focus handling per FR-051:
+- [x] T132 [US2] Implement unsaved-changes prompt on exit edit mode per FR-045 (check Auto Save + `document.isDirty`; localize strings via `vscode.l10n`) (FR-045)
+- [x] T133 [US2] Implement pane tracking/close handling for edit mode per FR-006a/006b/006c (update StateService + context keys based on editor/preview presence) (FR-006a, FR-006b, FR-006c)
+- [x] T141 [US2] Respect explicit text editor opens for markdown files (detect user intent; skip auto-preview and keep edit mode until user exits) (FR-006f)
+- [x] T134 [US2] Implement focus handling per FR-051:
   - Focus moves to text editor on enter edit mode (line 1, col 1 or last cursor if returning)
   - Focus moves to preview on exit edit mode
   - Scroll sync: attempt `editor.revealRange()` but accept VS Code's native preview scroll behavior if sync not achievable
   - Localize user-facing strings via `vscode.l10n`
-- [ ] T047 [US2] Create `src/commands/mode-commands.ts` with enterEditMode, exitEditMode, toggleEditMode command handlers
-- [ ] T048 [US2] Register mode commands in package.json contributes.commands per contracts/commands.json
-- [ ] T049 [US2] Update context key `markdownReader.editMode` via setContext on mode changes in StateService
-- [ ] T050 [US2] Register mode commands in `src/extension.ts` with proper disposables
-- [ ] T051 [US2] Add "Done" button to editor title bar (edit mode only) in package.json menus per contracts/menus.json
-- [ ] T052 [US2] Create `tests/integration/commands.test.ts` with command registration tests
+- [x] T047 [US2] Create `src/commands/mode-commands.ts` with enterEditMode, exitEditMode, toggleEditMode command handlers
+- [x] T048 [US2] Register mode commands in package.json contributes.commands per contracts/commands.json
+- [x] T049 [US2] Update context key `markdownReader.editMode` via setContext on mode changes in StateService
+- [x] T050 [US2] Register mode commands in `src/extension.ts` with proper disposables
+- [x] T051 [US2] Add "Done" button to editor title bar (edit mode only) in package.json menus per contracts/menus.json
+- [x] T052 [US2] Create `tests/integration/commands.test.ts` with command registration tests
 
 **Manual Test Checklist (US2)**
 - [ ] Preview mode → Command Palette "Markdown Reader: Enter Edit Mode" (or Ctrl+Shift+V) → split view (editor left, preview right)
@@ -182,11 +189,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Close text editor pane → exits edit mode (preview only)
 - [ ] Each file maintains independent edit/preview state
 
+- [x] T142 Release closeout (v0.1.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+
 ---
 
 ## v0.2.0 - Formatting Toolbar
 
-### User Story 3 - Format Text with Toolbar [P3]
+### User Story 3 - Format Text with Toolbar [P1]
 
 **Story Goal**: Formatting toolbar visible in edit mode with common actions.
 **Independent Test**: Enter edit mode, select text, click Bold button, verify text wrapped with **.
@@ -229,11 +238,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Edit mode → no selection → click Bold → placeholder inserted or word wrapped
 - [ ] Preview mode → toolbar icons NOT visible
 
+- [ ] T143 Release closeout (v0.2.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+
 ---
 
 ## v0.3.0 - Access & Shortcuts
 
-### User Story 4 - Format Text with Context Menu [P4]
+### User Story 4 - Format Text with Context Menu [P2]
 
 **Story Goal**: Right-click context menu with Format submenu.
 **Independent Test**: Enter edit mode, right-click, verify Format submenu appears.
@@ -263,7 +274,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ---
 
-### User Story 5 - Use Keyboard Shortcuts [P5]
+### User Story 5 - Use Keyboard Shortcuts [P2]
 
 **Story Goal**: Keyboard shortcuts for mode switching and formatting.
 **Independent Test**: Edit mode, select text, press Ctrl+B, verify text becomes bold.
@@ -290,11 +301,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Edit mode → select text → Ctrl+I → text becomes italic
 - [ ] Outside markdown edit mode → Ctrl+B → toggles sidebar (VS Code default)
 
+- [ ] T144 Release closeout (v0.3.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+
 ---
 
 ## v0.4.0 - Configuration
 
-### User Story 6 - Configure Extension Behavior [P6]
+### User Story 6 - Configure Extension Behavior [P2]
 
 **Story Goal**: Users can configure exclude patterns and enable/disable extension.
 **Independent Test**: Set exclude pattern for node_modules, open markdown there, verify text editor.
@@ -322,6 +335,8 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 - [ ] Disable extension globally → all .md files open in text editor
 - [ ] Disable for workspace only → affects only that workspace
 - [ ] Re-enable extension → preview-by-default resumes
+
+- [ ] T145 Release closeout (v0.4.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
 
 ---
 
@@ -363,13 +378,13 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 ### Documentation
 
 - [ ] T116 [P] Add JSDoc comments to all public functions (NFR-008)
-- [ ] T117 [P] Create README.md with installation, feature overview + screenshots/GIFs, keyboard shortcuts table, configuration options table, known limitations, contributing guide link, and license
-- [ ] T118 [P] Create CHANGELOG.md following Keep a Changelog format
+- [ ] T117 [P] Release closeout (v1.0.0): update README.md with installation, feature overview + screenshots/GIFs, keyboard shortcuts table, configuration options table, known limitations, contributing guide link, and license; ensure Features/Commands list only released functionality (no milestone/version mentions) and add a README "Changelog" section linking to CHANGELOG.md
+- [ ] T118 [P] Release closeout (v1.0.0): update CHANGELOG.md following Keep a Changelog format
 
 ### Marketplace Readiness
 
 - [ ] T119 Add extension icon (128x128 PNG) and marketplace metadata in package.json (FR-043)
-- [ ] T120 Add categories ["Other"], keywords, repository URL, license (MIT)
+- [ ] T120 Add categories ["Other"], keywords, repository field (GitHub URL), license (MIT)
 - [ ] T121 Performance optimization: debounce rapid events in MarkdownFileHandler
 - [ ] T122 Implement error handling + observability: create Output Channel "Markdown Reader" and log failures/conflicts; implement preview-failure UX with [Open in Editor]; no silent failures; localize user-facing strings via `vscode.l10n` (FR-046, FR-049, FR-052)
 - [ ] T123 Validate against quickstart.md scenarios (US1-US6 + edge cases + error paths + accessibility announcements); confirm behavior matches spec acceptance scenarios
@@ -381,14 +396,15 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 ### By Milestone
 
-| Milestone | Tasks | Notes |
-|-----------|-------|-------|
-| v0.1.0 | 65 | Setup + Foundational + US1 + US2 |
-| v0.2.0 | 19 | US3 |
-| v0.3.0 | 19 | US4 + US5 |
-| v0.4.0 | 12 | US6 |
+| Step | Tasks | Notes |
+|------|-------|-------|
+| Sprint 0 | 11 | Setup |
+| v0.1.0 | 55 | Foundational + US1 + US2 |
+| v0.2.0 | 20 | US3 |
+| v0.3.0 | 20 | US4 + US5 |
+| v0.4.0 | 13 | US6 |
 | v1.0.0 | 24 | Testing + Polish |
-| **Total** | **139** | |
+| **Total** | **143** | |
 
 ### By User Story
 
@@ -402,14 +418,16 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 | US6 (Configuration) | 12 | No |
 | Setup + Foundational | 25 | Required |
 | Testing + Polish | 24 | Required |
+| Release Closeout | 4 | Required |
 
-### MVP Milestone (v0.1.0)
+### MVP (Sprint 0 + v0.1.0)
 
 - Setup: T001-T011
 - Foundational: T012-T022, T125-T126, T139
 - US1 (Preview): T023-T038, T127
 - US2 (Edit Mode): T039-T052, T128-T134, T140-T141
-- **Total MVP tasks**: 65
+- Release closeout: T142
+- **Total MVP tasks**: 66
 
 ---
 
@@ -417,7 +435,7 @@ US3 (Formatting Toolbar) [P3] (v0.2.0)
 
 - [P] tasks = different files, no dependencies, can run in parallel
 - [Story] label maps task to specific user story for traceability
-- Tooling/release tasks (T006, T010, T011, T123, T124) are operational and not tied to a specific requirement
+- Tooling/release tasks (T010, T011, T123, T124) are operational and not tied to a specific requirement; T006 maps to NFR-011
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing (TDD approach per NFR-007)
 - Commit after each task or logical group

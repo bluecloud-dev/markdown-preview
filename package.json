@@ -20,7 +20,87 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": []
+    "commands": [
+      {
+        "command": "markdownReader.enterEditMode",
+        "title": "Enter Edit Mode",
+        "category": "Markdown Reader",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "markdownReader.exitEditMode",
+        "title": "Done",
+        "category": "Markdown Reader",
+        "icon": "$(check)"
+      },
+      {
+        "command": "markdownReader.toggleEditMode",
+        "title": "Toggle Edit Mode",
+        "category": "Markdown Reader",
+        "icon": "$(split-horizontal)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "markdownReader.exitEditMode",
+          "when": "markdownReader.editMode && resourceLangId == markdown",
+          "group": "navigation@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "markdownReader.enterEditMode",
+          "when": "resourceLangId == markdown && !markdownReader.editMode"
+        },
+        {
+          "command": "markdownReader.exitEditMode",
+          "when": "resourceLangId == markdown && markdownReader.editMode"
+        },
+        {
+          "command": "markdownReader.toggleEditMode",
+          "when": "resourceLangId == markdown"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "markdownReader.toggleEditMode",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "resourceLangId == markdown"
+      }
+    ],
+    "configuration": {
+      "title": "Markdown Reader",
+      "properties": {
+        "markdownReader.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Markdown Reader extension. When disabled, markdown files open in standard VS Code editor mode.",
+          "scope": "resource"
+        },
+        "markdownReader.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/.git/**"
+          ],
+          "description": "Glob patterns for files and folders to exclude from auto-preview. Files matching these patterns will open in standard editor mode.",
+          "scope": "resource"
+        },
+        "markdownReader.maxFileSize": {
+          "type": "number",
+          "default": 1048576,
+          "minimum": 0,
+          "description": "Maximum file size in bytes for auto-preview (default: 1MB = 1048576). Files larger than this will open in editor mode with an info message.",
+          "scope": "resource"
+        }
+      }
+    }
   },
   "scripts": {
     "compile": "tsc -p . && tsc -p tsconfig.tests.json",
@@ -38,9 +118,10 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.6",
     "@types/minimatch": "^5.1.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.30",
+    "@types/sinon": "^21.0.0",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",

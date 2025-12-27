@@ -7,7 +7,7 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Preview Markdown by Default (Priority: P1)
+### User Story 1 - Preview Markdown by Default (Priority: P0)
 
 As a developer reviewing AI-generated documentation, I want markdown files to open in rendered preview mode by default, so I can read the content without seeing raw markdown syntax.
 
@@ -21,10 +21,11 @@ As a developer reviewing AI-generated documentation, I want markdown files to op
 2. **Given** user opens a markdown file via Quick Open (Ctrl+P), **When** they select the file, **Then** it opens in preview mode
 3. **Given** user navigates to a markdown file via "Go to Definition" or similar, **When** the file opens, **Then** it displays in preview mode
 4. **Given** the extension is disabled globally, **When** user opens a markdown file, **Then** VS Code's default behavior applies (raw editor)
+5. **Given** the extension is installed for the first time, **When** the user opens their first markdown file, **Then** show a non-blocking welcome message with an optional US1 tutorial link, and do not show it again after dismissal
 
 ---
 
-### User Story 2 - Switch to Edit Mode (Priority: P2)
+### User Story 2 - Switch to Edit Mode (Priority: P0)
 
 As a developer who needs to make changes to a markdown file, I want a clear, non-intrusive way (Command Palette or keyboard shortcut) to switch to edit mode with a split view showing both raw markdown and live preview, so I can edit efficiently while seeing the rendered result.
 
@@ -41,7 +42,7 @@ As a developer who needs to make changes to a markdown file, I want a clear, non
 
 ---
 
-### User Story 3 - Format Text with Toolbar (Priority: P3)
+### User Story 3 - Format Text with Toolbar (Priority: P1)
 
 As a developer editing markdown, I want a formatting toolbar with common actions (bold, italic, lists, etc.) visible when in edit mode, so I can format text without memorizing markdown syntax.
 
@@ -59,7 +60,7 @@ As a developer editing markdown, I want a formatting toolbar with common actions
 
 ---
 
-### User Story 4 - Format Text with Context Menu (Priority: P4)
+### User Story 4 - Format Text with Context Menu (Priority: P2)
 
 As a developer editing markdown, I want a right-click context menu with formatting options, so I can discover and access formatting features without looking for toolbar icons.
 
@@ -76,7 +77,7 @@ As a developer editing markdown, I want a right-click context menu with formatti
 
 ---
 
-### User Story 5 - Use Keyboard Shortcuts (Priority: P5)
+### User Story 5 - Use Keyboard Shortcuts (Priority: P2)
 
 As a power user editing markdown, I want keyboard shortcuts for all formatting actions and mode switching, so I can work efficiently without using the mouse.
 
@@ -92,7 +93,7 @@ As a power user editing markdown, I want keyboard shortcuts for all formatting a
 
 ---
 
-### User Story 6 - Configure Extension Behavior (Priority: P6)
+### User Story 6 - Configure Extension Behavior (Priority: P2)
 
 As a user with specific workflow needs, I want to configure which files/folders are excluded from auto-preview and enable/disable the extension entirely, so the extension doesn't interfere with my existing workflow.
 
