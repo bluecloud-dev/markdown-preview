@@ -14,6 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - N/A
 
+## [0.3.0] - 2025-12-27
+
+### Added
+- Format context menu with heading and code submenus in edit mode
+- Keyboard shortcuts for toggle edit mode, bold, and italic (edit mode only)
+- Context menu and shortcut coverage in integration tests
+
 ## [0.2.0] - 2025-12-27
 
 ### Added

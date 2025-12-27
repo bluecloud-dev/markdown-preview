@@ -34,6 +34,7 @@ Preview-by-default, edit mode, and formatting toolbar actions are available for 
 - [Requirements](#clipboard-requirements)
 - [Quick Start](#zap-quick-start)
 - [Commands](#keyboard-commands)
+- [Keyboard Shortcuts](#zap-keyboard-shortcuts)
 - [Settings](#gear-settings)
 - [Known Limitations](#warning-known-limitations)
 - [How It Works](#bulb-how-it-works)
@@ -51,6 +52,8 @@ Preview-by-default, edit mode, and formatting toolbar actions are available for 
 - Detect binary markdown files and fall back to the text editor with a warning.
 - Enter edit mode to get a split view (editor left, preview right) with a Done button.
 - Format text in edit mode with toolbar actions for bold, italic, strikethrough, lists, code, links, and headings.
+- Use a Format context menu (right-click) with heading and code submenus while editing.
+- Use keyboard shortcuts for toggle, bold, and italic in markdown edit mode.
 
 ## :clipboard: Requirements
 
@@ -79,6 +82,12 @@ Preview-by-default, edit mode, and formatting toolbar actions are available for 
 - **Markdown Preview: Heading 2** — toggle `## ` prefix
 - **Markdown Preview: Heading 3** — toggle `### ` prefix
 
+## :zap: Keyboard Shortcuts
+
+- **Toggle Edit Mode** — `Ctrl+Shift+V` / `Cmd+Shift+V`
+- **Bold** — `Ctrl+B` / `Cmd+B` (edit mode only)
+- **Italic** — `Ctrl+I` / `Cmd+I` (edit mode only)
+
 ## :gear: Settings
 
 - `markdownReader.enabled` (default: `true`) — enable preview-by-default behavior
@@ -87,7 +96,7 @@ Preview-by-default, edit mode, and formatting toolbar actions are available for 
 
 ## :warning: Known Limitations
 
-- Formatting is available via toolbar and command palette; context menus and per-action keybindings are not available yet.
+- Formatting shortcuts beyond bold/italic require custom keybindings in VS Code.
 - Split ratio and layout are controlled by VS Code; the extension cannot force a 50/50 ratio.
 
 ## :bulb: How It Works

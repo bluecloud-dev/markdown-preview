@@ -251,19 +251,19 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 
 ### Tests
 
-- [ ] T072 [P] [US4] Add test to formatting.test.ts: "Format submenu appears in context menu in edit mode"
-- [ ] T073 [P] [US4] Add test: "Format submenu not shown in preview-only mode"
-- [ ] T074 [P] [US4] Add test: "Heading submenu shows H1, H2, H3 options"
-- [ ] T075 [P] [US4] Add test: "Code submenu shows Inline and Block options"
+- [x] T072 [P] [US4] Add test to formatting.test.ts: "Format submenu appears in context menu in edit mode"
+- [x] T073 [P] [US4] Add test: "Format submenu not shown in preview-only mode"
+- [x] T074 [P] [US4] Add test: "Heading submenu shows H1, H2, H3 options"
+- [x] T075 [P] [US4] Add test: "Code submenu shows Inline and Block options"
 
 ### Implementation
 
-- [ ] T076 [US4] Add submenus to package.json contributes.submenus per contracts/menus.json (markdownReader.formatSubmenu, headingSubmenu, codeSubmenu)
-- [ ] T077 [US4] Add editor/context menu contribution with Format submenu in package.json
-- [ ] T078 [US4] Add markdownReader.formatSubmenu menu items in package.json (Bold, Italic, Strikethrough, lists)
-- [ ] T079 [US4] Add markdownReader.headingSubmenu menu items (H1, H2, H3)
-- [ ] T080 [US4] Add markdownReader.codeSubmenu menu items (Inline, Block)
-- [ ] T081 [US4] Apply `when` clause: `markdownReader.editMode && resourceLangId == markdown`
+- [x] T076 [US4] Add submenus to package.json contributes.submenus per contracts/menus.json (markdownReader.formatSubmenu, headingSubmenu, codeSubmenu)
+- [x] T077 [US4] Add editor/context menu contribution with Format submenu in package.json
+- [x] T078 [US4] Add markdownReader.formatSubmenu menu items in package.json (Bold, Italic, Strikethrough, lists)
+- [x] T079 [US4] Add markdownReader.headingSubmenu menu items (H1, H2, H3)
+- [x] T080 [US4] Add markdownReader.codeSubmenu menu items (Inline, Block)
+- [x] T081 [US4] Apply `when` clause: `markdownReader.editMode && resourceLangId == markdown`
 
 **Manual Test Checklist (US4)**
 - [ ] Edit mode → right-click → Format submenu visible
@@ -281,18 +281,18 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 
 ### Tests
 
-- [ ] T082 [P] [US5] Add test to commands.test.ts: "Ctrl+Shift+V toggles edit mode"
-- [ ] T083 [P] [US5] Add test: "Ctrl+B applies bold in edit mode only"
-- [ ] T084 [P] [US5] Add test: "Ctrl+I applies italic in edit mode only"
-- [ ] T085 [P] [US5] Add test: "Ctrl+B does not interfere with VS Code sidebar toggle outside edit mode"
+- [x] T082 [P] [US5] Add test to commands.test.ts: "Ctrl+Shift+V toggles edit mode"
+- [x] T083 [P] [US5] Add test: "Ctrl+B applies bold in edit mode only"
+- [x] T084 [P] [US5] Add test: "Ctrl+I applies italic in edit mode only"
+- [x] T085 [P] [US5] Add test: "Ctrl+B does not interfere with VS Code sidebar toggle outside edit mode"
 
 ### Implementation
 
-- [ ] T086 [US5] Add keybindings to package.json contributes.keybindings per contracts/keybindings.json
-- [ ] T087 [US5] Add Ctrl+Shift+V / Cmd+Shift+V for toggleEditMode with `when: resourceLangId == markdown`
-- [ ] T088 [US5] Add Ctrl+B / Cmd+B for formatBold with `when: markdownReader.editMode && editorLangId == markdown && editorTextFocus`
-- [ ] T089 [US5] Add Ctrl+I / Cmd+I for formatItalic with `when: markdownReader.editMode && editorLangId == markdown && editorTextFocus`
-- [ ] T090 [US5] Document all keyboard shortcuts in README.md
+- [x] T086 [US5] Add keybindings to package.json contributes.keybindings per contracts/keybindings.json
+- [x] T087 [US5] Add Ctrl+Shift+V / Cmd+Shift+V for toggleEditMode with `when: resourceLangId == markdown`
+- [x] T088 [US5] Add Ctrl+B / Cmd+B for formatBold with `when: markdownReader.editMode && editorLangId == markdown && editorTextFocus`
+- [x] T089 [US5] Add Ctrl+I / Cmd+I for formatItalic with `when: markdownReader.editMode && editorLangId == markdown && editorTextFocus`
+- [x] T090 [US5] Document all keyboard shortcuts in README.md
 
 **Manual Test Checklist (US5)**
 - [ ] Preview mode → Ctrl+Shift+V → enters edit mode
@@ -301,7 +301,7 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 - [ ] Edit mode → select text → Ctrl+I → text becomes italic
 - [ ] Outside markdown edit mode → Ctrl+B → toggles sidebar (VS Code default)
 
-- [ ] T144 Release closeout (v0.3.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+- [x] T144 Release closeout (v0.3.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
 
 ---
 

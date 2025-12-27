@@ -106,6 +106,20 @@
         "icon": "$(symbol-field)"
       }
     ],
+    "submenus": [
+      {
+        "id": "markdownReader.formatSubmenu",
+        "label": "Format"
+      },
+      {
+        "id": "markdownReader.headingSubmenu",
+        "label": "Heading"
+      },
+      {
+        "id": "markdownReader.codeSubmenu",
+        "label": "Code"
+      }
+    ],
     "menus": {
       "editor/title": [
         {
@@ -152,6 +166,71 @@
           "command": "markdownReader.formatLink",
           "when": "markdownReader.editMode && resourceLangId == markdown",
           "group": "navigation@9"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "markdownReader.formatSubmenu",
+          "when": "markdownReader.editMode && resourceLangId == markdown",
+          "group": "1_modification"
+        }
+      ],
+      "markdownReader.formatSubmenu": [
+        {
+          "command": "markdownReader.formatBold",
+          "group": "1_text@1"
+        },
+        {
+          "command": "markdownReader.formatItalic",
+          "group": "1_text@2"
+        },
+        {
+          "command": "markdownReader.formatStrikethrough",
+          "group": "1_text@3"
+        },
+        {
+          "submenu": "markdownReader.headingSubmenu",
+          "group": "2_structure@1"
+        },
+        {
+          "command": "markdownReader.formatBulletList",
+          "group": "2_structure@2"
+        },
+        {
+          "command": "markdownReader.formatNumberedList",
+          "group": "2_structure@3"
+        },
+        {
+          "submenu": "markdownReader.codeSubmenu",
+          "group": "3_code@1"
+        },
+        {
+          "command": "markdownReader.formatLink",
+          "group": "4_link@1"
+        }
+      ],
+      "markdownReader.headingSubmenu": [
+        {
+          "command": "markdownReader.formatHeading1",
+          "group": "1_headings@1"
+        },
+        {
+          "command": "markdownReader.formatHeading2",
+          "group": "1_headings@2"
+        },
+        {
+          "command": "markdownReader.formatHeading3",
+          "group": "1_headings@3"
+        }
+      ],
+      "markdownReader.codeSubmenu": [
+        {
+          "command": "markdownReader.formatInlineCode",
+          "group": "1_code@1"
+        },
+        {
+          "command": "markdownReader.formatCodeBlock",
+          "group": "1_code@2"
         }
       ],
       "commandPalette": [
@@ -219,6 +298,18 @@
         "key": "ctrl+shift+v",
         "mac": "cmd+shift+v",
         "when": "resourceLangId == markdown"
+      },
+      {
+        "command": "markdownReader.formatBold",
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "when": "markdownReader.editMode && editorLangId == markdown && editorTextFocus"
+      },
+      {
+        "command": "markdownReader.formatItalic",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "markdownReader.editMode && editorLangId == markdown && editorTextFocus"
       }
     ],
     "configuration": {

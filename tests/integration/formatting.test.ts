@@ -14,6 +14,20 @@ type EditOperation =
   | { type: 'insert'; position: vscode.Position; text: string }
   | { type: 'replace'; range: vscode.Range; text: string };
 
+type PackageJsonMenus = Record<
+  string,
+  Array<{ command?: string; submenu?: string; when?: string }>
+>;
+
+const loadPackageJsonMenus = (): PackageJsonMenus => {
+  const packageJsonPath = path.resolve(__dirname, '..', '..', '..', 'package.json');
+  const raw = fs.readFileSync(packageJsonPath, 'utf8');
+  const packageJson = JSON.parse(raw) as {
+    contributes?: { menus?: PackageJsonMenus };
+  };
+  return packageJson.contributes?.menus ?? {};
+};
+
 const createEditor = (content: string, selection: vscode.Selection): {
   editor: vscode.TextEditor;
   getText: () => string;
@@ -143,13 +157,8 @@ describe('Formatting toolbar integration', () => {
   });
 
   it('shows toolbar icons only in edit mode', () => {
-    const packageJsonPath = path.resolve(__dirname, '..', '..', '..', 'package.json');
-    const raw = fs.readFileSync(packageJsonPath, 'utf8');
-    const packageJson = JSON.parse(raw) as {
-      contributes?: { menus?: { ['editor/title']?: Array<{ command: string; when?: string }> } };
-    };
-
-    const titleMenus = packageJson.contributes?.menus?.['editor/title'] ?? [];
+    const menus = loadPackageJsonMenus();
+    const titleMenus = menus['editor/title'] ?? [];
     const toolbarCommands = [
       'markdownReader.formatBold',
       'markdownReader.formatItalic',
@@ -167,6 +176,33 @@ describe('Formatting toolbar integration', () => {
       expect(entry?.when).to.include('markdownReader.editMode');
       expect(entry?.when).to.include('resourceLangId == markdown');
     }
+  });
+
+  it('shows Format submenu in context menu only in edit mode', () => {
+    const menus = loadPackageJsonMenus();
+    const contextMenus = menus['editor/context'] ?? [];
+    const formatEntry = contextMenus.find(
+      (item) => item.submenu === 'markdownReader.formatSubmenu'
+    );
+
+    expect(formatEntry, 'missing Format submenu entry').to.not.equal(undefined);
+    expect(formatEntry?.when).to.include('markdownReader.editMode');
+    expect(formatEntry?.when).to.include('resourceLangId == markdown');
+  });
+
+  it('includes heading and code submenu items', () => {
+    const menus = loadPackageJsonMenus();
+
+    const headingMenus = menus['markdownReader.headingSubmenu'] ?? [];
+    const headingCommands = headingMenus.map((item) => item.command);
+    expect(headingCommands).to.include('markdownReader.formatHeading1');
+    expect(headingCommands).to.include('markdownReader.formatHeading2');
+    expect(headingCommands).to.include('markdownReader.formatHeading3');
+
+    const codeMenus = menus['markdownReader.codeSubmenu'] ?? [];
+    const codeCommands = codeMenus.map((item) => item.command);
+    expect(codeCommands).to.include('markdownReader.formatInlineCode');
+    expect(codeCommands).to.include('markdownReader.formatCodeBlock');
   });
 
   it('formats selections for bold, italic, and strikethrough', async () => {
