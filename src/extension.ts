@@ -25,6 +25,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const disposables: vscode.Disposable[] = [];
   const stateService = new StateService();
   const configService = new ConfigService();
+  const outputChannel = vscode.window.createOutputChannel('Markdown Preview');
   const validationService = new ValidationService();
   const formattingService = new FormattingService();
   const previewService = new PreviewService(
@@ -42,11 +43,96 @@ export function activate(context: vscode.ExtensionContext): void {
     context.globalState
   );
   const titleBarController = new TitleBarController(stateService);
+
+  const updateEnabledContext = (resource?: vscode.Uri): Thenable<unknown> =>
+    vscode.commands.executeCommand(
+      'setContext',
+      'markdownReader.enabled',
+      configService.getEnabled(resource)
+    );
+
+  const formatInspectValue = <T>(
+    inspect?: vscode.ConfigurationInspect<T>
+  ): string => {
+    if (!inspect) {
+      return 'unavailable';
+    }
+
+    const parts = [
+      ['default', inspect.defaultValue],
+      ['user', inspect.globalValue],
+      ['workspace', inspect.workspaceValue],
+      ['folder', inspect.workspaceFolderValue],
+    ].filter(([, value]) => value !== undefined);
+
+    if (parts.length === 0) {
+      return 'unset';
+    }
+
+    return parts
+      .map(([label, value]) => `${label}=${JSON.stringify(value)}`)
+      .join(' | ');
+  };
+
+  const logConfigInspection = (resource?: vscode.Uri): void => {
+    const inspection = configService.inspect(resource);
+    outputChannel.clear();
+    outputChannel.appendLine('Markdown Preview configuration');
+    outputChannel.appendLine(`Resource: ${resource?.toString() ?? 'global'}`);
+    outputChannel.appendLine(
+      `enabled: ${formatInspectValue(inspection.enabled)}`
+    );
+    outputChannel.appendLine(
+      `excludePatterns: ${formatInspectValue(inspection.excludePatterns)}`
+    );
+    outputChannel.appendLine(
+      `maxFileSize: ${formatInspectValue(inspection.maxFileSize)}`
+    );
+    outputChannel.show(true);
+  };
+
+  void updateEnabledContext(vscode.window.activeTextEditor?.document.uri);
+
   fileHandler.register();
   titleBarController.register();
   disposables.push(
     fileHandler,
     titleBarController,
+    outputChannel,
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      const resource = vscode.window.activeTextEditor?.document.uri;
+      const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+      const affectedFolders = workspaceFolders.filter((folder) =>
+        event.affectsConfiguration('markdownReader', folder.uri)
+      );
+      const affectsResource =
+        resource !== undefined &&
+        event.affectsConfiguration('markdownReader', resource);
+      const affectsGlobal = event.affectsConfiguration('markdownReader');
+
+      if (!affectsGlobal && !affectsResource && affectedFolders.length === 0) {
+        return;
+      }
+
+      configService.clearCache();
+
+      if (affectsGlobal) {
+        configService.reload();
+      }
+
+      for (const folder of affectedFolders) {
+        configService.reload(folder.uri);
+      }
+
+      if (affectsResource) {
+        configService.reload(resource);
+      }
+
+      void updateEnabledContext(resource);
+    }),
+    vscode.commands.registerCommand('markdownReader.inspectConfiguration', () =>
+      logConfigInspection(vscode.window.activeTextEditor?.document.uri)
+    ),
     vscode.commands.registerCommand('markdownReader.enterEditMode', () =>
       enterEditMode(previewService)
     ),

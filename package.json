@@ -40,6 +40,12 @@
         "icon": "$(split-horizontal)"
       },
       {
+        "command": "markdownReader.inspectConfiguration",
+        "title": "Inspect Configuration",
+        "category": "Markdown Preview",
+        "icon": "$(settings-gear)"
+      },
+      {
         "command": "markdownReader.formatBold",
         "title": "Bold",
         "category": "Markdown Preview",
@@ -244,6 +250,10 @@
         },
         {
           "command": "markdownReader.toggleEditMode",
+          "when": "resourceLangId == markdown"
+        },
+        {
+          "command": "markdownReader.inspectConfiguration",
           "when": "resourceLangId == markdown"
         },
         {

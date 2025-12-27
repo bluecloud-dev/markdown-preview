@@ -14,6 +14,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - N/A
 
+## [0.4.0] - 2025-12-27
+
+### Added
+- Configuration settings for enablement, exclusion patterns, and max file size
+- Inspect Configuration command for effective settings diagnostics
+- Configuration integration tests for exclusions, disabled state, and workspace overrides
+
+### Changed
+- Configuration cache reloads and context updates when settings change
+
 ## [0.3.0] - 2025-12-27
 
 ### Added

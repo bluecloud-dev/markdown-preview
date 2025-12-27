@@ -54,6 +54,7 @@ Preview-by-default, edit mode, and formatting toolbar actions are available for 
 - Format text in edit mode with toolbar actions for bold, italic, strikethrough, lists, code, links, and headings.
 - Use a Format context menu (right-click) with heading and code submenus while editing.
 - Use keyboard shortcuts for toggle, bold, and italic in markdown edit mode.
+- Configure preview behavior (enabled, exclude patterns, max file size) per workspace or file.
 
 ## :clipboard: Requirements
 
@@ -70,6 +71,7 @@ Preview-by-default, edit mode, and formatting toolbar actions are available for 
 - **Markdown Preview: Enter Edit Mode** — open split editor (text left, preview right)
 - **Markdown Preview: Exit Edit Mode** — return to preview-only mode
 - **Markdown Preview: Toggle Edit Mode** — switch between modes (`Ctrl+Shift+V`)
+- **Markdown Preview: Inspect Configuration** — show effective settings in the Output panel
 - **Markdown Preview: Bold** — wrap selection with `**`
 - **Markdown Preview: Italic** — wrap selection with `_`
 - **Markdown Preview: Strikethrough** — wrap selection with `~~`

@@ -9,28 +9,65 @@ const DEFAULT_CONFIG: ExtensionConfiguration = {
 };
 
 export class ConfigService {
+  private readonly cachedConfigs = new Map<string, ExtensionConfiguration>();
+
   getEnabled(resource?: vscode.Uri): boolean {
-    return this.loadConfig(resource).enabled;
+    return this.getConfig(resource).enabled;
   }
 
   getExcludePatterns(resource?: vscode.Uri): string[] {
-    return this.loadConfig(resource).excludePatterns;
+    return this.getConfig(resource).excludePatterns;
   }
 
   getMaxFileSize(resource?: vscode.Uri): number {
-    return this.loadConfig(resource).maxFileSize;
+    return this.getConfig(resource).maxFileSize;
   }
 
   getConfig(resource?: vscode.Uri): ExtensionConfiguration {
-    return this.loadConfig(resource);
+    const cacheKey = this.getCacheKey(resource);
+    const cached = this.cachedConfigs.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const config = this.loadConfig(resource);
+    this.cachedConfigs.set(cacheKey, config);
+    return config;
+  }
+
+  reload(resource?: vscode.Uri): ExtensionConfiguration {
+    const config = this.loadConfig(resource);
+    this.cachedConfigs.set(this.getCacheKey(resource), config);
+    return config;
+  }
+
+  clearCache(): void {
+    this.cachedConfigs.clear();
+  }
+
+  inspect(resource?: vscode.Uri): {
+    enabled?: vscode.ConfigurationInspect<boolean>;
+    excludePatterns?: vscode.ConfigurationInspect<string[]>;
+    maxFileSize?: vscode.ConfigurationInspect<number>;
+  } {
+    const config = vscode.workspace.getConfiguration('markdownReader', resource);
+    return {
+      enabled: config.inspect<boolean>('enabled'),
+      excludePatterns: config.inspect<string[]>('excludePatterns'),
+      maxFileSize: config.inspect<number>('maxFileSize'),
+    };
   }
 
   isExcluded(uri: vscode.Uri): boolean {
     const filePath = vscode.workspace.asRelativePath(uri, false);
-    const config = this.loadConfig(uri);
+    const config = this.getConfig(uri);
     return config.excludePatterns.some((pattern) =>
       minimatch(filePath, pattern, { dot: true, nocase: true })
     );
+  }
+
+  private getCacheKey(resource?: vscode.Uri): string {
+    return resource?.toString() ?? '__global__';
   }
 
   private loadConfig(resource?: vscode.Uri): ExtensionConfiguration {

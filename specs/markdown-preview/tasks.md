@@ -314,21 +314,21 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 
 ### Tests
 
-- [ ] T091 [P] [US6] Add test to preview-mode.test.ts: "excluded files open in text editor mode"
-- [ ] T092 [P] [US6] Add test: "files in node_modules excluded by default"
-- [ ] T093 [P] [US6] Add test: "files in .git excluded by default"
-- [ ] T094 [P] [US6] Add test: "extension disabled globally skips preview interception"
-- [ ] T096 [P] [US6] Add test: "workspace settings override user settings"
+- [x] T091 [P] [US6] Add test to preview-mode.test.ts: "excluded files open in text editor mode"
+- [x] T092 [P] [US6] Add test: "files in node_modules excluded by default"
+- [x] T093 [P] [US6] Add test: "files in .git excluded by default"
+- [x] T094 [P] [US6] Add test: "extension disabled globally skips preview interception"
+- [x] T096 [P] [US6] Add test: "workspace settings override user settings"
 
 ### Implementation
 
-- [ ] T097 [US6] Define configuration properties in package.json contributes.configuration per contracts/configuration.json
-- [ ] T098 [US6] Add `markdownReader.enabled` boolean setting (default: true, scope: resource)
-- [ ] T099 [US6] Add `markdownReader.excludePatterns` array setting (default: ["**/node_modules/**", "**/.git/**"], scope: resource)
-- [ ] T100 [US6] Add `markdownReader.maxFileSize` number setting (default: 1048576, scope: resource)
-- [ ] T101 [US6] Implement `ConfigService.reload()` for config changes
-- [ ] T102 [US6] Register `onDidChangeConfiguration` event listener in `src/extension.ts`
-- [ ] T103 [US6] Update context key `markdownReader.enabled` on config change
+- [x] T097 [US6] Define configuration properties in package.json contributes.configuration per contracts/configuration.json
+- [x] T098 [US6] Add `markdownReader.enabled` boolean setting (default: true, scope: resource)
+- [x] T099 [US6] Add `markdownReader.excludePatterns` array setting (default: ["**/node_modules/**", "**/.git/**"], scope: resource)
+- [x] T100 [US6] Add `markdownReader.maxFileSize` number setting (default: 1048576, scope: resource)
+- [x] T101 [US6] Implement `ConfigService.reload()` for config changes
+- [x] T102 [US6] Register `onDidChangeConfiguration` event listener in `src/extension.ts`
+- [x] T103 [US6] Update context key `markdownReader.enabled` on config change
 
 **Manual Test Checklist (US6)**
 - [ ] Exclude pattern `**/node_modules/**` → .md in node_modules opens in text editor
@@ -336,7 +336,7 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 - [ ] Disable for workspace only → affects only that workspace
 - [ ] Re-enable extension → preview-by-default resumes
 
-- [ ] T145 Release closeout (v0.4.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+- [x] T145 Release closeout (v0.4.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
 
 ---
 
