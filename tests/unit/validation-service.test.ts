@@ -45,7 +45,7 @@ describe('ValidationService', () => {
 
   it('flags binary files based on null bytes', async () => {
     const service = new ValidationService();
-    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'markdown-reader-'));
+    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'markdown-preview-'));
     const binaryPath = path.join(temporaryDirectory, 'binary.md');
     fs.writeFileSync(binaryPath, Buffer.from([0, 1, 2, 3]));
 

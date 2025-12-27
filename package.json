@@ -1,6 +1,6 @@
 {
-  "name": "markdown-reader",
-  "displayName": "Markdown Reader",
+  "name": "markdown-preview",
+  "displayName": "Markdown Preview",
   "publisher": "blueclouddev",
   "version": "0.1.0",
   "description": "Open markdown files in preview mode by default.",
@@ -24,19 +24,19 @@
       {
         "command": "markdownReader.enterEditMode",
         "title": "Enter Edit Mode",
-        "category": "Markdown Reader",
+        "category": "Markdown Preview",
         "icon": "$(edit)"
       },
       {
         "command": "markdownReader.exitEditMode",
         "title": "Done",
-        "category": "Markdown Reader",
+        "category": "Markdown Preview",
         "icon": "$(check)"
       },
       {
         "command": "markdownReader.toggleEditMode",
         "title": "Toggle Edit Mode",
-        "category": "Markdown Reader",
+        "category": "Markdown Preview",
         "icon": "$(split-horizontal)"
       }
     ],
@@ -72,12 +72,12 @@
       }
     ],
     "configuration": {
-      "title": "Markdown Reader",
+      "title": "Markdown Preview",
       "properties": {
         "markdownReader.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable the Markdown Reader extension. When disabled, markdown files open in standard VS Code editor mode.",
+          "description": "Enable the Markdown Preview extension. When disabled, markdown files open in standard VS Code editor mode.",
           "scope": "resource"
         },
         "markdownReader.excludePatterns": {

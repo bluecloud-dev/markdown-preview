@@ -1,7 +1,7 @@
-# Markdown Reader
+# Markdown Preview
 
 <p align="center">
-  <img src="assets/hero.png" alt="Markdown Reader hero banner" width="840">
+  <img src="assets/hero.png" alt="Markdown Preview hero banner" width="840">
 </p>
 
 <p align="center">
@@ -57,14 +57,14 @@ Preview-by-default and edit mode are available for a focused read/write loop.
 ## :zap: Quick Start
 
 1. Open any `.md` file to see the preview immediately.
-2. Run **Markdown Reader: Enter Edit Mode** (or `Ctrl+Shift+V`) to open a split editor.
-3. Click **Done** or run **Markdown Reader: Exit Edit Mode** to return to preview-only mode.
+2. Run **Markdown Preview: Enter Edit Mode** (or `Ctrl+Shift+V`) to open a split editor.
+3. Click **Done** or run **Markdown Preview: Exit Edit Mode** to return to preview-only mode.
 
 ## :keyboard: Commands
 
-- **Markdown Reader: Enter Edit Mode** — open split editor (text left, preview right)
-- **Markdown Reader: Exit Edit Mode** — return to preview-only mode
-- **Markdown Reader: Toggle Edit Mode** — switch between modes (`Ctrl+Shift+V`)
+- **Markdown Preview: Enter Edit Mode** — open split editor (text left, preview right)
+- **Markdown Preview: Exit Edit Mode** — return to preview-only mode
+- **Markdown Preview: Toggle Edit Mode** — switch between modes (`Ctrl+Shift+V`)
 
 ## :gear: Settings
 

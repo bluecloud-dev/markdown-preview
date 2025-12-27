@@ -110,7 +110,7 @@ export class MarkdownFileHandler implements vscode.Disposable {
 
     const tutorialAction = t('View Tutorial');
     const selection = await vscode.window.showInformationMessage(
-      t('Welcome to Markdown Reader! Open any markdown file to preview by default.'),
+      t('Welcome to Markdown Preview! Open any markdown file to preview by default.'),
       tutorialAction
     );
 

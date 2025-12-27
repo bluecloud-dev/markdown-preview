@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 describe('Command registration', () => {
   it('registers edit mode commands', async () => {
-    const extension = vscode.extensions.getExtension('blueclouddev.markdown-reader');
+    const extension = vscode.extensions.getExtension('blueclouddev.markdown-preview');
     expect(extension).to.not.equal(undefined);
     await extension?.activate();
 

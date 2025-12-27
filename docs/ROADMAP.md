@@ -1,4 +1,4 @@
-# Markdown Reader - Roadmap
+# Markdown Preview - Roadmap
 
 > Open markdown files in preview mode by default, optimizing the reading experience for developers reviewing AI-generated documentation. (rolling, no fixed dates)
 
@@ -362,7 +362,7 @@ Sprint 0 (11) ──🧪──> Foundational (14)
 
 ---
 
-Visual representations of the project roadmap for the Markdown Reader VS Code extension.
+Visual representations of the project roadmap for the Markdown Preview VS Code extension.
 
 **Development Workflow**: Sprint 0 First → Milestone-Driven with Test Gates
 
@@ -434,7 +434,7 @@ flowchart TD
 }}}%%
 
 timeline
-    title Markdown Reader Evolution
+    title Markdown Preview Evolution
 
     section Sprint 0 - Test Infrastructure
         Setup      : Test scaffolding (unit, integration, fixtures)
@@ -774,7 +774,7 @@ quadrantChart
 %%{init: {'theme': 'base'}}%%
 
 journey
-    title User Journey - Markdown Reader v1.0.0
+    title User Journey - Markdown Preview v1.0.0
     section Install
       Install from Marketplace: 5: User
       No configuration needed: 5: System
