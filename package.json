@@ -2,7 +2,7 @@
   "name": "markdown-preview",
   "displayName": "Markdown Preview",
   "publisher": "blueclouddev",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Open markdown files in preview mode by default.",
   "engines": {
     "vscode": "^1.107.0"
