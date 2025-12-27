@@ -11,7 +11,7 @@ Dependency-ordered tasks organized by user story. Testing and tooling land first
 
 - Follow `CLAUDE.md` for the implementation loop and repo conventions.
 - Follow the project constitution at `.specify/memory/constitution.md`.
-- Use `specs/markdown-preview-default/quickstart.md` as the scenario checklist.
+- Use `specs/markdown-preview/quickstart.md` as the scenario checklist.
 
 **Notes**:
 - Plan research/design refer to documentation gates; this file starts at implementation setup.
@@ -202,34 +202,34 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 
 ### Tests
 
-- [ ] T053 [P] [US3] Create `tests/integration/formatting.test.ts` with test: "toolbar icons visible only in edit mode"
-- [ ] T054 [P] [US3] Add test: "Bold button wraps selection with ** markers"
-- [ ] T055 [P] [US3] Add test: "Italic button wraps selection with _ markers"
-- [ ] T056 [P] [US3] Add test: "Strikethrough button wraps selection with ~~ markers"
-- [ ] T057 [P] [US3] Add test: "no-selection behavior: word under cursor or placeholder"
-- [ ] T058 [P] [US3] Create `tests/unit/formatting-service.test.ts` with unit tests for all formatting methods
+- [x] T053 [P] [US3] Create `tests/integration/formatting.test.ts` with test: "toolbar icons visible only in edit mode"
+- [x] T054 [P] [US3] Add test: "Bold button wraps selection with ** markers"
+- [x] T055 [P] [US3] Add test: "Italic button wraps selection with _ markers"
+- [x] T056 [P] [US3] Add test: "Strikethrough button wraps selection with ~~ markers"
+- [x] T057 [P] [US3] Add test: "no-selection behavior: word under cursor or placeholder"
+- [x] T058 [P] [US3] Create `tests/unit/formatting-service.test.ts` with unit tests for all formatting methods
 
 ### Services
 
-- [ ] T059 [P] [US3] Create `src/services/formatting-service.ts` with FormattingService class
-- [ ] T060 [P] [US3] Implement `wrapSelection()` for inline formatting (bold, italic, strikethrough, inline code)
-- [ ] T061 [P] [US3] Implement `toggleLinePrefix()` for lists/headings (bullet, numbered, heading levels)
-- [ ] T062 [P] [US3] Implement `wrapBlock()` for code block formatting
-- [ ] T063 [US3] Implement `insertLink()` with URL prompt via vscode.window.showInputBox
+- [x] T059 [P] [US3] Create `src/services/formatting-service.ts` with FormattingService class
+- [x] T060 [P] [US3] Implement `wrapSelection()` for inline formatting (bold, italic, strikethrough, inline code)
+- [x] T061 [P] [US3] Implement `toggleLinePrefix()` for lists/headings (bullet, numbered, heading levels)
+- [x] T062 [P] [US3] Implement `wrapBlock()` for code block formatting
+- [x] T063 [US3] Implement `insertLink()` with URL prompt via vscode.window.showInputBox
 
 ### Commands
 
-- [ ] T064 [US3] Create `src/commands/format-commands.ts` with formatBold, formatItalic, formatStrikethrough handlers
-- [ ] T065 [US3] Add formatBulletList, formatNumberedList handlers
-- [ ] T066 [US3] Add formatInlineCode, formatCodeBlock handlers
-- [ ] T067 [US3] Add formatLink handler with URL prompt
-- [ ] T068 [US3] Add formatHeading1, formatHeading2, formatHeading3 handlers
+- [x] T064 [US3] Create `src/commands/format-commands.ts` with formatBold, formatItalic, formatStrikethrough handlers
+- [x] T065 [US3] Add formatBulletList, formatNumberedList handlers
+- [x] T066 [US3] Add formatInlineCode, formatCodeBlock handlers
+- [x] T067 [US3] Add formatLink handler with URL prompt
+- [x] T068 [US3] Add formatHeading1, formatHeading2, formatHeading3 handlers
 
 ### Integration
 
-- [ ] T069 [US3] Register all formatting commands and toolbar menu items in package.json per contracts/commands.json and contracts/menus.json (with icons)
-- [ ] T070 [US3] Create `src/ui/title-bar-controller.ts` with TitleBarController class managing toolbar visibility
-- [ ] T071 [US3] Register formatting commands in `src/extension.ts` with proper disposables
+- [x] T069 [US3] Register all formatting commands and toolbar menu items in package.json per contracts/commands.json and contracts/menus.json (with icons)
+- [x] T070 [US3] Create `src/ui/title-bar-controller.ts` with TitleBarController class managing toolbar visibility
+- [x] T071 [US3] Register formatting commands in `src/extension.ts` with proper disposables
 
 **Manual Test Checklist (US3)**
 - [ ] Edit mode → select text → click Bold → text wrapped with **
@@ -238,7 +238,7 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 - [ ] Edit mode → no selection → click Bold → placeholder inserted or word wrapped
 - [ ] Preview mode → toolbar icons NOT visible
 
-- [ ] T143 Release closeout (v0.2.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
+- [x] T143 Release closeout (v0.2.0): update README.md Features/Commands to list only released functionality (no milestone/version mentions) and reflect current settings/known limitations; update CHANGELOG.md with release notes
 
 ---
 

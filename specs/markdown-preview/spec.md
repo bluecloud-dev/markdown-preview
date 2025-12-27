@@ -1,6 +1,6 @@
 # Feature Specification: Markdown Preview Default
 
-**Feature Branch**: `feature/markdown-preview-default`
+**Feature Branch**: `feature/markdown-preview`
 **Created**: 2025-12-23
 **Status**: Draft
 **Input**: VS Code extension that opens markdown files in preview mode by default with edit mode toggle and formatting toolbar

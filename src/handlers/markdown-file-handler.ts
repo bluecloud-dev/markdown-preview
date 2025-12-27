@@ -34,27 +34,22 @@ export class MarkdownFileHandler implements vscode.Disposable {
 
   private async handleDocumentOpen(document: vscode.TextDocument): Promise<void> {
     const isMarkdown = this.validationService.isMarkdownFile(document);
-    await vscode.commands.executeCommand('setContext', 'markdownReader.isMarkdown', isMarkdown);
+    const isEnabled = this.configService.getEnabled(document.uri);
     await vscode.commands.executeCommand(
       'setContext',
       'markdownReader.enabled',
-      this.configService.getEnabled()
+      isEnabled
     );
 
     if (!isMarkdown) {
       return;
     }
 
-    if (!this.configService.getEnabled()) {
+    if (!isEnabled) {
       return;
     }
 
     const existingState = this.stateService.getExistingState(document.uri);
-    await vscode.commands.executeCommand(
-      'setContext',
-      'markdownReader.editMode',
-      existingState?.mode === ViewMode.Edit
-    );
 
     if (existingState?.mode === ViewMode.Edit) {
       return;

@@ -16,6 +16,7 @@ dist/
 
 # TypeScript
 *.tsbuildinfo
+*.backup
 
 # IDE
 .vscode/*
@@ -46,6 +47,5 @@ logs/
 .claude
 .codex
 .vscode-test
-specs
 AGENTS.md
 CLAUDE.md

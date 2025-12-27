@@ -1,7 +1,7 @@
 # Implementation Plan: Markdown Reader Extension
 
-**Branch**: `feature/markdown-preview-default` | **Date**: 2025-12-24 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/markdown-preview-default/spec.md`
+**Branch**: `feature/markdown-preview` | **Date**: 2025-12-24 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/markdown-preview/spec.md`
 
 ## Summary
 
@@ -43,7 +43,7 @@ Build a VS Code extension that opens markdown files in rendered preview mode by 
 ### Documentation (this feature)
 
 ```text
-specs/markdown-preview-default/
+specs/markdown-preview/
 ├── plan.md              # This file
 ├── research.md          # Research output - VS Code API research
 ├── data-model.md        # Design output - State and configuration types
