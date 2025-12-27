@@ -118,9 +118,10 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.6",
     "@types/minimatch": "^5.1.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.30",
+    "@types/sinon": "^21.0.0",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
