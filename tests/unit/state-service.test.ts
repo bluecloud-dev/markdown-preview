@@ -5,57 +5,63 @@ import { StateService } from '../../src/services/state-service';
 import { ViewMode } from '../../src/types/state';
 
 describe('StateService', () => {
-  let clock: sinon.SinonFakeTimers;
-
-  beforeEach(() => {
-    clock = sinon.useFakeTimers({ now: 1000 });
-  });
-
   afterEach(() => {
-    clock.restore();
     sinon.restore();
   });
 
-  it('creates default preview state on first access', () => {
+  it('creates default state for new URIs', () => {
     const service = new StateService();
     const uri = vscode.Uri.file('/tmp/sample.md');
 
     const state = service.getState(uri);
 
-    expect(state.uri).to.equal(uri.toString());
     expect(state.mode).to.equal(ViewMode.Preview);
-    expect(state.lastModeChange).to.equal(1000);
+    expect(state.editorVisible).to.equal(false);
+    expect(state.uri).to.equal(uri.toString());
   });
 
-  it('updates mode and timestamp', () => {
+  it('updates mode and announces transitions', () => {
     const service = new StateService();
     const uri = vscode.Uri.file('/tmp/sample.md');
-    const contextStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
 
-    service.getState(uri);
-    clock.tick(1000);
+    const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    const statusStub = sinon.stub(vscode.window, 'setStatusBarMessage');
+
     service.setMode(uri, ViewMode.Edit);
 
-    const updated = service.getState(uri);
-    expect(updated.mode).to.equal(ViewMode.Edit);
-    expect(updated.lastModeChange).to.equal(2000);
-    expect(
-      contextStub.calledWith('setContext', 'markdownReader.editMode', true)
-    ).to.equal(true);
+    expect(executeStub.calledWith('setContext', 'markdownReader.editMode', true)).to.equal(true);
+    expect(statusStub.calledOnce).to.equal(true);
   });
 
-  it('clears state and recreates defaults', () => {
+  it('does not announce when mode does not change', () => {
     const service = new StateService();
     const uri = vscode.Uri.file('/tmp/sample.md');
+
     sinon.stub(vscode.commands, 'executeCommand').resolves();
+    const statusStub = sinon.stub(vscode.window, 'setStatusBarMessage');
 
-    service.getState(uri);
-    service.setMode(uri, ViewMode.Edit);
-    service.clear(uri);
+    service.setMode(uri, ViewMode.Preview);
+    statusStub.resetHistory();
 
-    clock.tick(1000);
-    const reset = service.getState(uri);
-    expect(reset.mode).to.equal(ViewMode.Preview);
-    expect(reset.lastModeChange).to.equal(2000);
+    service.setMode(uri, ViewMode.Preview);
+    expect(statusStub.called).to.equal(false);
+  });
+
+  it('stores and retrieves last selection', () => {
+    const service = new StateService();
+    const uri = vscode.Uri.file('/tmp/sample.md');
+    const position = new vscode.Position(2, 5);
+
+    service.setLastSelection(uri, position);
+    const restored = service.getLastSelection(uri);
+
+    expect(restored?.line).to.equal(2);
+    expect(restored?.character).to.equal(5);
+  });
+
+  it('returns undefined when no last selection exists', () => {
+    const service = new StateService();
+    const uri = vscode.Uri.file('/tmp/new.md');
+    expect(service.getLastSelection(uri)).to.equal(undefined);
   });
 });

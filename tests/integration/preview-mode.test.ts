@@ -6,6 +6,7 @@ import { PreviewService } from '../../src/services/preview-service';
 import { StateService } from '../../src/services/state-service';
 import { ValidationService } from '../../src/services/validation-service';
 import { ConfigService } from '../../src/services/config-service';
+import { Logger } from '../../src/services/logger';
 
 const createMemento = (): vscode.Memento => {
   const store = new Map<string, unknown>();
@@ -23,6 +24,14 @@ const createMemento = (): vscode.Memento => {
   } as vscode.Memento;
 };
 
+const createLogger = (): Logger =>
+  ({
+    info: sinon.stub(),
+    warn: sinon.stub(),
+    error: sinon.stub(),
+    show: sinon.stub(),
+  }) as unknown as Logger;
+
 describe('Preview mode integration', () => {
   beforeEach(() => {
     const l10nStub = sinon.stub(vscode.l10n, 't') as sinon.SinonStub;
@@ -38,6 +47,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -58,7 +68,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      workspaceState
+      workspaceState,
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -70,7 +81,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      globalState
+      globalState,
+      createLogger()
     );
 
     const document = {
@@ -79,14 +91,14 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(true);
     expect(infoStub.calledOnce).to.equal(true);
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(infoStub.calledOnce).to.equal(true);
   });
@@ -96,6 +108,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => true,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -116,7 +129,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      workspaceState
+      workspaceState,
+      createLogger()
     );
 
     sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -131,7 +145,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      globalState
+      globalState,
+      createLogger()
     );
 
     const document = {
@@ -140,15 +155,225 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(infoStub.calledOnce).to.equal(true);
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(infoStub.calledOnce).to.equal(true);
+  });
+
+  it('opens untitled markdown files in edit mode', async () => {
+    const stateService = new StateService();
+    const validationService = {
+      isMarkdownFile: () => true,
+      isDiffView: () => false,
+      hasConflictMarkers: () => false,
+      isLargeFile: async () => false,
+      isBinaryFile: async () => false,
+    } as ValidationService;
+
+    const configService = {
+      getEnabled: () => true,
+      isExcluded: () => false,
+      getConfig: () => ({
+        enabled: true,
+        excludePatterns: [],
+        maxFileSize: 1_048_576,
+      }),
+    } as unknown as import('../../src/services/config-service').ConfigService;
+
+    const logger = createLogger();
+    const previewService = new PreviewService(
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      logger
+    );
+    const enterStub = sinon.stub(previewService, 'enterEditMode').resolves();
+    sinon.stub(vscode.commands, 'executeCommand').resolves();
+    sinon.stub(vscode.window, 'showInformationMessage').resolves();
+    sinon.stub(vscode.window, 'showInformationMessage').resolves();
+
+    const handler = new MarkdownFileHandler(
+      previewService,
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      logger
+    );
+
+    const document = {
+      languageId: 'markdown',
+      uri: vscode.Uri.parse('untitled:Untitled-1'),
+      isUntitled: true,
+    } as vscode.TextDocument;
+
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
+
+    expect(enterStub.calledOnce).to.equal(true);
+    expect((logger.warn as sinon.SinonStub).calledOnce).to.equal(true);
+  });
+
+  it('skips preview for diff views', async () => {
+    const stateService = new StateService();
+    const validationService = {
+      isMarkdownFile: () => true,
+      isDiffView: () => true,
+      hasConflictMarkers: () => false,
+      isLargeFile: async () => false,
+      isBinaryFile: async () => false,
+    } as ValidationService;
+
+    const configService = {
+      getEnabled: () => true,
+      isExcluded: () => false,
+      getConfig: () => ({
+        enabled: true,
+        excludePatterns: [],
+        maxFileSize: 1_048_576,
+      }),
+    } as unknown as import('../../src/services/config-service').ConfigService;
+
+    const previewService = new PreviewService(
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      createLogger()
+    );
+    const previewStub = sinon.stub(previewService, 'shouldShowPreview').resolves(true);
+    const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
+
+    const handler = new MarkdownFileHandler(
+      previewService,
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      createLogger()
+    );
+
+    const document = {
+      languageId: 'markdown',
+      uri: vscode.Uri.parse('git:/tmp/diff.md'),
+      isUntitled: false,
+    } as vscode.TextDocument;
+
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
+
+    expect(previewStub.called).to.equal(false);
+    expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);
+  });
+
+  it('opens edit mode when conflict markers are detected', async () => {
+    const stateService = new StateService();
+    const validationService = {
+      isMarkdownFile: () => true,
+      isDiffView: () => false,
+      hasConflictMarkers: () => true,
+      isLargeFile: async () => false,
+      isBinaryFile: async () => false,
+    } as ValidationService;
+
+    const configService = {
+      getEnabled: () => true,
+      isExcluded: () => false,
+      getConfig: () => ({
+        enabled: true,
+        excludePatterns: [],
+        maxFileSize: 1_048_576,
+      }),
+    } as unknown as import('../../src/services/config-service').ConfigService;
+
+    const previewService = new PreviewService(
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      createLogger()
+    );
+    const enterStub = sinon.stub(previewService, 'enterEditMode').resolves();
+    sinon.stub(vscode.commands, 'executeCommand').resolves();
+
+    const handler = new MarkdownFileHandler(
+      previewService,
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      createLogger()
+    );
+
+    const document = {
+      languageId: 'markdown',
+      uri: vscode.Uri.file('/tmp/conflict.md'),
+      isUntitled: false,
+    } as vscode.TextDocument;
+
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
+
+    expect(enterStub.calledOnce).to.equal(true);
+  });
+
+  it('shows a binary-file error and skips preview', async () => {
+    const stateService = new StateService();
+    const validationService = {
+      isMarkdownFile: () => true,
+      isDiffView: () => false,
+      hasConflictMarkers: () => false,
+      isLargeFile: async () => false,
+      isBinaryFile: async () => true,
+    } as ValidationService;
+
+    const configService = {
+      getEnabled: () => true,
+      isExcluded: () => false,
+      getConfig: () => ({
+        enabled: true,
+        excludePatterns: [],
+        maxFileSize: 1_048_576,
+      }),
+    } as unknown as import('../../src/services/config-service').ConfigService;
+
+    const previewService = new PreviewService(
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      createLogger()
+    );
+    const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    const errorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves();
+
+    const handler = new MarkdownFileHandler(
+      previewService,
+      stateService,
+      configService,
+      validationService,
+      createMemento(),
+      createLogger()
+    );
+
+    const document = {
+      languageId: 'markdown',
+      uri: vscode.Uri.file('/tmp/binary.md'),
+      isUntitled: false,
+    } as vscode.TextDocument;
+
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
+
+    expect(errorStub.calledWith('Cannot preview binary file')).to.equal(true);
+    expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);
   });
 
   it('uses native preview command and avoids edit-mode preview', async () => {
@@ -156,6 +381,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -176,7 +402,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      workspaceState
+      workspaceState,
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -188,7 +415,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      globalState
+      globalState,
+      createLogger()
     );
 
     const document = {
@@ -197,8 +425,8 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(true);
     expect(executeStub.calledWith('markdown.showPreviewToSide')).to.equal(false);
@@ -209,6 +437,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -227,7 +456,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -239,7 +469,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -248,8 +479,8 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(true);
   });
@@ -259,6 +490,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -277,7 +509,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -289,7 +522,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -298,8 +532,8 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreviewToSide')).to.equal(false);
     expect(executeStub.calledWith('workbench.action.splitEditor')).to.equal(false);
@@ -310,6 +544,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -328,7 +563,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -338,7 +574,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -347,8 +584,8 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);
   });
@@ -358,6 +595,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -377,7 +615,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -387,7 +626,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -396,8 +636,8 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);
   });
@@ -407,6 +647,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -426,7 +667,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -436,7 +678,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -445,8 +688,8 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);
   });
@@ -456,6 +699,7 @@ describe('Preview mode integration', () => {
     const validationService = {
       isMarkdownFile: () => true,
       isDiffView: () => false,
+      hasConflictMarkers: () => false,
       isLargeFile: async () => false,
       isBinaryFile: async () => false,
     } as ValidationService;
@@ -475,7 +719,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -485,7 +730,8 @@ describe('Preview mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -494,8 +740,8 @@ describe('Preview mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);
   });

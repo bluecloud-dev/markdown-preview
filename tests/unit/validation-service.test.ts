@@ -1,57 +1,117 @@
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { ValidationService } from '../../src/services/validation-service';
+
+const createDocument = (text: string, options?: { scheme?: string; languageId?: string }) => {
+  const lines = text.split('\n');
+  return {
+    languageId: options?.languageId ?? 'markdown',
+    uri: vscode.Uri.parse(`${options?.scheme ?? 'file'}:/test.md`),
+    lineCount: lines.length,
+    lineAt: (index: number) => {
+      const lineText = lines[index] ?? '';
+      return {
+        text: lineText,
+        range: new vscode.Range(
+          new vscode.Position(index, 0),
+          new vscode.Position(index, lineText.length)
+        ),
+      };
+    },
+    getText: () => text,
+  } as vscode.TextDocument;
+};
 
 describe('ValidationService', () => {
   afterEach(() => {
     sinon.restore();
   });
 
-  it('detects markdown documents', () => {
+  it('detects markdown language', () => {
     const service = new ValidationService();
-    const document = {
-      languageId: 'markdown',
-      uri: vscode.Uri.file('/tmp/test.md'),
-    } as vscode.TextDocument;
+    const document = createDocument('content', { languageId: 'markdown' });
 
     expect(service.isMarkdownFile(document)).to.equal(true);
+    expect(service.isMarkdownFile(createDocument('content', { languageId: 'plaintext' }))).to.equal(false);
   });
 
-  it('detects diff views', () => {
+  it('detects diff and git schemes', () => {
     const service = new ValidationService();
-    const document = { uri: vscode.Uri.parse('git:/tmp/test.md') } as vscode.TextDocument;
 
-    expect(service.isDiffView(document)).to.equal(true);
+    expect(service.isDiffView(createDocument('content', { scheme: 'diff' }))).to.equal(true);
+    expect(service.isDiffView(createDocument('content', { scheme: 'git' }))).to.equal(true);
+    expect(service.isDiffView(createDocument('content', { scheme: 'file' }))).to.equal(false);
   });
 
-  it('flags large files using fs.stat', async () => {
+  it('detects conflict markers', () => {
     const service = new ValidationService();
-    const largePath = path.resolve(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'tests',
-      'fixtures',
-      'large-file.md'
-    );
-    const result = await service.isLargeFile(vscode.Uri.file(largePath), 1_048_576);
+    const document = createDocument('line\n<<<<<<< HEAD\nconflict\n>>>>>>> branch');
+
+    expect(service.hasConflictMarkers(document)).to.equal(true);
+  });
+
+  it('returns false for empty documents when checking conflict markers', () => {
+    const service = new ValidationService();
+    const document = createDocument('');
+    (document as unknown as { lineCount: number }).lineCount = 0;
+
+    expect(service.hasConflictMarkers(document)).to.equal(false);
+  });
+
+  it('flags large files above the configured size', async () => {
+    const service = new ValidationService();
+    sinon.stub(vscode.workspace.fs, 'stat').resolves({ size: 2048 } as vscode.FileStat);
+
+    const uri = vscode.Uri.file('/tmp/large.md');
+    const result = await service.isLargeFile(uri, 1024);
+
     expect(result).to.equal(true);
   });
 
-  it('flags binary files based on null bytes', async () => {
+  it('treats unreadable files as not large', async () => {
     const service = new ValidationService();
-    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'markdown-preview-'));
-    const binaryPath = path.join(temporaryDirectory, 'binary.md');
-    fs.writeFileSync(binaryPath, Buffer.from([0, 1, 2, 3]));
+    sinon.stub(vscode.workspace.fs, 'stat').rejects(new Error('missing'));
 
-    const result = await service.isBinaryFile(vscode.Uri.file(binaryPath));
-    fs.unlinkSync(binaryPath);
-    fs.rmdirSync(temporaryDirectory);
+    const uri = vscode.Uri.file('/tmp/missing.md');
+    const result = await service.isLargeFile(uri, 1024);
+
+    expect(result).to.equal(false);
+  });
+
+  it('detects binary files when null bytes are present', async () => {
+    const service = new ValidationService();
+    sinon.stub(vscode.workspace.fs, 'readFile').resolves(Uint8Array.from([0, 1, 2]));
+
+    const uri = vscode.Uri.file('/tmp/binary.md');
+    const result = await service.isBinaryFile(uri);
+
     expect(result).to.equal(true);
+  });
+
+  it('returns false for readable text files', async () => {
+    const service = new ValidationService();
+    sinon.stub(vscode.workspace.fs, 'readFile').resolves(Buffer.from('hello'));
+
+    const uri = vscode.Uri.file('/tmp/text.md');
+    const result = await service.isBinaryFile(uri);
+
+    expect(result).to.equal(false);
+  });
+
+  it('returns false when binary detection cannot read the file', async () => {
+    const service = new ValidationService();
+    sinon.stub(vscode.workspace.fs, 'readFile').rejects(new Error('boom'));
+
+    const result = await service.isBinaryFile(vscode.Uri.file('/tmp/missing.md'));
+    expect(result).to.equal(false);
+  });
+
+  it('returns false when binary detection encounters invalid utf8 without null bytes', async () => {
+    const service = new ValidationService();
+    sinon.stub(vscode.workspace.fs, 'readFile').resolves(new Uint8Array([0xC3, 0x28]));
+
+    const result = await service.isBinaryFile(vscode.Uri.file('/tmp/invalid.md'));
+    expect(result).to.equal(false);
   });
 });

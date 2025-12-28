@@ -43,7 +43,7 @@ This project follows a **Sprint 0-first** methodology:
 
 | Priority | Feature | User Story | Status |
 |----------|---------|------------|--------|
-| P0 | **Test & Build Infrastructure** | Setup | ✅ Complete |
+| P0 | **Test & Build Infrastructure** | Setup | :white_check_mark: Complete |
 
 #### Capabilities
 
@@ -254,67 +254,67 @@ This project follows a **Sprint 0-first** methodology:
 
 | Step | Tasks | Notes | Gate |
 |------|:-----:|-------|:----:|
-| Sprint 0 | 11 | Test scaffolding, dependencies, configuration | 🧪 CI Gate |
-| v0.1.0 | 55 | Foundational + US1 + US2 | 🧪 MVP Gate |
-| v0.2.0 | 20 | US3 | 🧪 Tests Pass |
-| v0.3.0 | 20 | US4 + US5 | 🧪 Tests Pass |
-| v0.4.0 | 13 | US6 | 🧪 Tests Pass |
-| v1.0.0 | 24 | Testing + Polish | 🧪 Release Gate |
+| Sprint 0 | 11 | Test scaffolding, dependencies, configuration | :test_tube: CI Gate |
+| v0.1.0 | 55 | Foundational + US1 + US2 | :test_tube: MVP Gate |
+| v0.2.0 | 20 | US3 | :test_tube: Tests Pass |
+| v0.3.0 | 20 | US4 + US5 | :test_tube: Tests Pass |
+| v0.4.0 | 13 | US6 | :test_tube: Tests Pass |
+| v1.0.0 | 24 | Testing + Polish | :test_tube: Release Gate |
 
 **Total**: 143 tasks | **Parallel Opportunities**: 63 tasks | **MVP**: 66 tasks
 
-**⚠️ Milestone Gate Rule**: Next milestone step is BLOCKED until current step gate passes. No exceptions.
+**:warning: Milestone Gate Rule**: Next milestone step is BLOCKED until current step gate passes. No exceptions.
 
 ---
 
 ## Dependency Flow
 
 ```
-Sprint 0 (11) ──🧪──> Foundational (14)
-    [CI Green]              |
-                            v
-                    🧪 Tests Pass
-                            |
-                            v
-                    US1: Preview (17) [P0]
-                            |
-                            v
-                    🧪 Tests Pass
-                            |
-                            v
-                    US2: Edit Mode (23) [P0]
-                            |
-                            v
-                    🧪 MVP Gate (v0.1.0)
-                            |
-                            v
-                    US3: Toolbar (19) [P1]
-                            |
-                            v
-                    🧪 Tests Pass
-                            |
-            +---------------+---------------+
-            |               |               |
-            v               v               v
-        US4 (10)        US5 (9)        US6 (12)
-        [P2]            [P2]            [P2]
-            |               |               |
-            v               v               v
-        🧪 Tests      🧪 Tests      🧪 Tests
-            |               |               |
-            +---------------+---------------+
-                            |
-                            v
-                    Testing (7) + Polish (17)
-                            |
-                            v
-                    🧪 Release Gate (v1.0.0)
-                            |
-                            v
-                          v1.0.0
+Sprint 0 (11) --[TEST]--> Foundational (14)
+    [CI Green]                 |
+                               v
+                       [TEST] Tests Pass
+                               |
+                               v
+                       US1: Preview (17) [P0]
+                               |
+                               v
+                       [TEST] Tests Pass
+                               |
+                               v
+                       US2: Edit Mode (23) [P0]
+                               |
+                               v
+                       [TEST] MVP Gate (v0.1.0)
+                               |
+                               v
+                       US3: Toolbar (19) [P1]
+                               |
+                               v
+                       [TEST] Tests Pass
+                               |
+               +---------------+---------------+
+               |               |               |
+               v               v               v
+           US4 (10)        US5 (9)        US6 (12)
+           [P2]            [P2]            [P2]
+               |               |               |
+               v               v               v
+           [TEST]          [TEST]          [TEST]
+               |               |               |
+               +---------------+---------------+
+                               |
+                               v
+                       Testing (7) + Polish (17)
+                               |
+                               v
+                       [TEST] Release Gate (v1.0.0)
+                               |
+                               v
+                             v1.0.0
 ```
 
-**Legend**: 🧪 = Milestone Test Gate (BLOCKING)
+**Legend**: [TEST] = Milestone Test Gate (BLOCKING)
 
 ---
 
@@ -353,7 +353,7 @@ Sprint 0 (11) ──🧪──> Foundational (14)
 - [x] Walking skeleton (extension activates, empty test passes)
 - [x] Coverage gates configured (80% overall)
 
-**Sprint 0 is complete when**: CI is green ✅
+**Sprint 0 is complete when**: CI is green :white_check_mark:
 
 ---
 
@@ -379,18 +379,18 @@ Visual representations of the project roadmap for the Markdown Preview VS Code e
 }}}%%
 
 flowchart TD
-    S0[🚀 Sprint 0<br/>Test Infrastructure + Walking Skeleton]
-    G0{🧪 Gate: CI Green?}
+    S0[Sprint 0<br/>Test Infrastructure + Walking Skeleton]
+    G0{Gate: CI Green?}
     P1[v0.1.0 Foundational]
-    G1{🧪 Gate: Tests Pass?}
+    G1{Gate: Tests Pass?}
     P2[v0.1.0 US1 Preview]
-    G2{🧪 Gate: Tests Pass?}
+    G2{Gate: Tests Pass?}
     P3[v0.1.0 US2 Edit Mode]
-    G3{🧪 Gate: Tests Pass?}
-    MVP[✅ v0.1.0 MVP Complete!]
+    G3{Gate: Tests Pass?}
+    MVP[v0.1.0 MVP Complete!]
     P4[v0.2.0+ Features]
-    G4{🧪 Gate: Tests Pass?}
-    REL[🎉 v1.0.0 Release]
+    G4{Gate: Tests Pass?}
+    REL[v1.0.0 Release]
 
     S0 --> G0
     G0 -->|Yes| P1
@@ -419,7 +419,7 @@ flowchart TD
     style G4 fill:#FFB74D
 ```
 
-**Key**: 🧪 = Test Gate (BLOCKING) | ❌ = Fix before proceeding
+**Key**: Gate = Test Gate (BLOCKING) | Fix before proceeding if failed
 
 ---
 
@@ -442,24 +442,24 @@ timeline
                    : CI/CD pipeline (GitHub Actions)
                    : Walking skeleton (extension activates)
                    : Coverage gates (80% threshold)
-                   : 🧪 GATE: CI must be green
+                   : GATE - CI must be green
 
     section v0.1.0 - MVP Core (55 tasks)
         Foundation : Types (ViewMode, FileState, Config)
                    : StateService & ConfigService
                    : L10n infrastructure
-                   : 🧪 GATE: Tests must pass
+                   : GATE - Tests must pass
         Preview    : File open interception
                    : ValidationService (size, binary, diff)
                    : PreviewService (markdown.showPreview)
                    : Large file handling with opt-out
-                   : 🧪 GATE: Tests must pass
+                   : GATE - Tests must pass
         Edit Mode  : Enter/Exit/Toggle commands
                    : Split view (editor + live preview)
                    : Done button in title bar
                    : Pane tracking & focus management
                    : Unsaved changes prompt
-                   : 🧪 GATE: Tests must pass (MVP!)
+                   : GATE - Tests must pass (MVP!)
 
     section v0.2.0 - Formatting (20 tasks)
         Toolbar    : FormattingService
@@ -513,7 +513,7 @@ flowchart TD
         T003[npm Scripts]
         T007[Extension Manifest]
         T009[TS Strict Config]
-        G0{🧪 CI Green?}
+        G0{CI Green?}
     end
 
     subgraph foundation ["v0.1.0: Foundational"]
@@ -1006,7 +1006,7 @@ flowchart LR
     end
 
     T001 --> T002 --> T003 --> T004 --> parallel1
-    parallel1 --> G0{🧪 CI Green?}
+    parallel1 --> G0{CI Green?}
 
     subgraph Foundational ["v0.1.0: Foundational"]
         direction TB

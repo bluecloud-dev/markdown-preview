@@ -1,3 +1,20 @@
+/**
+ * @fileoverview Extension entry point for Markdown Preview.
+ *
+ * This module handles the activation and deactivation lifecycle of the extension.
+ * It is responsible for:
+ * - Creating and wiring all service instances (dependency injection)
+ * - Registering all commands with VS Code
+ * - Setting up event listeners for configuration changes
+ * - Managing the extension's disposables for proper cleanup
+ *
+ * The extension uses lazy activation via `onLanguage:markdown` to minimize
+ * startup impact on VS Code.
+ *
+ * @module extension
+ * @see {@link https://code.visualstudio.com/api/references/activation-events}
+ */
+
 import * as vscode from 'vscode';
 import {
   formatBold,
@@ -16,11 +33,28 @@ import { MarkdownFileHandler } from './handlers/markdown-file-handler';
 import { enterEditMode, exitEditMode, toggleEditMode } from './commands/mode-commands';
 import { ConfigInspection, ConfigService } from './services/config-service';
 import { FormattingService } from './services/formatting-service';
+import { Logger } from './services/logger';
 import { PreviewService } from './services/preview-service';
 import { StateService } from './services/state-service';
 import { ValidationService } from './services/validation-service';
 import { TitleBarController } from './ui/title-bar-controller';
+import { t } from './utils/l10n';
 
+/**
+ * Format a configuration inspection result for display in the output channel.
+ *
+ * Transforms the VS Code configuration inspection object into a human-readable
+ * string showing values at each scope level (default, user, workspace, folder).
+ *
+ * @param inspect - The configuration inspection result from VS Code
+ * @returns A formatted string showing the value at each defined scope
+ *
+ * @example
+ * // Returns: "default=true | user=false"
+ * formatInspectValue({ defaultValue: true, globalValue: false });
+ *
+ * @internal
+ */
 const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
   if (!inspect) {
     return 'unavailable';
@@ -42,18 +76,46 @@ const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
     .join(' | ');
 };
 
+/**
+ * Activate the Markdown Preview extension.
+ *
+ * This is the main entry point called by VS Code when the extension is activated.
+ * Activation occurs when a markdown file is opened (via `onLanguage:markdown`).
+ *
+ * The function performs the following setup:
+ * 1. Creates all service instances with proper dependency injection
+ * 2. Registers command handlers for mode switching and formatting
+ * 3. Sets up configuration change listeners
+ * 4. Initializes the file handler and UI controllers
+ *
+ * All disposables are registered with the extension context to ensure proper
+ * cleanup when the extension is deactivated.
+ *
+ * @param context - Extension activation context provided by VS Code, used for
+ *                  state persistence and disposable management
+ *
+ * @example
+ * // Called automatically by VS Code, not intended for direct invocation
+ * // Activation event in package.json: "onLanguage:markdown"
+ */
 export function activate(context: vscode.ExtensionContext): void {
   const disposables: vscode.Disposable[] = [];
+
+  // Core services are shared across commands for consistent state management.
+  // The service layer follows a dependency injection pattern where each service
+  // receives its dependencies through the constructor.
   const stateService = new StateService();
   const configService = new ConfigService();
-  const outputChannel = vscode.window.createOutputChannel('Markdown Preview');
+  const outputChannel = vscode.window.createOutputChannel(t('Markdown Reader'));
+  const logger = new Logger(outputChannel);
   const validationService = new ValidationService();
   const formattingService = new FormattingService();
   const previewService = new PreviewService(
     stateService,
     configService,
     validationService,
-    context.workspaceState
+    context.workspaceState,
+    logger
   );
 
   const fileHandler = new MarkdownFileHandler(
@@ -61,35 +123,31 @@ export function activate(context: vscode.ExtensionContext): void {
     stateService,
     configService,
     validationService,
-    context.globalState
+    context.globalState,
+    logger
   );
   const titleBarController = new TitleBarController(stateService);
 
-  const updateEnabledContext = (resource?: vscode.Uri): Thenable<unknown> =>
-    vscode.commands.executeCommand(
-      'setContext',
-      'markdownReader.enabled',
-      configService.getEnabled(resource)
-    );
+  logger.info(t('Markdown Preview activated.'));
 
   const logConfigInspection = (resource?: vscode.Uri): void => {
     const inspection = configService.inspect(resource);
     outputChannel.clear();
-    outputChannel.appendLine('Markdown Preview configuration');
-    outputChannel.appendLine(`Resource: ${resource?.toString() ?? 'global'}`);
+    outputChannel.appendLine(t('Markdown Reader configuration'));
     outputChannel.appendLine(
-      `enabled: ${formatInspectValue(inspection.enabled)}`
+      t('Resource: {0}', resource?.toString() ?? 'global')
     );
     outputChannel.appendLine(
-      `excludePatterns: ${formatInspectValue(inspection.excludePatterns)}`
+      t('enabled: {0}', formatInspectValue(inspection.enabled))
     );
     outputChannel.appendLine(
-      `maxFileSize: ${formatInspectValue(inspection.maxFileSize)}`
+      t('excludePatterns: {0}', formatInspectValue(inspection.excludePatterns))
+    );
+    outputChannel.appendLine(
+      t('maxFileSize: {0}', formatInspectValue(inspection.maxFileSize))
     );
     outputChannel.show(true);
   };
-
-  void updateEnabledContext(vscode.window.activeTextEditor?.document.uri);
 
   fileHandler.register();
   titleBarController.register();
@@ -112,6 +170,12 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
+      logger.info(
+        t(
+          'Configuration changed; reloading settings for {0}.',
+          resource?.toString() ?? 'global'
+        )
+      );
       configService.clearCache();
 
       if (affectsGlobal) {
@@ -125,8 +189,6 @@ export function activate(context: vscode.ExtensionContext): void {
       if (affectsResource) {
         configService.reload(resource);
       }
-
-      void updateEnabledContext(resource);
     }),
     vscode.commands.registerCommand('markdownReader.inspectConfiguration', () =>
       logConfigInspection(vscode.window.activeTextEditor?.document.uri)
@@ -180,6 +242,11 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(...disposables);
 }
 
+/**
+ * Deactivate the extension.
+ * @returns void
+ * @throws No errors expected.
+ */
 export function deactivate(): void {
   // No-op.
 }

@@ -48,7 +48,7 @@ jobs:
         run: xvfb-run -a npm run coverage
 
       - name: VS Code integration tests
-        run: xvfb-run -a npm run test:integration
+        run: xvfb-run -a npm test
 
       - name: No-telemetry guard
         run: npm run check:no-telemetry

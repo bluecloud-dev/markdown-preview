@@ -1,0 +1,16 @@
+const os = require('os');
+
+const original = os.cpus.bind(os);
+os.cpus = () => {
+  const cpus = original();
+  if (Array.isArray(cpus) && cpus.length > 0) {
+    return cpus;
+  }
+  return [
+    {
+      model: 'unknown',
+      speed: 0,
+      times: { user: 0, nice: 0, sys: 0, idle: 0, irq: 0 },
+    },
+  ];
+};

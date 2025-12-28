@@ -31,6 +31,12 @@ describe('Command registration', () => {
     expect(commands).to.include('markdownReader.toggleEditMode');
   });
 
+  it('exposes native markdown preview commands', async () => {
+    const commands = await vscode.commands.getCommands(true);
+    expect(commands).to.include('markdown.showPreview');
+    expect(commands).to.include('markdown.showPreviewToSide');
+  });
+
   it('defines keyboard shortcuts for edit mode and formatting', () => {
     const keybindings = loadPackageJsonKeybindings();
 

@@ -34,6 +34,63 @@ This guide helps developers get started implementing the Markdown Reader extensi
 
 ---
 
+## Manual Acceptance Checklist (US1–US6 + Edge Cases)
+
+Run these checks in the Extension Development Host to validate user stories, edge cases, error paths, and accessibility behavior.
+
+### US1: Preview by Default
+- [ ] Open a `.md` file from Explorer → preview opens automatically
+- [ ] Quick Open (`Ctrl+P`) a `.md` file → preview opens automatically
+- [ ] Go to Definition into a `.md` file → preview opens automatically
+- [ ] Disable `markdownReader.enabled` → file opens in editor
+- [ ] Open a large file (>1MB) → prompt appears with opt-in preview
+
+### US2: Edit Mode
+- [ ] Run **Enter Edit Mode** → split view (editor left, preview right)
+- [ ] Click **Done (Exit Edit Mode)** → preview-only
+- [ ] Toggle with `Ctrl+Shift+V` / `Cmd+Shift+V` → mode switches
+- [ ] Cursor restores to last position when re-entering edit mode
+
+### US3: Toolbar Formatting
+- [ ] Bold/Italic/Strikethrough wrap selection
+- [ ] Bullet/Numbered list toggles current line prefix
+- [ ] Inline code / code block insert correctly
+- [ ] Link prompt inserts `[text](url)`
+- [ ] Heading 1/2/3 toggle prefixes
+
+### US4: Context Menu Formatting
+- [ ] Right-click in edit mode → **Format** menu appears
+- [ ] Heading + Code submenus appear and execute commands
+
+### US5: Keyboard Shortcuts
+- [ ] Bold (`Ctrl+B` / `Cmd+B`) in edit mode
+- [ ] Italic (`Ctrl+I` / `Cmd+I`) in edit mode
+- [ ] Toggle edit mode (`Ctrl+Shift+V` / `Cmd+Shift+V`)
+
+### US6: Configuration
+- [ ] `excludePatterns` prevents auto-preview in matching paths
+- [ ] `maxFileSize` blocks auto-preview and prompts
+
+### Edge Cases
+- [ ] Untitled markdown opens in edit mode
+- [ ] Diff view (`git:` or `diff:`) is ignored
+- [ ] Binary file shows error and stays in editor
+- [ ] Conflict markers open in edit mode
+
+### Error Handling + Observability
+- [ ] Preview failure shows **Open in Editor** action
+- [ ] Output channel logs warnings/errors
+- [ ] State changes show transient status bar messages
+
+### Accessibility & Keyboard Navigation
+- [ ] Use **Toggle Tab Key Moves Focus** (Command Palette) to enable UI tabbing
+- [ ] Tab moves focus to the first toolbar button
+- [ ] Shift+Tab moves focus backward
+- [ ] Enter/Space activates toolbar buttons
+- [ ] Escape returns focus to the text editor
+
+---
+
 ## Project Setup
 
 ### 1. Initialize Extension

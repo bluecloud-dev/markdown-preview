@@ -7,7 +7,12 @@ async function main(): Promise<void> {
   try {
     // Clear environment variables that cause issues with Electron on macOS
     delete process.env.ELECTRON_RUN_AS_NODE;
-    delete process.env.NODE_OPTIONS;
+    const isCoverageRun = Boolean(
+      process.env.NYC_PROCESS_ID || process.env.NYC_CONFIG || process.env.NYC_COVERAGE
+    );
+    if (!isCoverageRun) {
+      delete process.env.NODE_OPTIONS;
+    }
 
     const extensionDevelopmentPath = path.resolve(__dirname, '..', '..');
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
@@ -31,7 +36,7 @@ async function main(): Promise<void> {
         env: {
           ...process.env,
           ELECTRON_RUN_AS_NODE: undefined,
-          NODE_OPTIONS: undefined,
+          NODE_OPTIONS: isCoverageRun ? process.env.NODE_OPTIONS : undefined,
         },
       }
     );

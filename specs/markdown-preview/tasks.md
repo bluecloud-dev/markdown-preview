@@ -346,16 +346,16 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 
 ### Test Infrastructure
 
-- [ ] T104 Verify VS Code test runner wiring in `tests/run-test.ts` works (should already exist from T001; no new file creation)
-- [ ] T105 Verify `npm test` scripts run locally and in CI
+- [x] T104 Verify VS Code test runner wiring in `tests/run-test.ts` works (should already exist from T001; no new file creation)
+- [x] T105 Verify `npm test` scripts run locally and in CI
 
 ### Coverage & Quality
 
-- [ ] T106 Add integration tests for remaining edge cases (untitled, diff views, binary files) not already covered
-- [ ] T136 [P] Add tests for error handling + observability + announcements (preview failure → [Open in Editor], Output Channel logging, state-change announcements) (FR-046, FR-049, FR-052)
-- [ ] T107 Verify `markdown.showPreview` and `markdown.showPreviewToSide` commands work correctly after extension activation
-- [ ] T108 Add performance validation: measure SC-001 (<1s file open) via integration test timer, SC-002 (<500ms mode switch) via integration test timer, SC-004 (<100ms formatting) via unit test timer, SC-005 (<50ms startup) via VS Code Developer: Startup Performance command or extension activation event timing
-- [ ] T109 Run full test suite and ensure all tests pass with >=80% coverage
+- [x] T106 Add integration tests for remaining edge cases (untitled, diff views, binary files) not already covered
+- [x] T136 [P] Add tests for error handling + observability + announcements (preview failure → [Open in Editor], Output Channel logging, state-change announcements) (FR-046, FR-049, FR-052)
+- [x] T107 Verify `markdown.showPreview` and `markdown.showPreviewToSide` commands work correctly after extension activation
+- [x] T108 Add performance validation: measure SC-001 (<1s file open) via integration test timer, SC-002 (<500ms mode switch) via integration test timer, SC-004 (<100ms formatting) via unit test timer, SC-005 (<50ms startup) via VS Code Developer: Startup Performance command or extension activation event timing
+- [x] T109 Run full test suite and ensure all tests pass with >=80% coverage
 
 ---
 
@@ -363,32 +363,32 @@ US3 (Formatting Toolbar) [P1] (v0.2.0)
 
 ### Edge Cases
 
-- [ ] T110 [P] Handle new untitled markdown files: open in edit mode (FR-039)
-- [ ] T111 [P] Handle diff views: do not intercept (FR-040)
-- [ ] T112 [P] Ensure each open file maintains independent edit/preview state (FR-042)
-- [ ] T113 [P] Handle git conflict markers (detect `<<<<<<<`, `=======`, `>>>>>>>` patterns): skip auto-preview and open in edit mode to allow conflict resolution
-- [ ] T137 [P] Clean up per-file state on document close and handle external deletion gracefully (no crashes; state removed when document closes) (FR-047)
+- [x] T110 [P] Handle new untitled markdown files: open in edit mode (FR-039)
+- [x] T111 [P] Handle diff views: do not intercept (FR-040)
+- [x] T112 [P] Ensure each open file maintains independent edit/preview state (FR-042)
+- [x] T113 [P] Handle git conflict markers (detect `<<<<<<<`, `=======`, `>>>>>>>` patterns): skip auto-preview and open in edit mode to allow conflict resolution
+- [x] T137 [P] Clean up per-file state on document close and handle external deletion gracefully (no crashes; state removed when document closes) (FR-047)
 
 ### Accessibility
 
-- [ ] T114 Add ARIA labels to all UI elements (toolbar buttons, Done button) for accessibility (NFR-009)
-- [ ] T115 Ensure keyboard navigation works per FR-050 (Tab/Shift+Tab/Enter/Escape/Ctrl+Shift+V) and add manual checklist coverage; localize any labels/tooltips via `vscode.l10n` (FR-050, FR-052)
-- [ ] T135 Implement state-change announcements via `vscode.window.setStatusBarMessage` for edit/preview mode transitions and other user-visible state changes; localize strings via `vscode.l10n` (FR-052)
+- [x] T114 Add ARIA labels to all UI elements (toolbar buttons, Done button) for accessibility (NFR-009)
+- [x] T115 Ensure keyboard navigation works per FR-050 (Tab/Shift+Tab/Enter/Escape/Ctrl+Shift+V) and add manual checklist coverage; localize any labels/tooltips via `vscode.l10n` (FR-050, FR-052)
+- [x] T135 Implement state-change announcements via `vscode.window.setStatusBarMessage` for edit/preview mode transitions and other user-visible state changes; localize strings via `vscode.l10n` (FR-052)
 
 ### Documentation
 
-- [ ] T116 [P] Add JSDoc comments to all public functions (NFR-008)
-- [ ] T117 [P] Release closeout (v1.0.0): update README.md with installation, feature overview + screenshots/GIFs, keyboard shortcuts table, configuration options table, known limitations, contributing guide link, and license; ensure Features/Commands list only released functionality (no milestone/version mentions) and add a README "Changelog" section linking to CHANGELOG.md
-- [ ] T118 [P] Release closeout (v1.0.0): update CHANGELOG.md following Keep a Changelog format
+- [x] T116 [P] Add JSDoc comments to all public functions (NFR-008)
+- [x] T117 [P] Release closeout (v1.0.0): update README.md with installation, feature overview + screenshots/GIFs, keyboard shortcuts table, configuration options table, known limitations, contributing guide link, and license; ensure Features/Commands list only released functionality (no milestone/version mentions) and add a README "Changelog" section linking to CHANGELOG.md
+- [x] T118 [P] Release closeout (v1.0.0): update CHANGELOG.md following Keep a Changelog format
 
 ### Marketplace Readiness
 
-- [ ] T119 Add extension icon (128x128 PNG) and marketplace metadata in package.json (FR-043)
-- [ ] T120 Add categories ["Other"], keywords, repository field (GitHub URL), license (MIT)
-- [ ] T121 Performance optimization: debounce rapid events in MarkdownFileHandler
-- [ ] T122 Implement error handling + observability: create Output Channel "Markdown Reader" and log failures/conflicts; implement preview-failure UX with [Open in Editor]; no silent failures; localize user-facing strings via `vscode.l10n` (FR-046, FR-049, FR-052)
-- [ ] T123 Validate against quickstart.md scenarios (US1-US6 + edge cases + error paths + accessibility announcements); confirm behavior matches spec acceptance scenarios
-- [ ] T124 Build and package extension with `vsce package`
+- [x] T119 Add extension icon (128x128 PNG) and marketplace metadata in package.json (FR-043)
+- [x] T120 Add categories ["Other"], keywords, repository field (GitHub URL), license (MIT)
+- [x] T121 Performance optimization: debounce rapid events in MarkdownFileHandler
+- [x] T122 Implement error handling + observability: create Output Channel "Markdown Reader" and log failures/conflicts; implement preview-failure UX with [Open in Editor]; no silent failures; localize user-facing strings via `vscode.l10n` (FR-046, FR-049, FR-052)
+- [x] T123 Validate against quickstart.md scenarios (US1-US6 + edge cases + error paths + accessibility announcements); confirm behavior matches spec acceptance scenarios
+- [x] T124 Build and package extension with `vsce package`
 
 ---
 

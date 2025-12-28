@@ -3,69 +3,39 @@ import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { FormattingService } from '../../src/services/formatting-service';
 
-type EditOperation =
-  | { type: 'insert'; position: vscode.Position; text: string }
-  | { type: 'replace'; range: vscode.Range; text: string };
+const isWordCharacter = (character: string): boolean => /\w/.test(character);
 
-const createEditor = (content: string, selection: vscode.Selection): {
-  editor: vscode.TextEditor;
-  getText: () => string;
-} => {
-  let text = content;
+const createEditor = (initialText: string) => {
+  let text = initialText;
 
-  const getLines = (): string[] => text.split('\n');
-
-  const offsetAt = (position: vscode.Position): number => {
-    const lines = getLines();
-    let offset = 0;
-    for (const [lineIndex, lineText] of lines.entries()) {
-      if (lineIndex >= position.line) {
-        break;
-      }
-      offset += lineText.length + 1;
-    }
-    return offset + position.character;
-  };
+  const getLines = () => text.split('\n');
 
   const positionAt = (offset: number): vscode.Position => {
-    const lines = getLines();
     let remaining = offset;
-    for (const [lineIndex, lineText] of lines.entries()) {
+    for (const [lineIndex, lineText] of getLines().entries()) {
       const lineLength = lineText.length;
       if (remaining <= lineLength) {
         return new vscode.Position(lineIndex, remaining);
       }
       remaining -= lineLength + 1;
     }
-    const lastLine = Math.max(lines.length - 1, 0);
-    return new vscode.Position(lastLine, lines[lastLine]?.length ?? 0);
-  };
-
-  const getWordRangeAtPosition = (
-    position: vscode.Position
-  ): vscode.Range | undefined => {
     const lines = getLines();
-    const lineText = lines[position.line] ?? '';
-    if (position.character > lineText.length) {
-      return undefined;
-    }
-    const regex = /\w+/g;
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(lineText))) {
-      const start = match.index;
-      const end = match.index + match[0].length;
-      if (position.character >= start && position.character <= end) {
-        return new vscode.Range(
-          new vscode.Position(position.line, start),
-          new vscode.Position(position.line, end)
-        );
-      }
-    }
-    return undefined;
+    const lastLineIndex = Math.max(lines.length - 1, 0);
+    const lastLineText = lines[lastLineIndex] ?? '';
+    return new vscode.Position(lastLineIndex, lastLineText.length);
   };
 
-  const document = {
-    getText: (range?: vscode.Range): string => {
+  const offsetAt = (position: vscode.Position): number => {
+    const lines = getLines();
+    let offset = 0;
+    for (const lineText of lines.slice(0, position.line)) {
+      offset += lineText.length + 1;
+    }
+    return offset + position.character;
+  };
+
+  const document: vscode.TextDocument = {
+    getText: (range?: vscode.Range) => {
       if (!range) {
         return text;
       }
@@ -73,61 +43,85 @@ const createEditor = (content: string, selection: vscode.Selection): {
       const end = offsetAt(range.end);
       return text.slice(start, end);
     },
-    lineAt: (line: number): { text: string; range: vscode.Range } => {
+    offsetAt,
+    positionAt,
+    lineAt: (line: number) => {
       const lines = getLines();
       const lineText = lines[line] ?? '';
-      const startOffset = offsetAt(new vscode.Position(line, 0));
+      let startOffset = 0;
+      for (const previousLineText of lines.slice(0, line)) {
+        startOffset += previousLineText.length + 1;
+      }
       const endOffset = startOffset + lineText.length;
       return {
         text: lineText,
         range: new vscode.Range(positionAt(startOffset), positionAt(endOffset)),
-      };
+      } as vscode.TextLine;
     },
-    positionAt,
-    offsetAt,
-    getWordRangeAtPosition,
-    languageId: 'markdown',
-  } as unknown as vscode.TextDocument;
+    getWordRangeAtPosition: (position: vscode.Position) => {
+      const offset = offsetAt(position);
+      if (offset < 0 || offset >= text.length) {
+        return;
+      }
+      const character = text[offset];
+      if (character === undefined || !isWordCharacter(character)) {
+        return;
+      }
+      let start = offset;
+      while (start > 0 && isWordCharacter(text[start - 1] ?? '')) {
+        start -= 1;
+      }
+      let end = offset;
+      while (end < text.length && isWordCharacter(text[end] ?? '')) {
+        end += 1;
+      }
+      return new vscode.Range(positionAt(start), positionAt(end));
+    },
+  } as vscode.TextDocument;
 
   const editor = {
     document,
-    selection,
-    edit: async (callback: (editBuilder: vscode.TextEditorEdit) => void): Promise<boolean> => {
-      const operations: EditOperation[] = [];
-      const editBuilder = {
-        insert: (position: vscode.Position, newText: string) => {
-          operations.push({ type: 'insert', position, text: newText });
-        },
+    selection: new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+    edit: async (callback: (builder: vscode.TextEditorEdit) => void) => {
+      const edits: Array<{
+        type: 'replace' | 'insert';
+        range?: vscode.Range;
+        position?: vscode.Position;
+        text: string;
+      }> = [];
+      const editBuilder: vscode.TextEditorEdit = {
         replace: (range: vscode.Range, newText: string) => {
-          operations.push({ type: 'replace', range, text: newText });
+          edits.push({ type: 'replace', range, text: newText });
+        },
+        insert: (position: vscode.Position, newText: string) => {
+          edits.push({ type: 'insert', position, text: newText });
         },
       } as vscode.TextEditorEdit;
 
       callback(editBuilder);
-      operations.sort((a, b) => {
-        const offsetA =
-          a.type === 'insert' ? offsetAt(a.position) : offsetAt(a.range.start);
-        const offsetB =
-          b.type === 'insert' ? offsetAt(b.position) : offsetAt(b.range.start);
-        return offsetB - offsetA;
-      });
 
-      for (const operation of operations) {
-        if (operation.type === 'insert') {
-          const start = offsetAt(operation.position);
-          text = `${text.slice(0, start)}${operation.text}${text.slice(start)}`;
-        } else {
-          const start = offsetAt(operation.range.start);
-          const end = offsetAt(operation.range.end);
-          text = `${text.slice(0, start)}${operation.text}${text.slice(end)}`;
+      for (const edit of edits) {
+        if (edit.type === 'replace' && edit.range) {
+          const start = offsetAt(edit.range.start);
+          const end = offsetAt(edit.range.end);
+          text = text.slice(0, start) + edit.text + text.slice(end);
+        }
+        if (edit.type === 'insert' && edit.position) {
+          const start = offsetAt(edit.position);
+          text = text.slice(0, start) + edit.text + text.slice(start);
         }
       }
-
       return true;
     },
   } as unknown as vscode.TextEditor;
 
-  return { editor, getText: () => text };
+  return {
+    editor,
+    getText: () => text,
+    setSelection: (start: number, end: number) => {
+      editor.selection = new vscode.Selection(positionAt(start), positionAt(end));
+    },
+  };
 };
 
 describe('FormattingService', () => {
@@ -135,74 +129,134 @@ describe('FormattingService', () => {
     sinon.restore();
   });
 
-  it('wraps selection with markers', async () => {
-    const service = new FormattingService();
-    const selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 5));
-    const { editor, getText } = createEditor('hello world', selection);
+  it('inserts placeholder text when selection is empty and no word exists', async () => {
+    const { editor, getText } = createEditor('');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
 
+    const service = new FormattingService();
     await service.wrapSelection(editor, '**', '**', 'bold text');
 
-    expect(getText()).to.equal('**hello** world');
-    expect(editor.selection.start.character).to.equal(2);
-    expect(editor.selection.end.character).to.equal(7);
+    expect(getText()).to.equal('**bold text**');
+    expect(editor.document.getText(editor.selection)).to.equal('bold text');
   });
 
-  it('wraps word under cursor when selection is empty', async () => {
-    const service = new FormattingService();
-    const selection = new vscode.Selection(new vscode.Position(0, 7), new vscode.Position(0, 7));
-    const { editor, getText } = createEditor('hello world', selection);
+  it('wraps selected content in fenced blocks', async () => {
+    const { editor, getText, setSelection } = createEditor('line1\nline2');
+    setSelection(0, 11);
 
+    const service = new FormattingService();
+    await service.wrapBlock(editor, '```', 'snippet');
+
+    expect(getText()).to.equal('```\nline1\nline2\n```');
+  });
+
+  it('inserts fenced block placeholder when current line is empty', async () => {
+    const { editor, getText } = createEditor('');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    const service = new FormattingService();
+    await service.wrapBlock(editor, '```', 'snippet');
+
+    expect(getText()).to.equal('```\nsnippet\n```');
+  });
+
+  it('does nothing when link input is cancelled', async () => {
+    const { editor, getText } = createEditor('text');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    sinon.stub(vscode.window, 'showInputBox').resolves();
+
+    const service = new FormattingService();
+    await service.insertLink(editor);
+
+    expect(getText()).to.equal('text');
+  });
+
+  it('uses url placeholder when user keeps default https prefix', async () => {
+    const { editor, getText, setSelection } = createEditor('link');
+    setSelection(0, 4);
+
+    sinon.stub(vscode.window, 'showInputBox').resolves('https://');
+
+    const service = new FormattingService();
+    await service.insertLink(editor);
+
+    expect(getText()).to.equal('[link](url)');
+  });
+
+  it('inserts link with default text when no selection exists', async () => {
+    const { editor, getText } = createEditor('');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    sinon.stub(vscode.window, 'showInputBox').resolves('https://example.com');
+
+    const service = new FormattingService();
+    await service.insertLink(editor);
+
+    expect(getText()).to.equal('[text](https://example.com)');
+  });
+
+  it('wraps selected text with inline markers', async () => {
+    const { editor, getText, setSelection } = createEditor('hello');
+    setSelection(0, 5);
+
+    const service = new FormattingService();
     await service.wrapSelection(editor, '**', '**', 'bold text');
 
-    expect(getText()).to.equal('hello **world**');
-    expect(editor.selection.start.character).to.equal(8);
-    expect(editor.selection.end.character).to.equal(13);
+    expect(getText()).to.equal('**hello**');
+    expect(editor.document.getText(editor.selection)).to.equal('hello');
   });
 
-  it('inserts placeholder when no word exists', async () => {
+  it('wraps the word at the cursor when selection is empty', async () => {
+    const { editor, getText } = createEditor('hello world');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 1), new vscode.Position(0, 1));
+
     const service = new FormattingService();
-    const selection = new vscode.Selection(new vscode.Position(0, 6), new vscode.Position(0, 6));
-    const { editor, getText } = createEditor('hello ', selection);
+    await service.wrapSelection(editor, '_', '_', 'italic');
 
-    await service.wrapSelection(editor, '**', '**', 'bold text');
-
-    expect(getText()).to.equal('hello **bold text**');
-    expect(editor.selection.start.character).to.equal(8);
-    expect(editor.selection.end.character).to.equal(17);
+    expect(getText()).to.equal('_hello_ world');
   });
 
-  it('toggles line prefixes', async () => {
-    const service = new FormattingService();
-    const selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
-    const { editor, getText } = createEditor('item', selection);
+  it('toggles line prefixes across selections', async () => {
+    const { editor, getText } = createEditor('alpha\n- beta');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(1, 6));
 
+    const service = new FormattingService();
     await service.toggleLinePrefix(editor, '- ');
-    expect(getText()).to.equal('- item');
 
-    await service.toggleLinePrefix(editor, '- ');
-    expect(getText()).to.equal('item');
+    expect(getText()).to.equal('- alpha\nbeta');
   });
 
-  it('wraps selection in code blocks', async () => {
-    const service = new FormattingService();
-    const selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 4));
-    const { editor, getText } = createEditor('code', selection);
+  it('toggles line prefix on the current line when selection is empty', async () => {
+    const { editor, getText } = createEditor('alpha');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
 
-    await service.wrapBlock(editor, '```', 'code');
+    const service = new FormattingService();
+    await service.toggleLinePrefix(editor, '- ');
+
+    expect(getText()).to.equal('- alpha');
+  });
+
+  it('wraps non-empty lines in fenced blocks', async () => {
+    const { editor, getText } = createEditor('code');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    const service = new FormattingService();
+    await service.wrapBlock(editor, '```', 'snippet');
 
     expect(getText()).to.equal('```\ncode\n```');
   });
 
-  it('inserts link and selects the url', async () => {
-    const service = new FormattingService();
-    const selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
-    const { editor, getText } = createEditor('', selection);
+  it('inserts markdown links from input', async () => {
+    const { editor, getText, setSelection } = createEditor('link');
+    setSelection(0, 4);
 
     sinon.stub(vscode.window, 'showInputBox').resolves('https://example.com');
+
+    const service = new FormattingService();
     await service.insertLink(editor);
 
-    expect(getText()).to.equal('[text](https://example.com)');
-    const selected = editor.document.getText(editor.selection);
-    expect(selected).to.equal('https://example.com');
+    expect(getText()).to.equal('[link](https://example.com)');
+    expect(editor.document.getText(editor.selection)).to.equal('https://example.com');
   });
 });

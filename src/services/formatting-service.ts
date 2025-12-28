@@ -1,7 +1,53 @@
+/**
+ * @fileoverview Text formatting service for markdown editing operations.
+ *
+ * This service provides the core text transformation logic for markdown formatting:
+ * - Inline formatting (bold, italic, strikethrough, code)
+ * - Line prefix toggling (lists, headings)
+ * - Block formatting (code blocks)
+ * - Link insertion with URL prompts
+ *
+ * All operations use VS Code's native TextEditorEdit API for reliable undo/redo
+ * support. The service handles both selected text and empty selections by using
+ * the word under cursor or inserting placeholder text.
+ *
+ * @module services/formatting-service
+ */
+
 import * as vscode from 'vscode';
 import { t } from '../utils/l10n';
 
+/**
+ * Service for applying markdown formatting to text in the editor.
+ *
+ * This service implements the formatting logic required by the toolbar buttons,
+ * context menu, and keyboard shortcuts. It ensures consistent behavior across
+ * all formatting entry points.
+ *
+ * @example
+ * ```typescript
+ * const formattingService = new FormattingService();
+ *
+ * // Wrap selection with bold markers
+ * await formattingService.wrapSelection(editor, '**', '**', 'bold text');
+ *
+ * // Toggle bullet list on current line
+ * await formattingService.toggleLinePrefix(editor, '- ');
+ *
+ * // Insert a link with URL prompt
+ * await formattingService.insertLink(editor);
+ * ```
+ */
 export class FormattingService {
+  /**
+   * Wrap a selection (or word at cursor) with prefix and suffix markers.
+   * @param editor Active text editor.
+   * @param prefix Marker prefix.
+   * @param suffix Marker suffix.
+   * @param placeholder Placeholder text for empty selections.
+   * @returns Promise resolved when the edit completes.
+   * @throws Propagates VS Code edit errors.
+   */
   async wrapSelection(
     editor: vscode.TextEditor,
     prefix: string,
@@ -33,6 +79,13 @@ export class FormattingService {
     editor.selection = new vscode.Selection(selectionStart, selectionEnd);
   }
 
+  /**
+   * Toggle a line prefix across the selected lines.
+   * @param editor Active text editor.
+   * @param prefix Prefix to toggle.
+   * @returns Promise resolved when the edit completes.
+   * @throws Propagates VS Code edit errors.
+   */
   async toggleLinePrefix(editor: vscode.TextEditor, prefix: string): Promise<void> {
     const document = editor.document;
     const selection = editor.selection;
@@ -55,6 +108,14 @@ export class FormattingService {
     });
   }
 
+  /**
+   * Wrap a selection or current line inside a fenced block.
+   * @param editor Active text editor.
+   * @param fence Fence marker (for example, ```).
+   * @param placeholder Placeholder text when no selection exists.
+   * @returns Promise resolved when the edit completes.
+   * @throws Propagates VS Code edit errors.
+   */
   async wrapBlock(
     editor: vscode.TextEditor,
     fence: string,
@@ -97,6 +158,12 @@ export class FormattingService {
     editor.selection = new vscode.Selection(selectionStart, selectionEnd);
   }
 
+  /**
+   * Insert a markdown link using a user-provided URL.
+   * @param editor Active text editor.
+   * @returns Promise resolved when the edit completes.
+   * @throws Propagates VS Code UI or edit errors.
+   */
   async insertLink(editor: vscode.TextEditor): Promise<void> {
     const document = editor.document;
     const selection = editor.selection;

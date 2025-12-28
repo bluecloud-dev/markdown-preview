@@ -7,6 +7,7 @@ import { ValidationService } from '../../src/services/validation-service';
 import { toggleEditMode } from '../../src/commands/mode-commands';
 import { ViewMode } from '../../src/types/state';
 import { MarkdownFileHandler } from '../../src/handlers/markdown-file-handler';
+import { Logger } from '../../src/services/logger';
 
 const createMemento = (): vscode.Memento => {
   const store = new Map<string, unknown>();
@@ -23,6 +24,14 @@ const createMemento = (): vscode.Memento => {
     keys: () => [...store.keys()],
   } as vscode.Memento;
 };
+
+const createLogger = (): Logger =>
+  ({
+    info: sinon.stub(),
+    warn: sinon.stub(),
+    error: sinon.stub(),
+    show: sinon.stub(),
+  }) as unknown as Logger;
 
 describe('Edit mode integration', () => {
   beforeEach(() => {
@@ -49,7 +58,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const editor = {
@@ -85,7 +95,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const editor = {
@@ -116,7 +127,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const executeStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
@@ -167,7 +179,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const uri = vscode.Uri.file('/tmp/edit.md');
@@ -204,7 +217,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const uri = vscode.Uri.file('/tmp/edit.md');
@@ -238,7 +252,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const editor = {
@@ -271,7 +286,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const saveStub = sinon.stub().resolves(true);
@@ -315,7 +331,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -368,7 +385,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const uri = vscode.Uri.file('/tmp/manual-open.md');
@@ -385,7 +403,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const document = {
@@ -394,8 +413,8 @@ describe('Edit mode integration', () => {
       isUntitled: false,
     } as vscode.TextDocument;
 
-    await (handler as unknown as { handleDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
-      .handleDocumentOpen(document);
+    await (handler as unknown as { processDocumentOpen: (d: vscode.TextDocument) => Promise<void> })
+      .processDocumentOpen(document);
 
     expect(stateService.getState(uri).mode).to.equal(ViewMode.Edit);
     expect(executeStub.calledWith('markdown.showPreview')).to.equal(false);
@@ -418,7 +437,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const uri = vscode.Uri.file('/tmp/close-editor.md');
@@ -430,7 +450,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     await (handler as unknown as { handleClosedTabs: (t: readonly vscode.Tab[]) => Promise<void> })
@@ -456,7 +477,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     const uri = vscode.Uri.file('/tmp/close-preview.md');
@@ -468,7 +490,8 @@ describe('Edit mode integration', () => {
       stateService,
       configService,
       validationService,
-      createMemento()
+      createMemento(),
+      createLogger()
     );
 
     await (handler as unknown as { handleClosedTabs: (t: readonly vscode.Tab[]) => Promise<void> })
