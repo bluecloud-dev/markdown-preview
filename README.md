@@ -1,18 +1,18 @@
 # Markdown Preview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ayhammouda/markdown-preview/main/assets/hero.png" alt="Markdown Preview hero banner" width="840">
+  <img src="https://raw.githubusercontent.com/bluecloud-dev/markdown-preview/main/assets/hero.png" alt="Markdown Preview hero banner" width="840">
 </p>
 
 <p align="center">
-  <a href="https://github.com/ayhammouda/markdown-preview/actions/workflows/ci.yml">
-    <img src="https://github.com/ayhammouda/markdown-preview/actions/workflows/ci.yml/badge.svg" alt="CI status">
+  <a href="https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml">
+    <img src="https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml/badge.svg" alt="CI status">
   </a>
-  <a href="https://github.com/ayhammouda/markdown-preview/releases">
-    <img src="https://img.shields.io/github/v/release/ayhammouda/markdown-preview?include_prereleases&label=release" alt="Latest release">
+  <a href="https://github.com/bluecloud-dev/markdown-preview/releases">
+    <img src="https://img.shields.io/github/v/release/bluecloud-dev/markdown-preview?include_prereleases&label=release" alt="Latest release">
   </a>
   <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/ayhammouda/markdown-preview" alt="License">
+    <img src="https://img.shields.io/github/license/bluecloud-dev/markdown-preview" alt="License">
   </a>
 </p>
 
@@ -52,7 +52,7 @@ Preview-by-default, edit mode, formatting toolbar actions, context menu formatti
 Markdown Preview keeps markdown content readable by default and gives you a fast split view when you need to edit.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ayhammouda/markdown-preview/main/assets/hero.png" alt="Markdown Preview split view" width="840">
+  <img src="https://raw.githubusercontent.com/bluecloud-dev/markdown-preview/main/assets/hero.png" alt="Markdown Preview split view" width="840">
 </p>
 
 ## Features
@@ -159,7 +159,7 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ```sh
-git clone https://github.com/ayhammouda/markdown-preview.git
+git clone https://github.com/bluecloud-dev/markdown-preview.git
 cd markdown-preview
 npm ci
 npm test
@@ -179,7 +179,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 ---
 
 <p align="center">
-  <a href="https://github.com/ayhammouda/markdown-preview/issues">Report a Bug</a>
+  <a href="https://github.com/bluecloud-dev/markdown-preview/issues">Report a Bug</a>
   ·
-  <a href="https://github.com/ayhammouda/markdown-preview/issues">Request a Feature</a>
+  <a href="https://github.com/bluecloud-dev/markdown-preview/issues">Request a Feature</a>
 </p>

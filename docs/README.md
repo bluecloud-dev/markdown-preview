@@ -77,6 +77,6 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root for contribution g
 
 ## Need Help?
 
-- **Bugs:** [Open an issue](https://github.com/ayhammouda/markdown-preview/issues)
+- **Bugs:** [Open an issue](https://github.com/bluecloud-dev/markdown-preview/issues)
 - **Questions:** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) first
-- **Feature Requests:** [Open a feature request](https://github.com/ayhammouda/markdown-preview/issues/new?template=feature_request.md)
+- **Feature Requests:** [Open a feature request](https://github.com/bluecloud-dev/markdown-preview/issues/new?template=feature_request.md)

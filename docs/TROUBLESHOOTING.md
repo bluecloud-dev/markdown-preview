@@ -376,7 +376,7 @@ Collect this information:
 
 ### Where to report issues
 
-- **GitHub Issues:** [Open an issue](https://github.com/ayhammouda/markdown-preview/issues)
+- **GitHub Issues:** [Open an issue](https://github.com/bluecloud-dev/markdown-preview/issues)
 - **Feature Requests:** Use the "feature request" template
 
 ### Quick diagnostics

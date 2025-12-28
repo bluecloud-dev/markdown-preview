@@ -302,7 +302,7 @@ Ensure `package.json` has all required fields:
   "icon": "assets/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ayhammouda/markdown-preview"
+    "url": "https://github.com/bluecloud-dev/markdown-preview"
   },
   "categories": ["Other"],
   "keywords": [
