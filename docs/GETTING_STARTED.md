@@ -28,7 +28,7 @@ If you're familiar with VS Code extension development, here's the fast track:
 
 ```bash
 # Clone and setup
-git clone https://github.com/ayhammouda/markdown-preview.git
+git clone https://github.com/bluecloud-dev/markdown-preview.git
 cd markdown-preview
 npm ci
 npm run compile
@@ -44,7 +44,7 @@ Then open any `.md` file in the Extension Development Host window to verify it o
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/ayhammouda/markdown-preview.git
+git clone https://github.com/bluecloud-dev/markdown-preview.git
 cd markdown-preview
 ```
 
@@ -205,5 +205,5 @@ Now that your environment is set up:
 ## Need Help?
 
 - **Documentation questions:** Check the [docs/README.md](README.md) index
-- **Bugs or issues:** [Open an issue](https://github.com/ayhammouda/markdown-preview/issues)
+- **Bugs or issues:** [Open an issue](https://github.com/bluecloud-dev/markdown-preview/issues)
 - **Troubleshooting:** See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)

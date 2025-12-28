@@ -318,7 +318,7 @@ export class MarkdownFileHandler implements vscode.Disposable {
     if (selection === tutorialAction) {
       this.logger.info(t('Opening tutorial link.'));
       await vscode.env.openExternal(
-        vscode.Uri.parse('https://github.com/ayhammouda/markdown-preview#quick-start')
+        vscode.Uri.parse('https://github.com/bluecloud-dev/markdown-preview#quick-start')
       );
     }
 

@@ -38,7 +38,7 @@ Install these extensions for the best development experience:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/ayhammouda/markdown-preview.git
+git clone https://github.com/bluecloud-dev/markdown-preview.git
 cd markdown-preview
 ```
 
