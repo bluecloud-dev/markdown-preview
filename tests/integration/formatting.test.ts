@@ -180,7 +180,7 @@ describe('Formatting toolbar integration', () => {
       const entry = titleMenus.find((item) => item.command === command);
       expect(entry, `missing toolbar command ${command}`).to.not.equal(undefined);
       expect(entry?.when).to.include('markdownReader.editMode');
-      expect(entry?.when).to.include('resourceLangId == markdown');
+      expect(entry?.when).to.include('markdownReader.isMarkdown');
     }
   });
 
@@ -193,7 +193,7 @@ describe('Formatting toolbar integration', () => {
 
     expect(formatEntry, 'missing Format submenu entry').to.not.equal(undefined);
     expect(formatEntry?.when).to.include('markdownReader.editMode');
-    expect(formatEntry?.when).to.include('resourceLangId == markdown');
+    expect(formatEntry?.when).to.include('markdownReader.isMarkdown');
   });
 
   it('includes heading and code submenu items', () => {

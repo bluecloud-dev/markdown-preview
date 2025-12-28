@@ -25,7 +25,6 @@
     "url": "https://github.com/ayhammouda/markdown-preview.git"
   },
   "activationEvents": [
-    "onStartupFinished",
     "onLanguage:markdown"
   ],
   "main": "./out/extension.js",
@@ -36,7 +35,7 @@
         "title": "%command.markdownReader.enterEditMode.title%",
         "category": "%command.category%",
         "icon": "$(edit)",
-        "enablement": "config.markdownReader.enabled && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.enterEditMode.shortTitle%"
       },
       {
@@ -44,7 +43,7 @@
         "title": "%command.markdownReader.exitEditMode.title%",
         "category": "%command.category%",
         "icon": "$(check)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.exitEditMode.shortTitle%"
       },
       {
@@ -52,7 +51,7 @@
         "title": "%command.markdownReader.toggleEditMode.title%",
         "category": "%command.category%",
         "icon": "$(split-horizontal)",
-        "enablement": "config.markdownReader.enabled && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.toggleEditMode.shortTitle%"
       },
       {
@@ -60,7 +59,7 @@
         "title": "%command.markdownReader.inspectConfiguration.title%",
         "category": "%command.category%",
         "icon": "$(settings-gear)",
-        "enablement": "config.markdownReader.enabled && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.inspectConfiguration.shortTitle%"
       },
       {
@@ -68,7 +67,7 @@
         "title": "%command.markdownReader.formatBold.title%",
         "category": "%command.category%",
         "icon": "$(bold)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatBold.shortTitle%"
       },
       {
@@ -76,7 +75,7 @@
         "title": "%command.markdownReader.formatItalic.title%",
         "category": "%command.category%",
         "icon": "$(italic)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatItalic.shortTitle%"
       },
       {
@@ -84,7 +83,7 @@
         "title": "%command.markdownReader.formatStrikethrough.title%",
         "category": "%command.category%",
         "icon": "$(strikethrough)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatStrikethrough.shortTitle%"
       },
       {
@@ -92,7 +91,7 @@
         "title": "%command.markdownReader.formatBulletList.title%",
         "category": "%command.category%",
         "icon": "$(list-unordered)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatBulletList.shortTitle%"
       },
       {
@@ -100,7 +99,7 @@
         "title": "%command.markdownReader.formatNumberedList.title%",
         "category": "%command.category%",
         "icon": "$(list-ordered)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatNumberedList.shortTitle%"
       },
       {
@@ -108,7 +107,7 @@
         "title": "%command.markdownReader.formatInlineCode.title%",
         "category": "%command.category%",
         "icon": "$(code)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatInlineCode.shortTitle%"
       },
       {
@@ -116,7 +115,7 @@
         "title": "%command.markdownReader.formatCodeBlock.title%",
         "category": "%command.category%",
         "icon": "$(symbol-snippet)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatCodeBlock.shortTitle%"
       },
       {
@@ -124,7 +123,7 @@
         "title": "%command.markdownReader.formatLink.title%",
         "category": "%command.category%",
         "icon": "$(link)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatLink.shortTitle%"
       },
       {
@@ -132,7 +131,7 @@
         "title": "%command.markdownReader.formatHeading1.title%",
         "category": "%command.category%",
         "icon": "$(symbol-class)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatHeading1.shortTitle%"
       },
       {
@@ -140,7 +139,7 @@
         "title": "%command.markdownReader.formatHeading2.title%",
         "category": "%command.category%",
         "icon": "$(symbol-method)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatHeading2.shortTitle%"
       },
       {
@@ -148,7 +147,7 @@
         "title": "%command.markdownReader.formatHeading3.title%",
         "category": "%command.category%",
         "icon": "$(symbol-field)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatHeading3.shortTitle%"
       }
     ],
@@ -170,54 +169,54 @@
       "editor/title": [
         {
           "command": "markdownReader.exitEditMode",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@1"
         },
         {
           "command": "markdownReader.formatBold",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@2"
         },
         {
           "command": "markdownReader.formatItalic",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@3"
         },
         {
           "command": "markdownReader.formatStrikethrough",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@4"
         },
         {
           "command": "markdownReader.formatBulletList",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@5"
         },
         {
           "command": "markdownReader.formatNumberedList",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@6"
         },
         {
           "command": "markdownReader.formatInlineCode",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@7"
         },
         {
           "command": "markdownReader.formatCodeBlock",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@8"
         },
         {
           "command": "markdownReader.formatLink",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "navigation@9"
         }
       ],
       "editor/context": [
         {
           "submenu": "markdownReader.formatSubmenu",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && resourceLangId == markdown",
+          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
           "group": "1_modification"
         }
       ],
@@ -282,63 +281,63 @@
       "commandPalette": [
         {
           "command": "markdownReader.enterEditMode",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && !markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && !markdownReader.editMode"
         },
         {
           "command": "markdownReader.exitEditMode",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.toggleEditMode",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown"
         },
         {
           "command": "markdownReader.inspectConfiguration",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown"
         },
         {
           "command": "markdownReader.formatBold",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatItalic",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatStrikethrough",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatBulletList",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatNumberedList",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatInlineCode",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatCodeBlock",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatLink",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatHeading1",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatHeading2",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
           "command": "markdownReader.formatHeading3",
-          "when": "config.markdownReader.enabled && resourceLangId == markdown && markdownReader.editMode"
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         }
       ]
     },
@@ -347,7 +346,7 @@
         "command": "markdownReader.toggleEditMode",
         "key": "ctrl+shift+v",
         "mac": "cmd+shift+v",
-        "when": "config.markdownReader.enabled && resourceLangId == markdown"
+        "when": "config.markdownReader.enabled && markdownReader.isMarkdown"
       },
       {
         "command": "markdownReader.formatBold",

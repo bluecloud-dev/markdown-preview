@@ -93,7 +93,14 @@ const window = {
   onDidChangeActiveTextEditor: () => ({ dispose: () => {} }),
   tabGroups: {
     onDidChangeTabs: () => ({ dispose: () => {} }),
+    onDidChangeTabGroups: () => ({ dispose: () => {} }),
     all: [],
+    activeTabGroup: {
+      isActive: true,
+      viewColumn: 1,
+      activeTab: undefined,
+      tabs: [],
+    },
     close: async () => true,
   },
 };

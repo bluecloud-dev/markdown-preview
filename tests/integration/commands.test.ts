@@ -52,7 +52,7 @@ describe('Command registration', () => {
     expect(toggleEdit, 'missing toggleEditMode keybinding').to.not.equal(undefined);
     expect(toggleEdit?.key).to.equal('ctrl+shift+v');
     expect(toggleEdit?.mac).to.equal('cmd+shift+v');
-    expect(toggleEdit?.when).to.include('resourceLangId == markdown');
+    expect(toggleEdit?.when).to.include('markdownReader.isMarkdown');
 
     const boldBinding = keybindings.find(
       (binding) => binding.command === 'markdownReader.formatBold'

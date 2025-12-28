@@ -18,6 +18,8 @@ import * as vscode from 'vscode';
 import { StateService } from '../services/state-service';
 import { ViewMode } from '../types/state';
 
+const MARKDOWN_PREVIEW_VIEW_TYPE = 'vscode.markdown.preview.editor';
+
 /**
  * Controller for keeping VS Code context keys synchronized with extension state.
  *
@@ -53,7 +55,9 @@ export class TitleBarController implements vscode.Disposable {
    */
   register(): void {
     this.disposables.push(
-      vscode.window.onDidChangeActiveTextEditor(this.handleEditorChange.bind(this))
+      vscode.window.onDidChangeActiveTextEditor(this.handleEditorChange.bind(this)),
+      vscode.window.tabGroups.onDidChangeTabs(this.handleTabsChanged.bind(this)),
+      vscode.window.tabGroups.onDidChangeTabGroups(this.handleTabGroupsChanged.bind(this))
     );
     void this.updateContext(vscode.window.activeTextEditor);
   }
@@ -73,16 +77,65 @@ export class TitleBarController implements vscode.Disposable {
     void this.updateContext(editor);
   }
 
-  private async updateContext(editor: vscode.TextEditor | undefined): Promise<void> {
-    const isMarkdown = editor?.document.languageId === 'markdown';
-    await vscode.commands.executeCommand('setContext', 'markdownReader.isMarkdown', isMarkdown);
+  private handleTabsChanged(): void {
+    void this.updateContext();
+  }
 
-    if (!editor || !isMarkdown) {
-      await vscode.commands.executeCommand('setContext', 'markdownReader.editMode', false);
+  private handleTabGroupsChanged(): void {
+    void this.updateContext();
+  }
+
+  private getActiveMarkdownUri(editor: vscode.TextEditor | undefined): vscode.Uri | undefined {
+    if (editor?.document.languageId === 'markdown') {
+      return editor.document.uri;
+    }
+
+    const activeTab = vscode.window.tabGroups.activeTabGroup?.activeTab;
+    if (!activeTab) {
+      return undefined;
+    }
+
+    const input = activeTab.input;
+    if (
+      input instanceof vscode.TabInputCustom &&
+      input.viewType === MARKDOWN_PREVIEW_VIEW_TYPE
+    ) {
+      return input.uri;
+    }
+
+    if (input instanceof vscode.TabInputText) {
+      const documentItem = vscode.workspace.textDocuments.find(
+        (textDocument) => textDocument.uri.toString() === input.uri.toString()
+      );
+      if (documentItem?.languageId === 'markdown') {
+        return documentItem.uri;
+      }
+    }
+
+    return undefined;
+  }
+
+  private async updateContext(editor?: vscode.TextEditor): Promise<void> {
+    const markdownUri = this.getActiveMarkdownUri(
+      editor ?? vscode.window.activeTextEditor
+    );
+    const isMarkdown = markdownUri !== undefined;
+    await vscode.commands.executeCommand(
+      'setContext',
+      'markdownReader.isMarkdown',
+      isMarkdown
+    );
+
+    if (!markdownUri) {
+      await vscode.commands.executeCommand(
+        'setContext',
+        'markdownReader.editMode',
+        false
+      );
       return;
     }
 
-    const state = this.stateService.getExistingState(editor.document.uri);
+    const state = this.stateService.getExistingState(markdownUri);
     await vscode.commands.executeCommand(
       'setContext',
       'markdownReader.editMode',
