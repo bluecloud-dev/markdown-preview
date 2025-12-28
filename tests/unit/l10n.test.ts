@@ -1,5 +1,11 @@
-import { expect } from 'chai';
 import { t } from '../../src/utils/l10n';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 describe('l10n', () => {
   it('formats messages with placeholders', () => {

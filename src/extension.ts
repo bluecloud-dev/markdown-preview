@@ -8,8 +8,8 @@
  * - Setting up event listeners for configuration changes
  * - Managing the extension's disposables for proper cleanup
  *
- * The extension uses lazy activation via `onLanguage:markdown` to minimize
- * startup impact on VS Code.
+ * The extension activates on `onStartupFinished` to prime editor associations,
+ * and on `onLanguage:markdown` to handle preview behavior when markdown is opened.
  *
  * @module extension
  * @see {@link https://code.visualstudio.com/api/references/activation-events}
@@ -76,11 +76,213 @@ const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
     .join(' | ');
 };
 
+type EditorAssociationEntry = {
+  filenamePattern: string;
+  viewType: string;
+};
+
+type EditorAssociations = Record<string, string> | EditorAssociationEntry[];
+
+const MARKDOWN_ASSOCIATION_PATTERNS = ['*.md', '*.markdown'];
+const MARKDOWN_ASSOCIATION_VIEW = 'vscode.markdown.preview.editor';
+const MARKDOWN_ASSOCIATION_STATE_KEY = 'markdownReader.editorAssociationsAdded';
+
+type AssociationState = {
+  patterns: string[];
+};
+
+const matchesAssociationPattern = (pattern: string, candidate: string): boolean =>
+  candidate === pattern || candidate === `**/${pattern}`;
+
+const addMarkdownAssociation = (
+  current: unknown
+): { updated: boolean; value: EditorAssociations; addedPatterns: string[] } => {
+  if (Array.isArray(current)) {
+    const entries = current as EditorAssociationEntry[];
+    const addedPatterns: string[] = [];
+    const nextEntries = [...entries];
+    for (const pattern of MARKDOWN_ASSOCIATION_PATTERNS) {
+      const hasAssociation = entries.some((entry) =>
+        matchesAssociationPattern(pattern, entry.filenamePattern)
+      );
+      if (!hasAssociation) {
+        nextEntries.push({
+          filenamePattern: pattern,
+          viewType: MARKDOWN_ASSOCIATION_VIEW,
+        });
+        addedPatterns.push(pattern);
+      }
+    }
+    return {
+      updated: addedPatterns.length > 0,
+      value: nextEntries,
+      addedPatterns,
+    };
+  }
+
+  if (current && typeof current === 'object') {
+    const record = current as Record<string, string>;
+    const addedPatterns: string[] = [];
+    const nextRecord = { ...record };
+    for (const pattern of MARKDOWN_ASSOCIATION_PATTERNS) {
+      if (record[pattern] || record[`**/${pattern}`]) {
+        continue;
+      }
+      nextRecord[pattern] = MARKDOWN_ASSOCIATION_VIEW;
+      addedPatterns.push(pattern);
+    }
+    return {
+      updated: addedPatterns.length > 0,
+      value: nextRecord,
+      addedPatterns,
+    };
+  }
+
+  return {
+    updated: true,
+    value: Object.fromEntries(
+      MARKDOWN_ASSOCIATION_PATTERNS.map((pattern) => [
+        pattern,
+        MARKDOWN_ASSOCIATION_VIEW,
+      ])
+    ),
+    addedPatterns: [...MARKDOWN_ASSOCIATION_PATTERNS],
+  };
+};
+
+const removeMarkdownAssociation = (
+  current: unknown,
+  patterns: string[]
+): { updated: boolean; value: EditorAssociations; removedPatterns: string[] } => {
+  if (Array.isArray(current)) {
+    const entries = current as EditorAssociationEntry[];
+    const removedPatterns = new Set<string>();
+    const nextEntries = entries.filter((entry) => {
+      const match = patterns.find((pattern) =>
+        matchesAssociationPattern(pattern, entry.filenamePattern)
+      );
+      if (!match) {
+        return true;
+      }
+      if (entry.viewType !== MARKDOWN_ASSOCIATION_VIEW) {
+        return true;
+      }
+      removedPatterns.add(match);
+      return false;
+    });
+    return {
+      updated: removedPatterns.size > 0,
+      value: nextEntries,
+      removedPatterns: [...removedPatterns],
+    };
+  }
+
+  if (current && typeof current === 'object') {
+    const record = current as Record<string, string>;
+    const removedPatterns: string[] = [];
+    const nextRecord = { ...record };
+    for (const pattern of patterns) {
+      if (nextRecord[pattern] === MARKDOWN_ASSOCIATION_VIEW) {
+        delete nextRecord[pattern];
+        removedPatterns.push(pattern);
+      }
+      const nestedPattern = `**/${pattern}`;
+      if (nextRecord[nestedPattern] === MARKDOWN_ASSOCIATION_VIEW) {
+        delete nextRecord[nestedPattern];
+        removedPatterns.push(pattern);
+      }
+    }
+    return {
+      updated: removedPatterns.length > 0,
+      value: nextRecord,
+      removedPatterns,
+    };
+  }
+
+  return {
+    updated: false,
+    value: {},
+    removedPatterns: [],
+  };
+};
+
+const isAssociationsEmpty = (value: EditorAssociations): boolean => {
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+  return Object.keys(value).length === 0;
+};
+
+const syncMarkdownAssociations = async (
+  context: vscode.ExtensionContext,
+  configService: ConfigService,
+  logger: Logger
+): Promise<void> => {
+  const hasWorkspace =
+    (vscode.workspace.workspaceFolders?.length ?? 0) > 0 ||
+    vscode.workspace.workspaceFile !== undefined;
+  if (!hasWorkspace) {
+    return;
+  }
+
+  const config = configService.getConfig();
+  const shouldSet = config.enabled && config.editorAssociations;
+  const state = context.workspaceState.get<AssociationState | undefined>(
+    MARKDOWN_ASSOCIATION_STATE_KEY
+  );
+
+  try {
+    const workbenchConfig = vscode.workspace.getConfiguration('workbench');
+    const current = workbenchConfig.get<unknown>('editorAssociations');
+
+    if (!shouldSet) {
+      if (!state?.patterns?.length) {
+        return;
+      }
+      const { updated, value } = removeMarkdownAssociation(
+        current,
+        state.patterns
+      );
+      if (!updated) {
+        return;
+      }
+      await workbenchConfig.update(
+        'editorAssociations',
+        isAssociationsEmpty(value) ? undefined : value,
+        vscode.ConfigurationTarget.Workspace
+      );
+      await context.workspaceState.update(MARKDOWN_ASSOCIATION_STATE_KEY, void 0);
+      logger.info(t('Removed workspace editor association for markdown preview.'));
+      return;
+    }
+
+    const { updated, value, addedPatterns } = addMarkdownAssociation(current);
+    if (!updated) {
+      return;
+    }
+    await workbenchConfig.update(
+      'editorAssociations',
+      value,
+      vscode.ConfigurationTarget.Workspace
+    );
+    if (addedPatterns.length > 0) {
+      await context.workspaceState.update(MARKDOWN_ASSOCIATION_STATE_KEY, {
+        patterns: addedPatterns,
+      });
+    }
+    logger.info(t('Set workspace editor association for markdown preview.'));
+  } catch (error) {
+    logger.warn(t('Failed to update workspace editor association for markdown preview.'));
+    logger.error(t('Editor association update error.'), error);
+  }
+};
+
 /**
  * Activate the Markdown Preview extension.
  *
  * This is the main entry point called by VS Code when the extension is activated.
- * Activation occurs when a markdown file is opened (via `onLanguage:markdown`).
+ * Activation occurs after startup and when a markdown file is opened
+ * (via `onStartupFinished` and `onLanguage:markdown`).
  *
  * The function performs the following setup:
  * 1. Creates all service instances with proper dependency injection
@@ -96,7 +298,7 @@ const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
  *
  * @example
  * // Called automatically by VS Code, not intended for direct invocation
- * // Activation event in package.json: "onLanguage:markdown"
+ * // Activation events in package.json: "onStartupFinished", "onLanguage:markdown"
  */
 export function activate(context: vscode.ExtensionContext): void {
   const disposables: vscode.Disposable[] = [];
@@ -129,6 +331,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const titleBarController = new TitleBarController(stateService);
 
   logger.info(t('Markdown Preview activated.'));
+  void syncMarkdownAssociations(context, configService, logger);
 
   const logConfigInspection = (resource?: vscode.Uri): void => {
     const inspection = configService.inspect(resource);
@@ -145,6 +348,12 @@ export function activate(context: vscode.ExtensionContext): void {
     );
     outputChannel.appendLine(
       t('maxFileSize: {0}', formatInspectValue(inspection.maxFileSize))
+    );
+    outputChannel.appendLine(
+      t(
+        'editorAssociations: {0}',
+        formatInspectValue(inspection.editorAssociations)
+      )
     );
     outputChannel.show(true);
   };
@@ -189,6 +398,8 @@ export function activate(context: vscode.ExtensionContext): void {
       if (affectsResource) {
         configService.reload(resource);
       }
+
+      void syncMarkdownAssociations(context, configService, logger);
     }),
     vscode.commands.registerCommand('markdownReader.inspectConfiguration', () =>
       logConfigInspection(vscode.window.activeTextEditor?.document.uri)

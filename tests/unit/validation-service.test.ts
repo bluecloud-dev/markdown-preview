@@ -1,7 +1,13 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { ValidationService } from '../../src/services/validation-service';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 const createDocument = (text: string, options?: { scheme?: string; languageId?: string }) => {
   const lines = text.split('\n');

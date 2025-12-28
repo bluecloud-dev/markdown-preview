@@ -15,6 +15,8 @@ coverage/**
 .vscode-test/**
 node_modules/**
 scripts/**
+eslint.config.mjs
+tsconfig*.json
 
 # Specs and agent files
 specs/**
@@ -34,3 +36,10 @@ docs/**
 
 # Misc
 *.log
+image.png
+
+# Runtime dependencies needed by the packaged extension.
+!node_modules/
+!node_modules/minimatch/**
+!node_modules/brace-expansion/**
+!node_modules/balanced-match/**

@@ -1,7 +1,13 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { FormattingService } from '../../src/services/formatting-service';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 const isWordCharacter = (character: string): boolean => /\w/.test(character);
 

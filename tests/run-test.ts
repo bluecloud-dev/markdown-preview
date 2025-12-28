@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unicorn/no-process-exit, unicorn/prefer-module, unicorn/prefer-top-level-await, unicorn/import-style */
+/* eslint-disable no-console, unicorn/no-process-exit, unicorn/prefer-top-level-await, unicorn/import-style */
 import * as path from 'node:path';
 import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 import * as cp from 'node:child_process';

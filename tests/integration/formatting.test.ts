@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import {
@@ -9,6 +8,13 @@ import {
   formatStrikethrough,
 } from '../../src/commands/format-commands';
 import { FormattingService } from '../../src/services/formatting-service';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 type EditOperation =
   | { type: 'insert'; position: vscode.Position; text: string }

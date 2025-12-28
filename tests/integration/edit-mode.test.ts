@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { PreviewService } from '../../src/services/preview-service';
@@ -8,6 +7,13 @@ import { toggleEditMode } from '../../src/commands/mode-commands';
 import { ViewMode } from '../../src/types/state';
 import { MarkdownFileHandler } from '../../src/handlers/markdown-file-handler';
 import { Logger } from '../../src/services/logger';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 const createMemento = (): vscode.Memento => {
   const store = new Map<string, unknown>();

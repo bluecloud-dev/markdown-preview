@@ -1,8 +1,14 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { activate } from '../../src/extension';
 import { ConfigService } from '../../src/services/config-service';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 const createOutputChannel = (): vscode.LogOutputChannel => ({
   name: 'Markdown Reader',

@@ -1,12 +1,19 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { ConfigService } from '../../src/services/config-service';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 type ConfigurationOverrides = {
   enabled?: boolean;
   excludePatterns?: string[];
   maxFileSize?: number;
+  editorAssociations?: boolean;
 };
 
 const createConfiguration = (overrides?: ConfigurationOverrides): vscode.WorkspaceConfiguration => {
@@ -14,6 +21,7 @@ const createConfiguration = (overrides?: ConfigurationOverrides): vscode.Workspa
     enabled: overrides?.enabled,
     excludePatterns: overrides?.excludePatterns,
     maxFileSize: overrides?.maxFileSize,
+    editorAssociations: overrides?.editorAssociations,
   };
 
   return {
@@ -46,6 +54,7 @@ describe('ConfigService', () => {
     expect(config.enabled).to.equal(true);
     expect(config.excludePatterns).to.include('**/node_modules/**');
     expect(config.maxFileSize).to.equal(1_048_576);
+    expect(config.editorAssociations).to.equal(true);
   });
 
   it('caches configuration per resource and reloads on demand', () => {
@@ -77,6 +86,7 @@ describe('ConfigService', () => {
 
     expect(inspection.enabled?.globalValue).to.equal(true);
     expect(inspection.maxFileSize?.globalValue).to.equal(512);
+    expect(inspection.editorAssociations?.globalValue).to.equal(undefined);
   });
 
   it('respects exclude patterns for workspace-relative paths', () => {

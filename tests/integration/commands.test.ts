@@ -1,7 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { expect } from 'chai';
 import * as vscode from 'vscode';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 type PackageJsonKeybinding = {
   command: string;

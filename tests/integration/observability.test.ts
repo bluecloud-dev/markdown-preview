@@ -1,10 +1,16 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { Logger } from '../../src/services/logger';
 import { PreviewService } from '../../src/services/preview-service';
 import { StateService } from '../../src/services/state-service';
 import { ValidationService } from '../../src/services/validation-service';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 const createMemento = (): vscode.Memento => {
   const store = new Map<string, unknown>();

@@ -1,8 +1,14 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { enterEditMode, exitEditMode, toggleEditMode } from '../../src/commands/mode-commands';
 import { ViewMode } from '../../src/types/state';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 describe('mode commands', () => {
   afterEach(() => {

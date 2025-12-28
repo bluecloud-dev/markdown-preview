@@ -15,8 +15,7 @@
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:unicorn/recommended"
+    "plugin:@typescript-eslint/recommended"
   ],
   "ignorePatterns": [
     "out/**",

@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - N/A
 
+## [1.0.1] - 2025-12-28
+
+### Fixed
+- Ensure exit edit mode closes the correct markdown editor tab(s)
+- Clear pending open debounces when the file handler is disposed
+
 ## [1.0.0] - 2025-12-27
 
 ### Added

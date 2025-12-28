@@ -128,7 +128,7 @@ export class PreviewService {
         this.logger.info(
           t('User opted to preview large file: {0}', uriKey)
         );
-        await this.showPreview(document.uri);
+        return true;
       }
 
       if (selection === actionDontShow) {
@@ -161,13 +161,14 @@ export class PreviewService {
    * @returns Promise resolved when the preview opens.
    * @throws Propagates VS Code command errors.
    */
-  async showPreview(uri: vscode.Uri): Promise<void> {
+  async showPreview(uri: vscode.Uri): Promise<boolean> {
     const success = await this.executePreviewCommand('markdown.showPreview', uri);
     if (!success) {
-      return;
+      return false;
     }
     this.stateService.setMode(uri, ViewMode.Preview);
     this.stateService.setEditorVisible(uri, false);
+    return true;
   }
 
   /**
@@ -200,10 +201,20 @@ export class PreviewService {
    * @throws Propagates VS Code command errors.
    */
   async exitEditMode(uri: vscode.Uri): Promise<void> {
+    const uriKey = uri.toString();
     const activeEditor = vscode.window.activeTextEditor;
-    if (activeEditor && activeEditor.document.uri.toString() === uri.toString()) {
-      const document = activeEditor.document;
-      const autoSave = vscode.workspace.getConfiguration('files').get<string>('autoSave', 'off');
+    const activeDocument = activeEditor?.document;
+    const document =
+      activeDocument?.uri.toString() === uriKey
+        ? activeDocument
+        : vscode.workspace.textDocuments.find(
+            (documentItem) => documentItem.uri.toString() === uriKey
+          );
+
+    if (document) {
+      const autoSave = vscode.workspace
+        .getConfiguration('files')
+        .get<string>('autoSave', 'off');
       if (document.isDirty && autoSave === 'off') {
         const actionSave = t('Save & Exit');
         const actionDiscard = t('Exit Without Saving');
@@ -224,19 +235,52 @@ export class PreviewService {
         }
 
         if (selection === actionDiscard) {
+          await this.activateEditor(uri);
           await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+          await this.closeTextEditors(uri);
           await this.showPreview(uri);
           return;
         }
       }
+    }
 
+    if (activeEditor && activeDocument?.uri.toString() === uriKey) {
       this.stateService.setLastSelection(uri, activeEditor.selection.active);
     }
 
     this.stateService.setMode(uri, ViewMode.Preview);
     this.stateService.setEditorVisible(uri, false);
-    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    await this.closeTextEditors(uri);
     await this.showPreview(uri);
+  }
+
+  private async activateEditor(uri: vscode.Uri): Promise<void> {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor && activeEditor.document.uri.toString() === uri.toString()) {
+      return;
+    }
+
+    await vscode.window.showTextDocument(uri, { preview: false });
+  }
+
+  private async closeTextEditors(uri: vscode.Uri): Promise<void> {
+    const tabsToClose: vscode.Tab[] = [];
+    const uriKey = uri.toString();
+
+    for (const group of vscode.window.tabGroups.all) {
+      for (const tab of group.tabs) {
+        const input = tab.input;
+        if (input instanceof vscode.TabInputText && input.uri.toString() === uriKey) {
+          tabsToClose.push(tab);
+        }
+      }
+    }
+
+    if (tabsToClose.length === 0) {
+      return;
+    }
+
+    await vscode.window.tabGroups.close(tabsToClose, true);
   }
 
   private async executePreviewCommand(

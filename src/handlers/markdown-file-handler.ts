@@ -29,6 +29,7 @@ import { t } from '../utils/l10n';
  * Stored in globalState to persist across workspaces.
  */
 const WELCOME_KEY = 'markdownReader.welcomeShown';
+const MARKDOWN_PREVIEW_VIEW_TYPE = 'vscode.markdown.preview.editor';
 
 /**
  * Handler for intercepting markdown file open events.
@@ -58,7 +59,7 @@ const WELCOME_KEY = 'markdownReader.welcomeShown';
 export class MarkdownFileHandler implements vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = [];
   private readonly pendingOpens = new Map<string, ReturnType<typeof setTimeout>>();
-  private readonly openDebounceMs = 75;
+  private readonly openDebounceMs = 0;
 
   constructor(
     private readonly previewService: PreviewService,
@@ -92,6 +93,10 @@ export class MarkdownFileHandler implements vscode.Disposable {
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
+    for (const timeout of this.pendingOpens.values()) {
+      clearTimeout(timeout);
+    }
+    this.pendingOpens.clear();
   }
 
   private handleDocumentOpen(document: vscode.TextDocument): void {
@@ -169,8 +174,19 @@ export class MarkdownFileHandler implements vscode.Disposable {
       return;
     }
 
+    if (this.hasPreviewTab(document.uri)) {
+      await this.closeTextTabsForPreview(document);
+      this.stateService.setMode(document.uri, ViewMode.Preview);
+      this.stateService.setEditorVisible(document.uri, false);
+      await this.maybeShowWelcome();
+      return;
+    }
+
     this.logger.info(t('Opening preview for {0}', document.uri.toString()));
-    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    // Close the text editor first, then open preview to avoid duplicate tabs.
+    // The order matters: VS Code's tab API may not have the tab registered yet
+    // if we try to close after opening the preview.
+    await this.closeActiveTextEditor(document.uri);
     await this.previewService.showPreview(document.uri);
     await this.maybeShowWelcome();
   }
@@ -235,6 +251,56 @@ export class MarkdownFileHandler implements vscode.Disposable {
     );
   }
 
+  private hasPreviewTab(uri: vscode.Uri): boolean {
+    return vscode.window.tabGroups.all.some((group) =>
+      group.tabs.some((tab) => {
+        const input = tab.input;
+        if (input instanceof vscode.TabInputCustom) {
+          return (
+            input.uri.toString() === uri.toString() &&
+            input.viewType === MARKDOWN_PREVIEW_VIEW_TYPE
+          );
+        }
+        return false;
+      })
+    );
+  }
+
+  private async closeTextTabsForPreview(
+    document: vscode.TextDocument
+  ): Promise<void> {
+    if (document.isDirty) {
+      return;
+    }
+
+    const uriKey = document.uri.toString();
+    const tabsToClose: vscode.Tab[] = [];
+
+    for (const group of vscode.window.tabGroups.all) {
+      for (const tab of group.tabs) {
+        if (!(tab.input instanceof vscode.TabInputText)) {
+          continue;
+        }
+        if (tab.input.uri.toString() !== uriKey) {
+          continue;
+        }
+        if ('isDirty' in tab && tab.isDirty) {
+          continue;
+        }
+        if ('isPinned' in tab && tab.isPinned) {
+          continue;
+        }
+        tabsToClose.push(tab);
+      }
+    }
+
+    if (tabsToClose.length === 0) {
+      return;
+    }
+
+    await vscode.window.tabGroups.close(tabsToClose, true);
+  }
+
   private async maybeShowWelcome(): Promise<void> {
     const alreadyShown = this.globalState.get<boolean>(WELCOME_KEY, false);
     if (alreadyShown) {
@@ -257,5 +323,22 @@ export class MarkdownFileHandler implements vscode.Disposable {
     }
 
     await this.globalState.update(WELCOME_KEY, true);
+  }
+
+  private async closeActiveTextEditor(uri: vscode.Uri): Promise<void> {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+      return;
+    }
+
+    if (activeEditor.document.uri.toString() !== uri.toString()) {
+      return;
+    }
+
+    if (activeEditor.document.isDirty) {
+      return;
+    }
+
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }
 }

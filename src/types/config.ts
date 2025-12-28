@@ -35,4 +35,10 @@ export interface ExtensionConfiguration {
    * Default is 1MB (1048576 bytes).
    */
   maxFileSize: number;
+
+  /**
+   * Whether to add a workspace editor association to open markdown files
+   * directly in the preview editor. This reduces the initial text-editor flicker.
+   */
+  editorAssociations: boolean;
 }

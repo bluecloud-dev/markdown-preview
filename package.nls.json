@@ -38,5 +38,6 @@
   "configuration.title": "Markdown Preview",
   "configuration.enabled.description": "Enable the Markdown Preview extension. When disabled, markdown files open in standard VS Code editor mode.",
   "configuration.excludePatterns.description": "Glob patterns for files and folders to exclude from auto-preview. Files matching these patterns will open in standard editor mode.",
-  "configuration.maxFileSize.description": "Maximum file size in bytes for auto-preview (default: 1MB = 1048576). Files larger than this will open in editor mode with an info message."
+  "configuration.maxFileSize.description": "Maximum file size in bytes for auto-preview (default: 1MB = 1048576). Files larger than this will open in editor mode with an info message.",
+  "configuration.editorAssociations.description": "Add a workspace editor association so markdown files open directly in the preview editor (reduces initial flicker)."
 }

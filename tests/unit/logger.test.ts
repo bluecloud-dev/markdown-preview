@@ -1,7 +1,13 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { Logger } from '../../src/services/logger';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 const createChannel = (
   appendLine: sinon.SinonStub,

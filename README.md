@@ -1,7 +1,7 @@
 # Markdown Preview
 
 <p align="center">
-  <img src="assets/hero.jpg" alt="Markdown Preview hero banner" width="840">
+  <img src="https://raw.githubusercontent.com/ayhammouda/markdown-preview/main/assets/hero.png" alt="Markdown Preview hero banner" width="840">
 </p>
 
 <p align="center">
@@ -31,31 +31,31 @@ Preview-by-default, edit mode, formatting toolbar actions, context menu formatti
 ## Table of Contents
 
 - [Feature Overview](#feature-overview)
-- [Features](#star-features)
-- [Installation](#package-installation)
-- [Requirements](#clipboard-requirements)
-- [Quick Start](#zap-quick-start)
-- [Commands](#keyboard-commands)
-- [Keyboard Shortcuts](#zap-keyboard-shortcuts)
-- [Settings](#gear-settings)
+- [Features](#features)
+- [Installation](#installation)
+- [Requirements](#requirements)
+- [Quick Start](#quick-start)
+- [Commands](#commands)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Settings](#settings)
 - [Accessibility & Keyboard Navigation](#accessibility--keyboard-navigation)
-- [Known Limitations](#warning-known-limitations)
-- [How It Works](#bulb-how-it-works)
-- [Privacy](#lock-privacy)
-- [Troubleshooting](#wrench-troubleshooting)
-- [Contributing](#handshake-contributing)
-- [Changelog](#bookmark-tabs-changelog)
-- [License](#page_facing_up-license)
+- [Known Limitations](#known-limitations)
+- [How It Works](#how-it-works)
+- [Privacy](#privacy)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [Changelog](#changelog)
+- [License](#license)
 
 ## Feature Overview
 
 Markdown Preview keeps markdown content readable by default and gives you a fast split view when you need to edit.
 
 <p align="center">
-  <img src="assets/hero.jpg" alt="Markdown Preview split view" width="840">
+  <img src="https://raw.githubusercontent.com/ayhammouda/markdown-preview/main/assets/hero.png" alt="Markdown Preview split view" width="840">
 </p>
 
-## :star: Features
+## Features
 
 - Open markdown files in preview mode by default (Explorer, Quick Open, and file links).
 - Show a one-time welcome message with an optional quick-start link.
@@ -70,7 +70,7 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 - Announce mode changes via transient status bar messages.
 - Configure preview behavior (enabled, exclude patterns, max file size) per workspace or file.
 
-## :package: Installation
+## Installation
 
 - **Marketplace (when published):** Open the Extensions view in VS Code and search for **Markdown Preview**.
 - **VSIX:** Download the `.vsix` asset from the GitHub Releases page and run:
@@ -78,17 +78,17 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
   code --install-extension markdown-preview.vsix
   ```
 
-## :clipboard: Requirements
+## Requirements
 
-- VS Code **1.107** or later
+- VS Code **1.85** or later
 
-## :zap: Quick Start
+## Quick Start
 
 1. Open any `.md` file to see the preview immediately.
 2. Run **Markdown Preview: Enter Edit Mode** (or `Ctrl+Shift+V`) to open a split editor.
 3. Click **Done** or run **Markdown Preview: Done (Exit Edit Mode)** to return to preview-only mode.
 
-## :keyboard: Commands
+## Commands
 
 - **Markdown Preview: Enter Edit Mode** — open split editor (text left, preview right)
 - **Markdown Preview: Done (Exit Edit Mode)** — return to preview-only mode
@@ -106,7 +106,7 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 - **Markdown Preview: Heading 2** — toggle `## ` prefix
 - **Markdown Preview: Heading 3** — toggle `### ` prefix
 
-## :zap: Keyboard Shortcuts
+## Keyboard Shortcuts
 
 | Action | Windows/Linux | macOS | When |
 | --- | --- | --- | --- |
@@ -116,13 +116,16 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 
 > Tip: Add your own keybindings in VS Code for the other formatting commands.
 
-## :gear: Settings
+## Settings
 
 | Setting | Default | Description |
 | --- | --- | --- |
 | `markdownReader.enabled` | `true` | Enable preview-by-default behavior. |
 | `markdownReader.excludePatterns` | `**/node_modules/**`, `**/.git/**` | Glob patterns that should open in the text editor instead. |
 | `markdownReader.maxFileSize` | `1048576` | Maximum file size (bytes) before auto-preview is skipped. |
+| `markdownReader.editorAssociations` | `true` | Add a workspace editor association so markdown files open directly in preview (reduces flicker). |
+
+> **Note:** If you don't want the extension to modify your workspace settings (`.vscode/settings.json`), set `markdownReader.editorAssociations` to `false` in your **User** settings. This will prevent the extension from adding `workbench.editorAssociations` entries, though you may notice a brief flicker when opening markdown files.
 
 ## Accessibility & Keyboard Navigation
 
@@ -131,27 +134,27 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 - Run **Toggle Tab Key Moves Focus** (Command Palette) to enable UI tabbing.
 - Tab/Shift+Tab moves focus across toolbar buttons; Enter/Space activates; Escape returns focus to the editor.
 
-## :warning: Known Limitations
+## Known Limitations
 
 - Formatting shortcuts beyond bold/italic require custom keybindings in VS Code.
 - Split ratio and layout are controlled by VS Code; the extension cannot force a 50/50 ratio.
 
-## :bulb: How It Works
+## How It Works
 
 - Uses VS Code's native markdown preview for rendering and live updates.
 - Auto-preview is skipped for untitled files, diff views, excluded paths, large files, and conflict markers.
 
-## :lock: Privacy
+## Privacy
 
 - **No telemetry** — nothing is collected or sent externally.
 - **No custom webviews** — uses VS Code's native markdown preview.
 
-## :wrench: Troubleshooting
+## Troubleshooting
 
 - If a file opens in preview and you want to edit, run **Enter Edit Mode** or disable the extension.
 - If preview fails to load, check the **Markdown Reader** Output channel for details.
 
-## :handshake: Contributing
+## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
@@ -165,11 +168,11 @@ npm run lint
 
 Open the project in VS Code and press `F5` to launch the Extension Development Host.
 
-## :bookmark-tabs: Changelog
+## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
-## :page_facing_up: License
+## License
 
 [MIT](LICENSE)
 

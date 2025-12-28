@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Localization utilities for user-facing strings.
+ *
+ * This module provides a wrapper around VS Code's l10n API for
+ * internationalization support. All user-facing strings in the extension
+ * should be passed through the `t()` function to enable localization.
+ *
+ * @module utils/l10n
+ */
+
 import * as vscode from 'vscode';
 
 /**

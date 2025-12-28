@@ -42,6 +42,7 @@ const DEFAULT_CONFIG: ExtensionConfiguration = {
   enabled: true,
   excludePatterns: ['**/node_modules/**', '**/.git/**'],
   maxFileSize: 1_048_576, // 1MB in bytes
+  editorAssociations: true,
 };
 
 /**
@@ -100,6 +101,16 @@ export class ConfigService {
   }
 
   /**
+   * Return whether editor associations should be managed for the provided resource.
+   * @param resource Optional resource URI for scoped settings.
+   * @returns True when editor associations are enabled.
+   * @throws No errors expected.
+   */
+  getEditorAssociations(resource?: vscode.Uri): boolean {
+    return this.getConfig(resource).editorAssociations;
+  }
+
+  /**
    * Resolve the effective configuration for the provided resource.
    * @param resource Optional resource URI for scoped settings.
    * @returns The resolved configuration.
@@ -148,12 +159,14 @@ export class ConfigService {
     enabled?: ConfigInspection<boolean>;
     excludePatterns?: ConfigInspection<string[]>;
     maxFileSize?: ConfigInspection<number>;
+    editorAssociations?: ConfigInspection<boolean>;
   } {
     const config = vscode.workspace.getConfiguration('markdownReader', resource);
     return {
       enabled: config.inspect<boolean>('enabled'),
       excludePatterns: config.inspect<string[]>('excludePatterns'),
       maxFileSize: config.inspect<number>('maxFileSize'),
+      editorAssociations: config.inspect<boolean>('editorAssociations'),
     };
   }
 
@@ -182,6 +195,10 @@ export class ConfigService {
       enabled: config.get('enabled', DEFAULT_CONFIG.enabled),
       excludePatterns: config.get('excludePatterns', DEFAULT_CONFIG.excludePatterns),
       maxFileSize: config.get('maxFileSize', DEFAULT_CONFIG.maxFileSize),
+      editorAssociations: config.get(
+        'editorAssociations',
+        DEFAULT_CONFIG.editorAssociations
+      ),
     };
   }
 }

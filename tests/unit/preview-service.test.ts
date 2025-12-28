@@ -1,8 +1,14 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { PreviewService } from '../../src/services/preview-service';
 import { ViewMode } from '../../src/types/state';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 const createStateService = () => ({
   setMode: sinon.stub(),
@@ -489,7 +495,6 @@ describe('PreviewService', () => {
       createLogger() as unknown as import('../../src/services/logger').Logger
     );
 
-    const showPreviewStub = sinon.stub(service, 'showPreview').resolves();
     sinon
       .stub(vscode.window, 'showInformationMessage')
       .resolves('Open Preview Anyway' as unknown as vscode.MessageItem);
@@ -501,8 +506,7 @@ describe('PreviewService', () => {
     } as vscode.TextDocument;
 
     const result = await service.shouldShowPreview(document);
-    expect(result).to.equal(false);
-    expect(showPreviewStub.calledOnce).to.equal(true);
+    expect(result).to.equal(true);
   });
 
   it('shows an error for binary files', async () => {

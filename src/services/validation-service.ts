@@ -118,7 +118,7 @@ export class ValidationService {
         }
       }
 
-      const decoder = new TextDecoder('utf8', { fatal: true });
+      const decoder = new TextDecoder('utf-8', { fatal: true });
       decoder.decode(sample);
       return false;
     } catch {

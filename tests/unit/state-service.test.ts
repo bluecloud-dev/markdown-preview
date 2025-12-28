@@ -1,8 +1,14 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { StateService } from '../../src/services/state-service';
 import { ViewMode } from '../../src/types/state';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
+
 
 describe('StateService', () => {
   afterEach(() => {

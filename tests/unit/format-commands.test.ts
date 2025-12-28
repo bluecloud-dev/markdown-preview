@@ -1,7 +1,7 @@
-import { expect } from 'chai';
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import {
+
   formatBold,
   formatBulletList,
   formatCodeBlock,
@@ -14,6 +14,12 @@ import {
   formatNumberedList,
   formatStrikethrough,
 } from '../../src/commands/format-commands';
+let expect: Chai.ExpectStatic;
+
+before(async () => {
+  ({ expect } = await import('chai'));
+});
+
 
 const createEditor = (languageId: string) => ({
   document: { languageId },

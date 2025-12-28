@@ -65,6 +65,7 @@ const workspace = {
   getConfiguration: () => ({
     get: () => undefined,
     inspect: () => undefined,
+    update: async () => undefined,
   }),
   asRelativePath: (uri) => uri.fsPath,
   workspaceFolders: [],
@@ -93,6 +94,7 @@ const window = {
   tabGroups: {
     onDidChangeTabs: () => ({ dispose: () => {} }),
     all: [],
+    close: async () => true,
   },
 };
 
@@ -122,8 +124,9 @@ class TabInputText {
 }
 
 class TabInputCustom {
-  constructor(uri) {
+  constructor(uri, viewType) {
     this.uri = uri;
+    this.viewType = viewType;
   }
 }
 
