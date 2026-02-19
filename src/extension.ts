@@ -18,16 +18,20 @@
 import * as vscode from 'vscode';
 import {
   formatBold,
+  formatBlockQuote,
   formatBulletList,
   formatCodeBlock,
   formatHeading1,
   formatHeading2,
   formatHeading3,
+  formatHorizontalRule,
+  formatImage,
   formatInlineCode,
   formatItalic,
   formatLink,
   formatNumberedList,
   formatStrikethrough,
+  formatTaskList,
 } from './commands/format-commands';
 import { MarkdownFileHandler } from './handlers/markdown-file-handler';
 import { enterEditMode, exitEditMode, toggleEditMode } from './commands/mode-commands';
@@ -431,6 +435,18 @@ export function activate(context: vscode.ExtensionContext): void {
       'markdownReader.formatNumberedList',
       (editor) => formatNumberedList(editor, formattingService)
     ),
+    vscode.commands.registerTextEditorCommand(
+      'markdownReader.formatTaskList',
+      (editor) => formatTaskList(editor, formattingService)
+    ),
+    vscode.commands.registerTextEditorCommand(
+      'markdownReader.formatBlockQuote',
+      (editor) => formatBlockQuote(editor, formattingService)
+    ),
+    vscode.commands.registerTextEditorCommand(
+      'markdownReader.formatHorizontalRule',
+      (editor) => formatHorizontalRule(editor, formattingService)
+    ),
     vscode.commands.registerTextEditorCommand('markdownReader.formatInlineCode', (editor) =>
       formatInlineCode(editor, formattingService)
     ),
@@ -439,6 +455,9 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
     vscode.commands.registerTextEditorCommand('markdownReader.formatLink', (editor) =>
       formatLink(editor, formattingService)
+    ),
+    vscode.commands.registerTextEditorCommand('markdownReader.formatImage', (editor) =>
+      formatImage(editor, formattingService)
     ),
     vscode.commands.registerTextEditorCommand('markdownReader.formatHeading1', (editor) =>
       formatHeading1(editor, formattingService)

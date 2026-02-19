@@ -200,3 +200,63 @@ export const formatHeading3 = async (
   runFormatting(editor, (activeEditor) =>
     formattingService.toggleLinePrefix(activeEditor, '### ')
   );
+
+/**
+ * Toggle block quote formatting on the current line(s).
+ * @param editor Active text editor.
+ * @param formattingService Formatting service.
+ * @returns Promise resolved when formatting completes.
+ * @throws Propagates VS Code edit errors.
+ */
+export const formatBlockQuote = async (
+  editor: vscode.TextEditor,
+  formattingService: FormattingService
+): Promise<void> =>
+  runFormatting(editor, (activeEditor) =>
+    formattingService.toggleLinePrefix(activeEditor, '> ')
+  );
+
+/**
+ * Toggle task list formatting on the current line(s).
+ * @param editor Active text editor.
+ * @param formattingService Formatting service.
+ * @returns Promise resolved when formatting completes.
+ * @throws Propagates VS Code edit errors.
+ */
+export const formatTaskList = async (
+  editor: vscode.TextEditor,
+  formattingService: FormattingService
+): Promise<void> =>
+  runFormatting(editor, (activeEditor) =>
+    formattingService.toggleTaskList(activeEditor)
+  );
+
+/**
+ * Insert a horizontal rule on a new line.
+ * @param editor Active text editor.
+ * @param formattingService Formatting service.
+ * @returns Promise resolved when formatting completes.
+ * @throws Propagates VS Code edit errors.
+ */
+export const formatHorizontalRule = async (
+  editor: vscode.TextEditor,
+  formattingService: FormattingService
+): Promise<void> =>
+  runFormatting(editor, (activeEditor) =>
+    formattingService.insertHorizontalRule(activeEditor)
+  );
+
+/**
+ * Insert a markdown image link from the file picker.
+ * @param editor Active text editor.
+ * @param formattingService Formatting service.
+ * @returns Promise resolved when formatting completes.
+ * @throws Propagates VS Code edit errors.
+ */
+export const formatImage = async (
+  editor: vscode.TextEditor,
+  formattingService: FormattingService
+): Promise<void> =>
+  runFormatting(editor, (activeEditor) =>
+    formattingService.insertImage(activeEditor)
+  );

@@ -63,7 +63,9 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 - Detect binary markdown files and fall back to the text editor with a warning.
 - Detect git conflict markers and open in edit mode to resolve conflicts.
 - Enter edit mode to get a split view (editor left, preview right) with a Done button.
+- Enter edit mode directly from a pencil icon in the preview title bar.
 - Format text in edit mode with toolbar actions for bold, italic, strikethrough, lists, code, links, and headings.
+- Insert task lists, block quotes, horizontal rules, and images from edit mode.
 - Use a Format context menu (right-click) with heading and code submenus while editing.
 - Use keyboard shortcuts for toggle, bold, and italic in markdown edit mode.
 - Log preview failures and conflicts to the **Markdown Reader** Output channel.
@@ -99,9 +101,13 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 - **Markdown Preview: Strikethrough** — wrap selection with `~~`
 - **Markdown Preview: Bullet List** — toggle `- ` prefix
 - **Markdown Preview: Numbered List** — toggle `1. ` prefix
+- **Markdown Preview: Task List** — toggle `- [ ]` / `- [x]` prefix
+- **Markdown Preview: Block Quote** — toggle `> ` prefix
+- **Markdown Preview: Horizontal Rule** — insert `---` on a new line
 - **Markdown Preview: Inline Code** — wrap selection with backticks
 - **Markdown Preview: Code Block** — wrap selection with triple backticks
 - **Markdown Preview: Link** — prompt for URL and wrap selection
+- **Markdown Preview: Image** — pick a file and insert `![alt](path)`
 - **Markdown Preview: Heading 1** — toggle `# ` prefix
 - **Markdown Preview: Heading 2** — toggle `## ` prefix
 - **Markdown Preview: Heading 3** — toggle `### ` prefix
@@ -113,6 +119,7 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 | Toggle Edit Mode | `Ctrl+Shift+V` | `Cmd+Shift+V` | Markdown file |
 | Bold | `Ctrl+B` | `Cmd+B` | Edit mode only |
 | Italic | `Ctrl+I` | `Cmd+I` | Edit mode only |
+| Task List | `Ctrl+Alt+T` | `Cmd+Alt+T` | Edit mode only |
 
 > Tip: Add your own keybindings in VS Code for the other formatting commands.
 
@@ -136,7 +143,7 @@ Markdown Preview keeps markdown content readable by default and gives you a fast
 
 ## Known Limitations
 
-- Formatting shortcuts beyond bold/italic require custom keybindings in VS Code.
+- Formatting shortcuts beyond bold/italic/task list require custom keybindings in VS Code.
 - Split ratio and layout are controlled by VS Code; the extension cannot force a 50/50 ratio.
 
 ## How It Works

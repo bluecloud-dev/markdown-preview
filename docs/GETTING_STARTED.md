@@ -32,6 +32,7 @@ git clone https://github.com/bluecloud-dev/markdown-preview.git
 cd markdown-preview
 npm ci
 npm run compile
+npm run bundle
 
 # Launch (in VS Code)
 # Press F5
@@ -61,11 +62,13 @@ npm ci
 
 ```bash
 npm run compile
+npm run bundle
 ```
 
 This compiles:
-- Extension source code (`src/` → `out/`)
+- Extension source code (`src/` → `out/`, type checking)
 - Test files (`tests/` → `out/tests/`)
+- Bundled runtime (`dist/extension.js`)
 
 You should see no errors. If you do, check [Troubleshooting](#troubleshooting-setup-issues).
 
@@ -127,7 +130,8 @@ export function activate(context: vscode.ExtensionContext): void {
 ### Step 2: Rebuild and Reload
 
 1. Run `npm run compile` in the terminal
-2. In the Extension Development Host, press `Ctrl+Shift+F5` (Reload Window)
+2. Run `npm run bundle` in the terminal
+3. In the Extension Development Host, press `Ctrl+Shift+F5` (Reload Window)
 
 ### Step 3: Verify Your Change
 
@@ -143,6 +147,7 @@ Remove the temporary log line and rebuild.
 | Command | Purpose |
 |---------|---------|
 | `npm run compile` | Build source and tests |
+| `npm run bundle` | Bundle extension entrypoint |
 | `npm test` | Run integration tests |
 | `npm run coverage` | Run unit tests with coverage report |
 | `npm run lint` | Check code style with ESLint |

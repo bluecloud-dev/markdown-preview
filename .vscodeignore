@@ -1,9 +1,11 @@
 # Build output
 src/**
 **/*.ts
+out/**
 out/tests/**
 out/src/**
 out/**/*.map
+dist/**/*.map
 
 # Tests and coverage
 tests/**
@@ -15,6 +17,7 @@ coverage/**
 .vscode-test/**
 node_modules/**
 scripts/**
+esbuild.mjs
 eslint.config.mjs
 tsconfig*.json
 

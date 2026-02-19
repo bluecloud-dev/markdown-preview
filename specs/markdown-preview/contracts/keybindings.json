@@ -23,6 +23,13 @@
       "mac": "cmd+i",
       "when": "markdownReader.editMode && editorLangId == markdown && editorTextFocus",
       "description": "Italic - only active in markdown edit mode"
+    },
+    {
+      "command": "markdownReader.formatTaskList",
+      "key": "ctrl+alt+t",
+      "mac": "cmd+alt+t",
+      "when": "markdownReader.editMode && editorLangId == markdown && editorTextFocus",
+      "description": "Task list - toggle checkboxes in markdown edit mode"
     }
   ],
   "notes": {

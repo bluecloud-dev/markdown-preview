@@ -59,7 +59,7 @@ const MARKDOWN_PREVIEW_VIEW_TYPE = 'vscode.markdown.preview.editor';
 export class MarkdownFileHandler implements vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = [];
   private readonly pendingOpens = new Map<string, ReturnType<typeof setTimeout>>();
-  private readonly openDebounceMs = 0;
+  private readonly openDebounceMs = 75;
 
   constructor(
     private readonly previewService: PreviewService,

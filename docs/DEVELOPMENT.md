@@ -54,9 +54,10 @@ npm ci
 
 ```bash
 npm run compile
+npm run bundle
 ```
 
-This compiles both the main source code and test files.
+This compiles the TypeScript sources, tests, and bundles the extension entrypoint.
 
 ### 4. Verify Setup
 
@@ -93,7 +94,6 @@ markdown-preview/
 │   ├── types/                  # TypeScript definitions
 │   │   ├── state.ts            # ViewMode, FileState
 │   │   ├── config.ts           # ExtensionConfiguration
-│   │   └── formatting.ts       # FormattingAction types
 │   └── utils/                  # Utilities
 │       └── l10n.ts             # Localization helper
 ├── tests/                      # Test suites
@@ -126,6 +126,7 @@ markdown-preview/
 3. **Make changes and test:**
    ```bash
    npm run compile  # Build
+   npm run bundle   # Bundle runtime
    # Press F5 in VS Code to test
    npm test         # Run tests
    npm run lint     # Check style
@@ -143,6 +144,7 @@ markdown-preview/
 | Command | Description |
 |---------|-------------|
 | `npm run compile` | Build source and tests (one-time) |
+| `npm run bundle` | Bundle extension entrypoint (dist/extension.js) |
 | `npm run lint` | Check code style with ESLint |
 | `npm run lint -- --fix` | Auto-fix linting issues |
 | `npm test` | Run integration tests |

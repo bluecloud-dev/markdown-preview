@@ -6,13 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- N/A
+- Task list, block quote, horizontal rule, and image insertion commands
+- Preview title bar pencil button for entering edit mode
+- esbuild bundling pipeline for a single runtime entrypoint
 
 ### Changed
-- N/A
+- Marketplace metadata (category, banner, badges) and description refresh
+- Packaging now uses bundled output in `dist/extension.js`
+- Default task list toggle keybinding (`Ctrl+Alt+T` / `Cmd+Alt+T`)
 
 ### Fixed
-- N/A
+- Markdown open debounce now matches documented 75ms behavior
 
 ## [1.0.1] - 2025-12-28
 

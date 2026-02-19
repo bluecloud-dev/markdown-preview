@@ -11,7 +11,7 @@ before(async () => {
 
 const isWordCharacter = (character: string): boolean => /\w/.test(character);
 
-const createEditor = (initialText: string) => {
+const createEditor = (initialText: string, uri?: vscode.Uri) => {
   let text = initialText;
 
   const getLines = () => text.split('\n');
@@ -41,6 +41,7 @@ const createEditor = (initialText: string) => {
   };
 
   const document: vscode.TextDocument = {
+    uri: uri ?? vscode.Uri.file('/workspace/note.md'),
     getText: (range?: vscode.Range) => {
       if (!range) {
         return text;
@@ -83,6 +84,7 @@ const createEditor = (initialText: string) => {
       }
       return new vscode.Range(positionAt(start), positionAt(end));
     },
+    languageId: 'markdown',
   } as vscode.TextDocument;
 
   const editor = {
@@ -264,5 +266,71 @@ describe('FormattingService', () => {
 
     expect(getText()).to.equal('[link](https://example.com)');
     expect(editor.document.getText(editor.selection)).to.equal('https://example.com');
+  });
+
+  it('toggles task list states and adds missing checkboxes', async () => {
+    const { editor, getText } = createEditor('- [ ] first\n- [x] second\nplain');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(2, 0));
+
+    const service = new FormattingService();
+    await service.toggleTaskList(editor);
+
+    expect(getText()).to.equal('- [x] first\n- [ ] second\n- [ ] plain');
+  });
+
+  it('adds task checkboxes to list items without duplicating markers', async () => {
+    const { editor, getText } = createEditor('- item');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    const service = new FormattingService();
+    await service.toggleTaskList(editor);
+
+    expect(getText()).to.equal('- [ ] item');
+  });
+
+  it('inserts a horizontal rule on an empty line', async () => {
+    const { editor, getText } = createEditor('');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    const service = new FormattingService();
+    await service.insertHorizontalRule(editor);
+
+    expect(getText()).to.equal('---');
+  });
+
+  it('inserts a horizontal rule below non-empty lines', async () => {
+    const { editor, getText } = createEditor('hello');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 2), new vscode.Position(0, 2));
+
+    const service = new FormattingService();
+    await service.insertHorizontalRule(editor);
+
+    expect(getText()).to.equal('hello\n---\n');
+  });
+
+  it('does nothing when image picker is cancelled', async () => {
+    const { editor, getText } = createEditor('note');
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    sinon.stub(vscode.window, 'showOpenDialog').resolves();
+
+    const service = new FormattingService();
+    await service.insertImage(editor);
+
+    expect(getText()).to.equal('note');
+  });
+
+  it('inserts relative image paths based on the active document', async () => {
+    const documentUri = vscode.Uri.file('/workspace/docs/note.md');
+    const imageUri = vscode.Uri.file('/workspace/assets/pic.png');
+    const { editor, getText } = createEditor('', documentUri);
+    editor.selection = new vscode.Selection(new vscode.Position(0, 0), new vscode.Position(0, 0));
+
+    sinon.stub(vscode.window, 'showOpenDialog').resolves([imageUri]);
+
+    const service = new FormattingService();
+    await service.insertImage(editor);
+
+    expect(getText()).to.equal('![alt text](../assets/pic.png)');
   });
 });

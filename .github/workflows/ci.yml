@@ -39,6 +39,9 @@ jobs:
       - name: TypeScript build
         run: npm run compile
 
+      - name: Bundle extension
+        run: npm run bundle
+
       - name: Install xvfb
         run: |
           sudo apt-get update

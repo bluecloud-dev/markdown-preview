@@ -64,6 +64,7 @@ npm test
 ```
 
 This launches VS Code with the extension loaded and runs all test suites.
+Run `npm run compile` and `npm run bundle` beforehand so `dist/extension.js` is available.
 
 > **Note:** The integration runner may attempt to download a VS Code build.
 > If the download host is unavailable, it will fall back to any cached
@@ -106,8 +107,12 @@ edge cases, and accessibility behavior.
 ### US3: Toolbar Formatting
 - [ ] Bold/Italic/Strikethrough wrap selection
 - [ ] Bullet/Numbered list toggles current line prefix
+- [ ] Task list toggles checkboxes
+- [ ] Block quote toggles `> ` prefix
+- [ ] Horizontal rule inserts `---`
 - [ ] Inline code / code block insert correctly
 - [ ] Link prompt inserts `[text](url)`
+- [ ] Image picker inserts `![alt](path)`
 - [ ] Heading 1/2/3 toggle prefixes
 
 ### US4: Context Menu Formatting
@@ -117,6 +122,7 @@ edge cases, and accessibility behavior.
 ### US5: Keyboard Shortcuts
 - [ ] Bold (`Ctrl+B` / `Cmd+B`) in edit mode
 - [ ] Italic (`Ctrl+I` / `Cmd+I`) in edit mode
+- [ ] Task list (`Ctrl+Alt+T` / `Cmd+Alt+T`) in edit mode
 - [ ] Toggle edit mode (`Ctrl+Shift+V` / `Cmd+Shift+V`)
 
 ### US6: Configuration

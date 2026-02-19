@@ -3,16 +3,20 @@ import * as vscode from 'vscode';
 import {
 
   formatBold,
+  formatBlockQuote,
   formatBulletList,
   formatCodeBlock,
   formatHeading1,
   formatHeading2,
   formatHeading3,
+  formatHorizontalRule,
+  formatImage,
   formatInlineCode,
   formatItalic,
   formatLink,
   formatNumberedList,
   formatStrikethrough,
+  formatTaskList,
 } from '../../src/commands/format-commands';
 let expect: Chai.ExpectStatic;
 
@@ -43,8 +47,11 @@ describe('format commands', () => {
     const formattingServiceStubs = {
       wrapSelection: sinon.stub().resolves(),
       toggleLinePrefix: sinon.stub().resolves(),
+      toggleTaskList: sinon.stub().resolves(),
       wrapBlock: sinon.stub().resolves(),
+      insertHorizontalRule: sinon.stub().resolves(),
       insertLink: sinon.stub().resolves(),
+      insertImage: sinon.stub().resolves(),
     };
     const formattingService =
       formattingServiceStubs as unknown as import('../../src/services/formatting-service').FormattingService;
@@ -56,15 +63,22 @@ describe('format commands', () => {
     await formatCodeBlock(editor, formattingService);
     await formatBulletList(editor, formattingService);
     await formatNumberedList(editor, formattingService);
+    await formatTaskList(editor, formattingService);
+    await formatBlockQuote(editor, formattingService);
+    await formatHorizontalRule(editor, formattingService);
     await formatHeading1(editor, formattingService);
     await formatHeading2(editor, formattingService);
     await formatHeading3(editor, formattingService);
     await formatLink(editor, formattingService);
+    await formatImage(editor, formattingService);
 
     expect(formattingServiceStubs.wrapSelection.callCount).to.equal(3);
     expect(formattingServiceStubs.wrapBlock.calledOnce).to.equal(true);
-    expect(formattingServiceStubs.toggleLinePrefix.callCount).to.equal(5);
+    expect(formattingServiceStubs.toggleLinePrefix.callCount).to.equal(6);
+    expect(formattingServiceStubs.toggleTaskList.calledOnce).to.equal(true);
+    expect(formattingServiceStubs.insertHorizontalRule.calledOnce).to.equal(true);
     expect(formattingServiceStubs.insertLink.calledOnce).to.equal(true);
+    expect(formattingServiceStubs.insertImage.calledOnce).to.equal(true);
   });
 
   it('skips formatting for non-markdown editors', async () => {

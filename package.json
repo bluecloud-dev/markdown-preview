@@ -9,7 +9,7 @@
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Other"
+    "Visualization"
   ],
   "keywords": [
     "markdown",
@@ -20,6 +20,27 @@
     "notes"
   ],
   "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#f5f4ef",
+    "theme": "light"
+  },
+  "badges": [
+    {
+      "url": "https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml/badge.svg",
+      "href": "https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml",
+      "description": "CI"
+    },
+    {
+      "url": "https://img.shields.io/github/v/release/bluecloud-dev/markdown-preview?include_prereleases&label=release",
+      "href": "https://github.com/bluecloud-dev/markdown-preview/releases",
+      "description": "Latest release"
+    },
+    {
+      "url": "https://img.shields.io/github/license/bluecloud-dev/markdown-preview",
+      "href": "https://github.com/bluecloud-dev/markdown-preview/blob/main/LICENSE",
+      "description": "License"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/bluecloud-dev/markdown-preview.git"
@@ -28,7 +49,7 @@
     "onStartupFinished",
     "onLanguage:markdown"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "l10n": "./l10n",
   "contributes": {
     "commands": [
@@ -105,6 +126,27 @@
         "shortTitle": "%command.markdownReader.formatNumberedList.shortTitle%"
       },
       {
+        "command": "markdownReader.formatTaskList",
+        "title": "%command.markdownReader.formatTaskList.title%",
+        "category": "%command.category%",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+        "shortTitle": "%command.markdownReader.formatTaskList.shortTitle%"
+      },
+      {
+        "command": "markdownReader.formatBlockQuote",
+        "title": "%command.markdownReader.formatBlockQuote.title%",
+        "category": "%command.category%",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+        "shortTitle": "%command.markdownReader.formatBlockQuote.shortTitle%"
+      },
+      {
+        "command": "markdownReader.formatHorizontalRule",
+        "title": "%command.markdownReader.formatHorizontalRule.title%",
+        "category": "%command.category%",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+        "shortTitle": "%command.markdownReader.formatHorizontalRule.shortTitle%"
+      },
+      {
         "command": "markdownReader.formatInlineCode",
         "title": "%command.markdownReader.formatInlineCode.title%",
         "category": "%command.category%",
@@ -127,6 +169,13 @@
         "icon": "$(link)",
         "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
         "shortTitle": "%command.markdownReader.formatLink.shortTitle%"
+      },
+      {
+        "command": "markdownReader.formatImage",
+        "title": "%command.markdownReader.formatImage.title%",
+        "category": "%command.category%",
+        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+        "shortTitle": "%command.markdownReader.formatImage.shortTitle%"
       },
       {
         "command": "markdownReader.formatHeading1",
@@ -169,6 +218,11 @@
     ],
     "menus": {
       "editor/title": [
+        {
+          "command": "markdownReader.enterEditMode",
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && !markdownReader.editMode",
+          "group": "navigation@0"
+        },
         {
           "command": "markdownReader.exitEditMode",
           "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
@@ -248,12 +302,28 @@
           "group": "2_structure@3"
         },
         {
+          "command": "markdownReader.formatTaskList",
+          "group": "2_structure@4"
+        },
+        {
+          "command": "markdownReader.formatBlockQuote",
+          "group": "2_structure@5"
+        },
+        {
+          "command": "markdownReader.formatHorizontalRule",
+          "group": "2_structure@6"
+        },
+        {
           "submenu": "markdownReader.codeSubmenu",
           "group": "3_code@1"
         },
         {
           "command": "markdownReader.formatLink",
           "group": "4_link@1"
+        },
+        {
+          "command": "markdownReader.formatImage",
+          "group": "4_link@2"
         }
       ],
       "markdownReader.headingSubmenu": [
@@ -318,6 +388,18 @@
           "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
+          "command": "markdownReader.formatTaskList",
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+        },
+        {
+          "command": "markdownReader.formatBlockQuote",
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+        },
+        {
+          "command": "markdownReader.formatHorizontalRule",
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+        },
+        {
           "command": "markdownReader.formatInlineCode",
           "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
@@ -327,6 +409,10 @@
         },
         {
           "command": "markdownReader.formatLink",
+          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+        },
+        {
+          "command": "markdownReader.formatImage",
           "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
         },
         {
@@ -360,6 +446,12 @@
         "command": "markdownReader.formatItalic",
         "key": "ctrl+i",
         "mac": "cmd+i",
+        "when": "config.markdownReader.enabled && markdownReader.editMode && editorLangId == markdown && editorTextFocus"
+      },
+      {
+        "command": "markdownReader.formatTaskList",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t",
         "when": "config.markdownReader.enabled && markdownReader.editMode && editorLangId == markdown && editorTextFocus"
       },
       {
@@ -407,12 +499,14 @@
   },
   "scripts": {
     "compile": "tsc -p . && tsc -p tsconfig.tests.json",
+    "bundle": "node esbuild.mjs",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "npm run test:integration",
     "test:integration": "node ./out/tests/run-test.js",
     "coverage": "node -r ./scripts/nyc-cpus-shim.js ./node_modules/nyc/bin/nyc.js node ./scripts/run-unit-tests.js",
-    "package": "node scripts/vsce-wrapper.js package",
-    "prepublish": "npm run compile",
+    "package": "npm run bundle && node scripts/vsce-wrapper.js package",
+    "prepublish": "npm run compile && npm run bundle",
+    "vscode:prepublish": "npm run compile && npm run bundle",
     "check:no-telemetry": "node scripts/check-no-telemetry.js"
   },
   "dependencies": {
