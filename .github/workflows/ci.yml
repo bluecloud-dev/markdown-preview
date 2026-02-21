@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  gate-linux:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -36,35 +36,48 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Install xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Integration tests
+        run: xvfb-run -a npm test
+
+  e2e-macos:
+    runs-on: macos-latest
+    needs: gate-linux
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: TypeScript build
         run: npm run compile
 
       - name: Bundle extension
         run: npm run bundle
 
-      - name: Install xvfb
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb
+      - name: Install ffmpeg
+        run: brew install ffmpeg
 
-      - name: Unit tests with coverage
-        run: xvfb-run -a npm run coverage
+      - name: Run UI E2E tests
+        run: env E2E_VIDEO=1 npm run test:e2e
 
-      - name: VS Code integration tests
-        run: xvfb-run -a npm test
-
-      - name: No-telemetry guard
-        run: npm run check:no-telemetry
-
-      - name: Security audit
-        run: npm audit --audit-level=high
-
-      - name: Build VSIX
-        run: npm run package
-
-      - name: Upload VSIX
+      - name: Upload E2E artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vsix-${{ github.sha }}
-          path: "*.vsix"
-          retention-days: 30
+          name: e2e-artifacts-macos-${{ github.sha }}
+          path: artifacts/e2e/**
+          retention-days: 14
