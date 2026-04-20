@@ -37,7 +37,6 @@
   "command.muninn.inspectConfiguration.title": "Inspect Configuration",
   "command.muninn.inspectConfiguration.shortTitle": "Inspect Config",
   "configuration.title": "Muninn for VS Code",
-  "configuration.editorAssociations.description": "Automatically set workspace markdown files to open with Muninn's custom markdown editor.",
   "configuration.integrations.mermaid.enabled.description": "Enable inline Mermaid rendering inside the Muninn custom markdown editor.",
   "configuration.integrations.mermaid.allowInUntrustedWorkspaces.description": "Allow Mermaid rendering in restricted workspaces (disabled by default for safety).",
   "configuration.toolbar.mode.description": "Choose the Muninn toolbar mode. Basic shows core actions, advanced shows the full authoring toolbar."

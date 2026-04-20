@@ -1,8 +1,4 @@
 {
-  "Removed workspace editor association for Muninn markdown editor.": "Removed workspace editor association for Muninn markdown editor.",
-  "Set workspace editor association for Muninn markdown editor.": "Set workspace editor association for Muninn markdown editor.",
-  "Failed to update workspace editor association for Muninn markdown editor.": "Failed to update workspace editor association for Muninn markdown editor.",
-  "Editor association update error.": "Editor association update error.",
   "Muninn for VS Code": "Muninn for VS Code",
   "Muninn for VS Code configuration": "Muninn for VS Code configuration",
   "Resource: {0}": "Resource: {0}",

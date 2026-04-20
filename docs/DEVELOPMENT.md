@@ -1,18 +1,10 @@
-# Development Guide
+# Development
 
 ## Prerequisites
 
 - Node.js 20+
 - VS Code 1.85+
 - npm
-
-## Setup
-
-```bash
-git clone https://github.com/bluecloud-dev/muninn-vscode.git
-cd muninn-vscode
-npm ci
-```
 
 ## Core Commands
 
@@ -30,33 +22,29 @@ npm run test:e2e
 
 ## Runtime Shape
 
-- Host entrypoint: `/Users/aymenhammouda/workspace/markdown-reader/src/extension.ts`
-- Custom editor host: `/Users/aymenhammouda/workspace/markdown-reader/src/custom-editor/`
-- Webview editor: `/Users/aymenhammouda/workspace/markdown-reader/src/webview/editor/`
+- Host entrypoint: `src/extension.ts`
+- Custom editor host: `src/custom-editor/`
+- Webview editor: `src/webview/editor/`
+- Integration policy: `src/integrations/`
 
-## Run in VS Code
+## Activation Notes
+
+- Muninn activates lazily through the custom editor contribution and contributed commands.
+- It does not perform startup-time workspace editor-association rewrites.
+
+## Local Workflow
 
 1. Open the repo in VS Code.
-2. Press `F5` (`Run Extension`).
-3. In the Extension Development Host, open an `.md` file.
-
-Expected: file opens with `muninn.markdownEditor`.
+2. Press `F5` to launch the Extension Development Host.
+3. Open a markdown file and verify it opens in `muninn.markdownEditor`.
+4. Use `Open Raw Markdown` when you need to inspect source-side behavior directly.
 
 ## Debugging
 
-- Logs use the `Logger` service and appear in **Output → Muninn for VS Code**.
-- Use breakpoints in `src/` and run `F5`.
+- Logs are written to `Output -> Muninn for VS Code`.
+- Put breakpoints in `src/extension.ts` for host logic and `src/webview/editor/` for webview logic.
+- When investigating sync issues, verify both the backing `TextDocument` and the active webview state.
 
-## Tests
+## Documentation Expectations
 
-- Integration config: `/Users/aymenhammouda/workspace/markdown-reader/.vscode-test.mjs`
-- E2E config: `/Users/aymenhammouda/workspace/markdown-reader/wdio.conf.cjs`
-- Unit runner: `/Users/aymenhammouda/workspace/markdown-reader/scripts/run-unit-tests.js`
-
-## Packaging
-
-```bash
-npm run package
-```
-
-Generated VSIX appears in repo root.
+When you change architecture, commands, settings, or UX behavior, update the affected docs in the same change. The implementation and the docs should tell the same story.

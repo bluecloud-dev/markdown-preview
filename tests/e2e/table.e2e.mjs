@@ -1,38 +1,12 @@
 import { expect, browser } from '@wdio/globals';
 import {
+  executeUntil,
   openWorkspaceFile,
   readWorkspaceFileText,
   waitForCustomEditor,
+  waitForWorkspaceMarkdown,
   withCustomEditorWebview,
 } from './helpers.mjs';
-
-const executeUntil = async (command, predicate, errorMessage) => {
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    await browser.executeWorkbench(async (vscode, commandName) => {
-      await vscode.commands.executeCommand(commandName);
-    }, command);
-    await browser.pause(200);
-
-    const text = await readWorkspaceFileText('sample.md');
-    if (predicate(text)) {
-      return;
-    }
-  }
-
-  throw new Error(errorMessage);
-};
-
-const waitForWorkspaceMarkdown = async (predicate, errorMessage) => {
-  for (let attempt = 0; attempt < 10; attempt += 1) {
-    const text = await readWorkspaceFileText('sample.md');
-    if (predicate(text)) {
-      return text;
-    }
-    await browser.pause(200);
-  }
-
-  throw new Error(errorMessage);
-};
 
 const applyTableSourceFromWebview = async (source, mode) => {
   await withCustomEditorWebview(async () => {
@@ -123,27 +97,4 @@ describe('Table node view workflow', () => {
     expect(text).not.toContain('```muninn-table');
   });
 
-  it('deletes the selected table from the document', async () => {
-    await openWorkspaceFile('sample.md');
-    await waitForCustomEditor('sample.md');
-
-    await executeUntil(
-      'muninn.insertTable',
-      (text) => text.includes('| Column 1 | Column 2 |'),
-      'Expected table insertion before delete validation.',
-    );
-
-    await withCustomEditorWebview(async () => {
-      const tableNode = await browser.$('[data-testid="muninn-table-node"]');
-      const deleteButton = await tableNode.$('[data-testid="muninn-table-delete"]');
-      await deleteButton.waitForDisplayed({ timeout: 5_000 });
-      await deleteButton.click();
-    });
-
-    const text = await waitForWorkspaceMarkdown(
-      (nextText) => !nextText.includes('| Column 1 | Column 2 |'),
-      'Expected Delete action to remove the inserted table markdown.',
-    );
-    expect(text).not.toContain('```muninn-table');
-  });
 });

@@ -101,7 +101,6 @@ describe('extension activation', () => {
 
     sinon.stub(ConfigService.prototype, 'clearCache');
     sinon.stub(ConfigService.prototype, 'getConfig').returns({
-      editorAssociations: true,
       mermaidEnabled: true,
       mermaidAllowInUntrustedWorkspaces: false,
       toolbarMode: 'basic',

@@ -1,16 +1,17 @@
 # Muninn for VS Code
 
-Muninn provides a reading-first Markdown experience in VS Code with a custom editor as the default for `.md` and `.markdown` files.
+Muninn is a reading-first markdown workspace for specs, ADRs, RFCs, and long-form developer docs inside VS Code. It opens markdown in a desktop custom editor that keeps the reading surface clean while still supporting routine authoring without bouncing out to raw source for every change.
 
-## Highlights
+## Product Shape
 
-- Custom markdown editor (`muninn.markdownEditor`) opens by default.
-- Single-pane rich editing toolbar with grouped Text/Structure/Insert actions.
-- Mermaid block insertion with inline preview panel and guarded rendering.
-- In-editor table node view with editable grid, add-row/add-column, and source toggle.
-- Raw markdown escape hatch command.
-- Workspace trust-aware Mermaid gating.
-- No telemetry.
+- Desktop-first VS Code custom editor for `.md` and `.markdown`
+- Single-pane reading surface with a built-in authoring toolbar
+- Raw markdown escape hatch via `muninn.openRawMarkdown`
+- Trust-aware Mermaid rendering
+- Source-preserving table editing
+- No telemetry
+
+Muninn no longer rewrites `workbench.editorAssociations`. Markdown ownership comes from the custom editor contribution itself, which keeps activation lazy and avoids mutating workspace settings on startup.
 
 ## Commands
 
@@ -34,29 +35,28 @@ Muninn provides a reading-first Markdown experience in VS Code with a custom edi
 
 ## Settings
 
-- `muninn.editorAssociations`
 - `muninn.integrations.mermaid.enabled`
 - `muninn.integrations.mermaid.allowInUntrustedWorkspaces`
-- `muninn.toolbar.mode` (`basic` or `advanced`)
+- `muninn.toolbar.mode`
 
 ## Development
 
 ```bash
 npm ci
-npm run compile
-npm run bundle
 npm run lint
-npm run format:check
 npm run typecheck
 npm test
-npm run test:e2e
 ```
 
-## Packaging
+Run `npm run coverage` when changing host-side services or document sync behavior, and run `npm run test:e2e` when changing webview/editor UX, toolbar behavior, table flows, or Mermaid behavior.
 
-```bash
-npm run package
-```
+## Docs
+
+- [Getting Started](./docs/GETTING_STARTED.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Roadmap](./docs/ROADMAP.md)
+- [Testing](./docs/TESTING.md)
+- [Contributing](./CONTRIBUTING.md)
 
 ## License
 

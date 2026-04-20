@@ -2,39 +2,41 @@ import { browser } from '@wdio/globals';
 
 export const getWorkbench = async () => browser.getWorkbench();
 
+const originalWorkspaceFiles = new Map();
+
 export const resetEditors = async () => {
   await browser.executeWorkbench(async (vscode) => {
-    const dirtyDocuments = vscode.workspace.textDocuments.filter(
-      (document) => document.isDirty && document.uri.scheme === 'file',
-    );
-
-    for (const document of dirtyDocuments) {
-      await vscode.window.showTextDocument(document, { preview: false });
-      await vscode.commands.executeCommand('workbench.action.files.revert');
-    }
-
+    await vscode.workspace.saveAll(false);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 };
 
-const getWorkspaceFileUri = async (fileName) =>
-  browser.executeWorkbench(async (vscode, relativeFileName) => {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-      throw new Error('No workspace folder available in VS Code test session.');
-    }
-    return vscode.Uri.joinPath(workspaceFolder.uri, relativeFileName).toString();
-  }, fileName);
-
 export const openWorkspaceFile = async (fileName) => {
   const workbench = await getWorkbench();
+  const hadSnapshot = originalWorkspaceFiles.has(fileName);
+  if (!hadSnapshot) {
+    originalWorkspaceFiles.set(fileName, await readWorkspaceFileText(fileName));
+  }
   await resetEditors();
 
-  const documentUri = await getWorkspaceFileUri(fileName);
-  await browser.executeWorkbench(async (vscode, serializedUri) => {
-    const uri = vscode.Uri.parse(serializedUri);
-    await vscode.commands.executeCommand('vscode.open', uri);
-  }, documentUri);
+  const originalContents = originalWorkspaceFiles.get(fileName);
+  await browser.executeWorkbench(
+    async (vscode, relativeFileName, contents, shouldRestore) => {
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        throw new Error('No workspace folder available in VS Code test session.');
+      }
+
+      const documentUri = vscode.Uri.joinPath(workspaceFolder.uri, relativeFileName);
+      if (shouldRestore) {
+        await vscode.workspace.fs.writeFile(documentUri, new TextEncoder().encode(contents));
+      }
+      await vscode.commands.executeCommand('vscode.open', documentUri);
+    },
+    fileName,
+    originalContents,
+    hadSnapshot,
+  );
 
   return workbench;
 };
@@ -125,7 +127,15 @@ const runWithOpenWebviewIfAppRoot = async (webview, runInWebview) => {
     await runInWebview();
     return true;
   } finally {
-    await webview.close();
+    try {
+      await webview.close();
+    } catch (error) {
+      // VS Code may have already torn down the webview iframe during editor
+      // transitions; WebdriverIO then surfaces this as "invalid session id".
+      if (!(error instanceof Error) || !error.message.includes('invalid session id')) {
+        throw error;
+      }
+    }
   }
 };
 
@@ -140,6 +150,43 @@ export const runInCustomEditorWebviewIfAvailable = async (runInWebview) => {
   }
 
   return false;
+};
+
+export const executeUntil = async (
+  command,
+  predicate,
+  errorMessage,
+  { fileName = 'sample.md', attempts = 8, pauseMs = 200 } = {},
+) => {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    await browser.executeWorkbench(async (vscode, commandName) => {
+      await vscode.commands.executeCommand(commandName);
+    }, command);
+    await browser.pause(pauseMs);
+
+    const text = await readWorkspaceFileText(fileName);
+    if (predicate(text)) {
+      return;
+    }
+  }
+
+  throw new Error(errorMessage);
+};
+
+export const waitForWorkspaceMarkdown = async (
+  predicate,
+  errorMessage,
+  { fileName = 'sample.md', attempts = 10, pauseMs = 200 } = {},
+) => {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const text = await readWorkspaceFileText(fileName);
+    if (predicate(text)) {
+      return text;
+    }
+    await browser.pause(pauseMs);
+  }
+
+  throw new Error(errorMessage);
 };
 
 export const withCustomEditorWebview = async (runInWebview) => {

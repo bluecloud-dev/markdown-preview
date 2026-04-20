@@ -8,6 +8,8 @@ before(async () => {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+const normalizeNewlines = (value: string): string => value.replaceAll('\r\n', '\n');
+
 const waitFor = async (
   predicate: () => boolean,
   timeoutMs = 15_000,
@@ -103,7 +105,7 @@ describe('Integration CLI: core workflow', () => {
     }
     expect(commandApplied).to.equal(true);
 
-    const text = document.getText();
+    const text = normalizeNewlines(document.getText());
     expect(text).to.include('| Name | Value |');
     expect(text).to.include('| --- | --- |');
     expect(text).to.include('\n| A | 1 |\n');
