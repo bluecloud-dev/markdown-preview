@@ -1,8 +1,8 @@
 {
-  "name": "markdown-preview",
+  "name": "muninn-vscode",
   "displayName": "%extension.displayName%",
   "publisher": "blueclouddev",
-  "version": "1.0.1",
+  "version": "2.0.0-alpha.1",
   "description": "%extension.description%",
   "license": "MIT",
   "engines": {
@@ -12,8 +12,10 @@
     "Visualization"
   ],
   "keywords": [
+    "muninn",
     "markdown",
     "preview",
+    "reading-first",
     "editor",
     "documentation",
     "readme",
@@ -26,504 +28,421 @@
   },
   "badges": [
     {
-      "url": "https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml/badge.svg",
-      "href": "https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml",
+      "url": "https://github.com/bluecloud-dev/muninn-vscode/actions/workflows/ci.yml/badge.svg",
+      "href": "https://github.com/bluecloud-dev/muninn-vscode/actions/workflows/ci.yml",
       "description": "CI"
     },
     {
-      "url": "https://img.shields.io/github/v/release/bluecloud-dev/markdown-preview?include_prereleases&label=release",
-      "href": "https://github.com/bluecloud-dev/markdown-preview/releases",
+      "url": "https://img.shields.io/github/v/release/bluecloud-dev/muninn-vscode?include_prereleases&label=release",
+      "href": "https://github.com/bluecloud-dev/muninn-vscode/releases",
       "description": "Latest release"
     },
     {
-      "url": "https://img.shields.io/github/license/bluecloud-dev/markdown-preview",
-      "href": "https://github.com/bluecloud-dev/markdown-preview/blob/main/LICENSE",
+      "url": "https://img.shields.io/github/license/bluecloud-dev/muninn-vscode",
+      "href": "https://github.com/bluecloud-dev/muninn-vscode/blob/main/LICENSE",
       "description": "License"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/bluecloud-dev/markdown-preview.git"
+    "url": "https://github.com/bluecloud-dev/muninn-vscode.git"
   },
   "activationEvents": [
     "onStartupFinished",
-    "onLanguage:markdown"
+    "onCustomEditor:muninn.markdownEditor",
+    "onCommand:muninn.inspectConfiguration",
+    "onCommand:muninn.openRawMarkdown",
+    "onCommand:muninn.toggleBold",
+    "onCommand:muninn.toggleItalic",
+    "onCommand:muninn.setHeading1",
+    "onCommand:muninn.setHeading2",
+    "onCommand:muninn.setHeading3",
+    "onCommand:muninn.setParagraph",
+    "onCommand:muninn.toggleBulletList",
+    "onCommand:muninn.toggleNumberedList",
+    "onCommand:muninn.insertLink",
+    "onCommand:muninn.insertMermaidBlock",
+    "onCommand:muninn.insertTable",
+    "onCommand:muninn.insertCodeBlock",
+    "onCommand:muninn.addTableRow",
+    "onCommand:muninn.addTableColumn",
+    "onCommand:muninn.tableActions"
   ],
   "main": "./dist/extension.js",
   "l10n": "./l10n",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "The Muninn editor works in restricted mode, but Mermaid rendering stays disabled unless explicitly allowed."
+    }
+  },
   "contributes": {
-    "commands": [
+    "customEditors": [
       {
-        "command": "markdownReader.enterEditMode",
-        "title": "%command.markdownReader.enterEditMode.title%",
-        "category": "%command.category%",
-        "icon": "$(edit)",
-        "enablement": "config.markdownReader.enabled && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.enterEditMode.shortTitle%"
-      },
-      {
-        "command": "markdownReader.exitEditMode",
-        "title": "%command.markdownReader.exitEditMode.title%",
-        "category": "%command.category%",
-        "icon": "$(check)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.exitEditMode.shortTitle%"
-      },
-      {
-        "command": "markdownReader.toggleEditMode",
-        "title": "%command.markdownReader.toggleEditMode.title%",
-        "category": "%command.category%",
-        "icon": "$(split-horizontal)",
-        "enablement": "config.markdownReader.enabled && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.toggleEditMode.shortTitle%"
-      },
-      {
-        "command": "markdownReader.inspectConfiguration",
-        "title": "%command.markdownReader.inspectConfiguration.title%",
-        "category": "%command.category%",
-        "icon": "$(settings-gear)",
-        "enablement": "config.markdownReader.enabled && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.inspectConfiguration.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatBold",
-        "title": "%command.markdownReader.formatBold.title%",
-        "category": "%command.category%",
-        "icon": "$(bold)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatBold.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatItalic",
-        "title": "%command.markdownReader.formatItalic.title%",
-        "category": "%command.category%",
-        "icon": "$(italic)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatItalic.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatStrikethrough",
-        "title": "%command.markdownReader.formatStrikethrough.title%",
-        "category": "%command.category%",
-        "icon": "$(strikethrough)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatStrikethrough.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatBulletList",
-        "title": "%command.markdownReader.formatBulletList.title%",
-        "category": "%command.category%",
-        "icon": "$(list-unordered)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatBulletList.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatNumberedList",
-        "title": "%command.markdownReader.formatNumberedList.title%",
-        "category": "%command.category%",
-        "icon": "$(list-ordered)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatNumberedList.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatTaskList",
-        "title": "%command.markdownReader.formatTaskList.title%",
-        "category": "%command.category%",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatTaskList.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatBlockQuote",
-        "title": "%command.markdownReader.formatBlockQuote.title%",
-        "category": "%command.category%",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatBlockQuote.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatHorizontalRule",
-        "title": "%command.markdownReader.formatHorizontalRule.title%",
-        "category": "%command.category%",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatHorizontalRule.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatInlineCode",
-        "title": "%command.markdownReader.formatInlineCode.title%",
-        "category": "%command.category%",
-        "icon": "$(code)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatInlineCode.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatCodeBlock",
-        "title": "%command.markdownReader.formatCodeBlock.title%",
-        "category": "%command.category%",
-        "icon": "$(symbol-snippet)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatCodeBlock.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatLink",
-        "title": "%command.markdownReader.formatLink.title%",
-        "category": "%command.category%",
-        "icon": "$(link)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatLink.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatImage",
-        "title": "%command.markdownReader.formatImage.title%",
-        "category": "%command.category%",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatImage.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatHeading1",
-        "title": "%command.markdownReader.formatHeading1.title%",
-        "category": "%command.category%",
-        "icon": "$(symbol-class)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatHeading1.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatHeading2",
-        "title": "%command.markdownReader.formatHeading2.title%",
-        "category": "%command.category%",
-        "icon": "$(symbol-method)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatHeading2.shortTitle%"
-      },
-      {
-        "command": "markdownReader.formatHeading3",
-        "title": "%command.markdownReader.formatHeading3.title%",
-        "category": "%command.category%",
-        "icon": "$(symbol-field)",
-        "enablement": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-        "shortTitle": "%command.markdownReader.formatHeading3.shortTitle%"
+        "viewType": "muninn.markdownEditor",
+        "displayName": "Muninn Markdown Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          },
+          {
+            "filenamePattern": "*.markdown"
+          }
+        ],
+        "priority": "default"
       }
     ],
-    "submenus": [
+    "commands": [
       {
-        "id": "markdownReader.formatSubmenu",
-        "label": "%submenu.format.label%"
+        "command": "muninn.openRawMarkdown",
+        "title": "%command.muninn.openRawMarkdown.title%",
+        "category": "%command.category%",
+        "icon": "$(code)",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.openRawMarkdown.shortTitle%"
       },
       {
-        "id": "markdownReader.headingSubmenu",
-        "label": "%submenu.heading.label%"
+        "command": "muninn.toggleBold",
+        "title": "%command.muninn.toggleBold.title%",
+        "category": "%command.category%",
+        "icon": "$(bold)",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.toggleBold.shortTitle%"
       },
       {
-        "id": "markdownReader.codeSubmenu",
-        "label": "%submenu.code.label%"
+        "command": "muninn.toggleItalic",
+        "title": "%command.muninn.toggleItalic.title%",
+        "category": "%command.category%",
+        "icon": "$(italic)",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.toggleItalic.shortTitle%"
+      },
+      {
+        "command": "muninn.setParagraph",
+        "title": "%command.muninn.setParagraph.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.setParagraph.shortTitle%"
+      },
+      {
+        "command": "muninn.setHeading1",
+        "title": "%command.muninn.setHeading1.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.setHeading1.shortTitle%"
+      },
+      {
+        "command": "muninn.setHeading2",
+        "title": "%command.muninn.setHeading2.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.setHeading2.shortTitle%"
+      },
+      {
+        "command": "muninn.setHeading3",
+        "title": "%command.muninn.setHeading3.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.setHeading3.shortTitle%"
+      },
+      {
+        "command": "muninn.toggleBulletList",
+        "title": "%command.muninn.toggleBulletList.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.toggleBulletList.shortTitle%"
+      },
+      {
+        "command": "muninn.toggleNumberedList",
+        "title": "%command.muninn.toggleNumberedList.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.toggleNumberedList.shortTitle%"
+      },
+      {
+        "command": "muninn.insertLink",
+        "title": "%command.muninn.insertLink.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.insertLink.shortTitle%"
+      },
+      {
+        "command": "muninn.insertMermaidBlock",
+        "title": "%command.muninn.insertMermaidBlock.title%",
+        "category": "%command.category%",
+        "icon": "$(symbol-structure)",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.insertMermaidBlock.shortTitle%"
+      },
+      {
+        "command": "muninn.inspectConfiguration",
+        "title": "%command.muninn.inspectConfiguration.title%",
+        "category": "%command.category%",
+        "icon": "$(settings-gear)",
+        "shortTitle": "%command.muninn.inspectConfiguration.shortTitle%"
+      },
+      {
+        "command": "muninn.insertTable",
+        "title": "%command.muninn.insertTable.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.insertTable.shortTitle%",
+        "icon": "$(table)"
+      },
+      {
+        "command": "muninn.insertCodeBlock",
+        "title": "%command.muninn.insertCodeBlock.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.insertCodeBlock.shortTitle%",
+        "icon": "$(code)"
+      },
+      {
+        "command": "muninn.addTableRow",
+        "title": "%command.muninn.addTableRow.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.addTableRow.shortTitle%"
+      },
+      {
+        "command": "muninn.addTableColumn",
+        "title": "%command.muninn.addTableColumn.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.addTableColumn.shortTitle%"
+      },
+      {
+        "command": "muninn.tableActions",
+        "title": "%command.muninn.tableActions.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.tableActions.shortTitle%",
+        "icon": "$(table)"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "markdownReader.enterEditMode",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && !markdownReader.editMode",
+          "command": "muninn.toggleBold",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@0"
         },
         {
-          "command": "markdownReader.exitEditMode",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+          "command": "muninn.toggleItalic",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@1"
         },
         {
-          "command": "markdownReader.formatBold",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+          "command": "muninn.insertMermaidBlock",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@2"
         },
         {
-          "command": "markdownReader.formatItalic",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+          "command": "muninn.insertTable",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@3"
         },
         {
-          "command": "markdownReader.formatStrikethrough",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+          "command": "muninn.tableActions",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@4"
         },
         {
-          "command": "markdownReader.formatBulletList",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+          "command": "muninn.openRawMarkdown",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@5"
         },
         {
-          "command": "markdownReader.formatNumberedList",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
+          "command": "muninn.inspectConfiguration",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@6"
-        },
-        {
-          "command": "markdownReader.formatInlineCode",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-          "group": "navigation@7"
-        },
-        {
-          "command": "markdownReader.formatCodeBlock",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-          "group": "navigation@8"
-        },
-        {
-          "command": "markdownReader.formatLink",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-          "group": "navigation@9"
-        }
-      ],
-      "editor/context": [
-        {
-          "submenu": "markdownReader.formatSubmenu",
-          "when": "config.markdownReader.enabled && markdownReader.editMode && markdownReader.isMarkdown",
-          "group": "1_modification"
-        }
-      ],
-      "markdownReader.formatSubmenu": [
-        {
-          "command": "markdownReader.formatBold",
-          "group": "1_text@1"
-        },
-        {
-          "command": "markdownReader.formatItalic",
-          "group": "1_text@2"
-        },
-        {
-          "command": "markdownReader.formatStrikethrough",
-          "group": "1_text@3"
-        },
-        {
-          "submenu": "markdownReader.headingSubmenu",
-          "group": "2_structure@1"
-        },
-        {
-          "command": "markdownReader.formatBulletList",
-          "group": "2_structure@2"
-        },
-        {
-          "command": "markdownReader.formatNumberedList",
-          "group": "2_structure@3"
-        },
-        {
-          "command": "markdownReader.formatTaskList",
-          "group": "2_structure@4"
-        },
-        {
-          "command": "markdownReader.formatBlockQuote",
-          "group": "2_structure@5"
-        },
-        {
-          "command": "markdownReader.formatHorizontalRule",
-          "group": "2_structure@6"
-        },
-        {
-          "submenu": "markdownReader.codeSubmenu",
-          "group": "3_code@1"
-        },
-        {
-          "command": "markdownReader.formatLink",
-          "group": "4_link@1"
-        },
-        {
-          "command": "markdownReader.formatImage",
-          "group": "4_link@2"
-        }
-      ],
-      "markdownReader.headingSubmenu": [
-        {
-          "command": "markdownReader.formatHeading1",
-          "group": "1_headings@1"
-        },
-        {
-          "command": "markdownReader.formatHeading2",
-          "group": "1_headings@2"
-        },
-        {
-          "command": "markdownReader.formatHeading3",
-          "group": "1_headings@3"
-        }
-      ],
-      "markdownReader.codeSubmenu": [
-        {
-          "command": "markdownReader.formatInlineCode",
-          "group": "1_code@1"
-        },
-        {
-          "command": "markdownReader.formatCodeBlock",
-          "group": "1_code@2"
         }
       ],
       "commandPalette": [
         {
-          "command": "markdownReader.enterEditMode",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && !markdownReader.editMode"
+          "command": "muninn.toggleBold",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.exitEditMode",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.toggleItalic",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.toggleEditMode",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown"
+          "command": "muninn.setParagraph",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.inspectConfiguration",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown"
+          "command": "muninn.setHeading1",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatBold",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.setHeading2",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatItalic",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.setHeading3",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatStrikethrough",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.toggleBulletList",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatBulletList",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.toggleNumberedList",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatNumberedList",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.insertLink",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatTaskList",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.insertMermaidBlock",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatBlockQuote",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.openRawMarkdown",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatHorizontalRule",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.inspectConfiguration"
         },
         {
-          "command": "markdownReader.formatInlineCode",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.insertTable",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatCodeBlock",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.insertCodeBlock",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatLink",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.addTableRow",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatImage",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.addTableColumn",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
-          "command": "markdownReader.formatHeading1",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
-        },
-        {
-          "command": "markdownReader.formatHeading2",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
-        },
-        {
-          "command": "markdownReader.formatHeading3",
-          "when": "config.markdownReader.enabled && markdownReader.isMarkdown && markdownReader.editMode"
+          "command": "muninn.tableActions",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "markdownReader.toggleEditMode",
-        "key": "ctrl+shift+v",
-        "mac": "cmd+shift+v",
-        "when": "config.markdownReader.enabled && markdownReader.isMarkdown"
-      },
-      {
-        "command": "markdownReader.formatBold",
+        "command": "muninn.toggleBold",
         "key": "ctrl+b",
         "mac": "cmd+b",
-        "when": "config.markdownReader.enabled && markdownReader.editMode && editorLangId == markdown && editorTextFocus"
+        "when": "activeCustomEditorId == muninn.markdownEditor"
       },
       {
-        "command": "markdownReader.formatItalic",
+        "command": "muninn.toggleItalic",
         "key": "ctrl+i",
         "mac": "cmd+i",
-        "when": "config.markdownReader.enabled && markdownReader.editMode && editorLangId == markdown && editorTextFocus"
+        "when": "activeCustomEditorId == muninn.markdownEditor"
       },
       {
-        "command": "markdownReader.formatTaskList",
+        "command": "muninn.insertMermaidBlock",
+        "key": "ctrl+alt+m",
+        "mac": "cmd+alt+m",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.insertTable",
         "key": "ctrl+alt+t",
         "mac": "cmd+alt+t",
-        "when": "config.markdownReader.enabled && markdownReader.editMode && editorLangId == markdown && editorTextFocus"
+        "when": "activeCustomEditorId == muninn.markdownEditor"
       },
       {
-        "command": "workbench.action.focusActiveEditorGroup",
-        "key": "escape",
-        "when": "config.markdownReader.enabled && markdownReader.editMode && editorLangId == markdown && !editorTextFocus && !inputFocus"
+        "command": "muninn.tableActions",
+        "key": "ctrl+alt+shift+t",
+        "mac": "cmd+alt+shift+t",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
       }
     ],
     "configuration": {
       "title": "%configuration.title%",
       "properties": {
-        "markdownReader.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "%configuration.enabled.description%",
-          "scope": "resource"
-        },
-        "markdownReader.excludePatterns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "**/node_modules/**",
-            "**/.git/**"
-          ],
-          "description": "%configuration.excludePatterns.description%",
-          "scope": "resource"
-        },
-        "markdownReader.maxFileSize": {
-          "type": "number",
-          "default": 1048576,
-          "minimum": 0,
-          "description": "%configuration.maxFileSize.description%",
-          "scope": "resource"
-        },
-        "markdownReader.editorAssociations": {
+        "muninn.editorAssociations": {
           "type": "boolean",
           "default": true,
           "description": "%configuration.editorAssociations.description%",
+          "scope": "window"
+        },
+        "muninn.integrations.mermaid.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "%configuration.integrations.mermaid.enabled.description%",
+          "scope": "resource"
+        },
+        "muninn.integrations.mermaid.allowInUntrustedWorkspaces": {
+          "type": "boolean",
+          "default": false,
+          "description": "%configuration.integrations.mermaid.allowInUntrustedWorkspaces.description%",
+          "scope": "resource"
+        },
+        "muninn.toolbar.mode": {
+          "type": "string",
+          "enum": [
+            "basic",
+            "advanced"
+          ],
+          "default": "basic",
+          "description": "%configuration.toolbar.mode.description%",
           "scope": "window"
         }
       }
     }
   },
   "scripts": {
-    "compile": "tsc -p . && tsc -p tsconfig.tests.json",
+    "typecheck": "tsc -p . --noEmit && tsc -p tsconfig.tests.json --noEmit",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/integration-cli/**/*.ts\" \"tests/unit/**/*.ts\" \"package.json\" \"package-lock.json\" \"package.nls.json\" \"l10n/bundle.l10n.json\" \".vscode-test.mjs\" \"wdio.conf.cjs\" \"scripts/*.js\" \".github/workflows/*.yml\" \"README.md\" \"docs/ARCHITECTURE.md\" \"docs/DEVELOPMENT.md\" \"docs/GETTING_STARTED.md\" \"docs/TESTING.md\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/integration-cli/**/*.ts\" \"tests/unit/**/*.ts\" \"package.json\" \"package-lock.json\" \"package.nls.json\" \"l10n/bundle.l10n.json\" \".vscode-test.mjs\" \"wdio.conf.cjs\" \"scripts/*.js\" \".github/workflows/*.yml\" \"README.md\" \"docs/ARCHITECTURE.md\" \"docs/DEVELOPMENT.md\" \"docs/GETTING_STARTED.md\" \"docs/TESTING.md\"",
+    "compile": "node -e \"require('fs').rmSync('out', { recursive: true, force: true })\" && tsc -p . && tsc -p tsconfig.tests.json",
     "bundle": "node esbuild.mjs",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "npm run test:integration",
-    "test:integration": "node ./out/tests/run-test.js",
-    "coverage": "node -r ./scripts/nyc-cpus-shim.js ./node_modules/nyc/bin/nyc.js node ./scripts/run-unit-tests.js",
+    "test:integration": "npm run compile && npm run bundle && vscode-test",
+    "test:web": "node ./scripts/test-web-not-supported.js",
+    "test:e2e": "node ./scripts/run-e2e.js",
+    "test:e2e:headed": "node ./scripts/run-e2e.js",
+    "coverage": "npm run compile && node -r ./scripts/nyc-cpus-shim.js ./node_modules/nyc/bin/nyc.js node ./scripts/run-unit-tests.js",
     "package": "npm run bundle && node scripts/vsce-wrapper.js package",
     "prepublish": "npm run compile && npm run bundle",
     "vscode:prepublish": "npm run compile && npm run bundle",
     "check:no-telemetry": "node scripts/check-no-telemetry.js"
   },
   "dependencies": {
-    "minimatch": "^10.1.1"
+    "markdown-it": "^14.1.1",
+    "mermaid": "^11.12.0",
+    "prosemirror-commands": "^1.7.1",
+    "prosemirror-history": "^1.5.0",
+    "prosemirror-keymap": "^1.2.3",
+    "prosemirror-markdown": "^1.13.2",
+    "prosemirror-model": "^1.25.4",
+    "prosemirror-schema-basic": "^1.2.4",
+    "prosemirror-schema-list": "^1.5.1",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-view": "^1.41.3"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@types/chai": "^5.2.3",
-    "@types/minimatch": "^6.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.0.3",
     "@types/sinon": "^21.0.0",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^8.50.1",
     "@typescript-eslint/parser": "^8.50.1",
+    "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.7.1",
+    "@wdio/cli": "^8.46.0",
+    "@wdio/globals": "^8.46.0",
+    "@wdio/junit-reporter": "^8.43.0",
+    "@wdio/local-runner": "^8.46.0",
+    "@wdio/mocha-framework": "^8.46.0",
+    "@wdio/spec-reporter": "^8.43.0",
     "chai": "^6.2.2",
     "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
@@ -533,7 +452,10 @@
     "prettier": "^3.7.4",
     "sinon": "^21.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wdio-video-reporter": "^6.2.0",
+    "wdio-vscode-service": "^6.1.4",
+    "webdriverio": "^8.46.0"
   },
   "nyc": {
     "all": true,
@@ -549,7 +471,9 @@
     "exclude": [
       "**/*.d.ts",
       "tests/**",
-      "out/src/types/config.js"
+      "out/src/types/config.js",
+      "out/src/custom-editor/muninn-custom-editor-provider.js",
+      "out/src/webview/**"
     ],
     "reporter": [
       "text",

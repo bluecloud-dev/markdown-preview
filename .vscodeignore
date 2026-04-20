@@ -1,48 +1,35 @@
-# Build output
 src/**
-**/*.ts
-out/**
-out/tests/**
-out/src/**
-out/**/*.map
-dist/**/*.map
-
-# Tests and coverage
 tests/**
+out/**
 coverage/**
 .nyc_output/**
-
-# Tooling and configs
+artifacts/**
+docs/**
+specs/**
+.github/**
 .vscode/**
 .vscode-test/**
-node_modules/**
+.specify/**
+.codex/**
 scripts/**
+node_modules/**
+**/*.ts
+**/*.map
+*.vsix
+*.log
+.gitignore
+.editorconfig
+.vscode-test.mjs
+MANUAL_QA.md
+QA_REPORT.md
+QUALITY_BASELINE.md
+REFACTOR_REPORT.md
+settings.json
+wdio.conf.cjs
 esbuild.mjs
 eslint.config.mjs
 tsconfig*.json
-
-# Specs and agent files
-specs/**
-.specify/**
-.codex/**
-.claude/**
 AGENTS.md
 CLAUDE.md
-
-# Repo metadata and docs not required at runtime
-.github/**
-docs/**
-.gitignore
-
-# Packaging artifacts
-*.vsix
-
-# Misc
-*.log
 image.png
-
-# Runtime dependencies needed by the packaged extension.
-!node_modules/
-!node_modules/minimatch/**
-!node_modules/brace-expansion/**
-!node_modules/balanced-match/**
+Evolmd

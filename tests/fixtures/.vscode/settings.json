@@ -1,6 +1,7 @@
 {
     "workbench.editorAssociations": {
-        "*.md": "vscode.markdown.preview.editor",
-        "*.markdown": "vscode.markdown.preview.editor"
-    }
+        "*.md": "muninn.markdownEditor",
+        "*.markdown": "muninn.markdownEditor"
+    },
+    "muninn.integrations.mermaid.allowInUntrustedWorkspaces": true
 }

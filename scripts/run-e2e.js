@@ -3,7 +3,12 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const now = new Date();
-const timestamp = now.toISOString().replaceAll(':', '').replaceAll('.', '').replace('T', '-').slice(0, 15);
+const timestamp = now
+  .toISOString()
+  .replaceAll(':', '')
+  .replaceAll('.', '')
+  .replace('T', '-')
+  .slice(0, 15);
 
 if (!process.env.WDIO_RUN_ID) {
   process.env.WDIO_RUN_ID = `${timestamp}-${Math.random().toString(16).slice(2, 8)}`;
@@ -22,7 +27,11 @@ const cliPath = path.join(__dirname, '..', 'node_modules', '@wdio', 'cli', 'bin'
 const repoRoot = path.join(__dirname, '..');
 const userArgs = process.argv.slice(2);
 const hasSpecSelection = userArgs.some(
-  (arg) => arg === '--spec' || arg.startsWith('--spec=') || arg === '--suite' || arg.startsWith('--suite=')
+  (arg) =>
+    arg === '--spec' ||
+    arg.startsWith('--spec=') ||
+    arg === '--suite' ||
+    arg.startsWith('--suite='),
 );
 const hasMaxInstancesArg = userArgs.some((arg, index) => {
   if (arg === '--maxInstances') {
@@ -44,9 +53,6 @@ const defaultSpecs = !hasSpecSelection
   ? fs
       .readdirSync(path.join(repoRoot, 'tests', 'e2e'))
       .filter((entry) => entry.endsWith('.e2e.mjs'))
-      // Temporarily exclude the flaky formatting UI scenario from the default CI gate.
-      // It is still runnable explicitly via --spec and formatting remains covered by integration tests.
-      .filter((entry) => entry !== 'formatting-mermaid.e2e.mjs')
       .sort()
       .map((entry) => `./tests/e2e/${entry}`)
   : [null];

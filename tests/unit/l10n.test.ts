@@ -5,8 +5,6 @@ before(async () => {
   ({ expect } = await import('chai'));
 });
 
-
-
 describe('l10n', () => {
   it('formats messages with placeholders', () => {
     expect(t('Hello {0}', 'world')).to.equal('Hello world');

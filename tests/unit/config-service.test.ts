@@ -7,21 +7,19 @@ before(async () => {
   ({ expect } = await import('chai'));
 });
 
-
-
 type ConfigurationOverrides = {
-  enabled?: boolean;
-  excludePatterns?: string[];
-  maxFileSize?: number;
   editorAssociations?: boolean;
+  mermaidEnabled?: boolean;
+  mermaidAllowInUntrustedWorkspaces?: boolean;
+  toolbarMode?: 'basic' | 'advanced';
 };
 
 const createConfiguration = (overrides?: ConfigurationOverrides): vscode.WorkspaceConfiguration => {
   const values = {
-    enabled: overrides?.enabled,
-    excludePatterns: overrides?.excludePatterns,
-    maxFileSize: overrides?.maxFileSize,
     editorAssociations: overrides?.editorAssociations,
+    'integrations.mermaid.enabled': overrides?.mermaidEnabled,
+    'integrations.mermaid.allowInUntrustedWorkspaces': overrides?.mermaidAllowInUntrustedWorkspaces,
+    'toolbar.mode': overrides?.toolbarMode,
   };
 
   return {
@@ -44,23 +42,21 @@ describe('ConfigService', () => {
   });
 
   it('returns defaults when configuration is empty', () => {
-    sinon
-      .stub(vscode.workspace, 'getConfiguration')
-      .returns(createConfiguration());
+    sinon.stub(vscode.workspace, 'getConfiguration').returns(createConfiguration());
 
     const service = new ConfigService();
     const config = service.getConfig();
 
-    expect(config.enabled).to.equal(true);
-    expect(config.excludePatterns).to.include('**/node_modules/**');
-    expect(config.maxFileSize).to.equal(1_048_576);
     expect(config.editorAssociations).to.equal(true);
+    expect(config.mermaidEnabled).to.equal(true);
+    expect(config.mermaidAllowInUntrustedWorkspaces).to.equal(false);
+    expect(config.toolbarMode).to.equal('basic');
   });
 
   it('caches configuration per resource and reloads on demand', () => {
     const getConfigurationStub = sinon
       .stub(vscode.workspace, 'getConfiguration')
-      .returns(createConfiguration({ enabled: false }));
+      .returns(createConfiguration({ editorAssociations: false }));
 
     const service = new ConfigService();
     const uri = vscode.Uri.file('/tmp/sample.md');
@@ -68,8 +64,8 @@ describe('ConfigService', () => {
     const first = service.getConfig(uri);
     const second = service.getConfig(uri);
 
-    expect(first.enabled).to.equal(false);
-    expect(second.enabled).to.equal(false);
+    expect(first.editorAssociations).to.equal(false);
+    expect(second.editorAssociations).to.equal(false);
     expect(getConfigurationStub.calledOnce).to.equal(true);
 
     service.reload(uri);
@@ -77,58 +73,52 @@ describe('ConfigService', () => {
   });
 
   it('returns inspection details for settings', () => {
-    sinon
-      .stub(vscode.workspace, 'getConfiguration')
-      .returns(createConfiguration({ enabled: true, maxFileSize: 512 }));
+    sinon.stub(vscode.workspace, 'getConfiguration').returns(
+      createConfiguration({
+        editorAssociations: false,
+        mermaidEnabled: true,
+        mermaidAllowInUntrustedWorkspaces: true,
+        toolbarMode: 'advanced',
+      }),
+    );
 
     const service = new ConfigService();
     const inspection = service.inspect();
 
-    expect(inspection.enabled?.globalValue).to.equal(true);
-    expect(inspection.maxFileSize?.globalValue).to.equal(512);
-    expect(inspection.editorAssociations?.globalValue).to.equal(undefined);
+    expect(inspection.editorAssociations?.globalValue).to.equal(false);
+    expect(inspection.mermaidEnabled?.globalValue).to.equal(true);
+    expect(inspection.mermaidAllowInUntrustedWorkspaces?.globalValue).to.equal(true);
+    expect(inspection.toolbarMode?.globalValue).to.equal('advanced');
   });
 
-  it('respects exclude patterns for workspace-relative paths', () => {
-    sinon
-      .stub(vscode.workspace, 'getConfiguration')
-      .returns(createConfiguration({ excludePatterns: ['**/docs/**'] }));
-    sinon
-      .stub(vscode.workspace, 'asRelativePath')
-      .callsFake((pathOrUri: string | vscode.Uri) =>
-        (typeof pathOrUri === 'string' ? pathOrUri : pathOrUri.fsPath).replace('/workspace/', '')
-      );
+  it('exposes convenience getters for active settings', () => {
+    sinon.stub(vscode.workspace, 'getConfiguration').returns(
+      createConfiguration({
+        editorAssociations: false,
+        mermaidEnabled: false,
+        mermaidAllowInUntrustedWorkspaces: true,
+        toolbarMode: 'advanced',
+      }),
+    );
 
     const service = new ConfigService();
-    const uri = vscode.Uri.file('/workspace/docs/readme.md');
+    const uri = vscode.Uri.file('/workspace/readme.md');
 
-    expect(service.isExcluded(uri)).to.equal(true);
+    expect(service.getEditorAssociations(uri)).to.equal(false);
+    expect(service.getMermaidEnabled(uri)).to.equal(false);
+    expect(service.getMermaidAllowInUntrustedWorkspaces(uri)).to.equal(true);
+    expect(service.getToolbarMode(uri)).to.equal('advanced');
   });
 
   it('clears cache and reloads configuration values', () => {
     const getConfigurationStub = sinon.stub(vscode.workspace, 'getConfiguration');
-    getConfigurationStub.onCall(0).returns(createConfiguration({ enabled: true }));
-    getConfigurationStub.onCall(1).returns(createConfiguration({ enabled: false }));
+    getConfigurationStub.onCall(0).returns(createConfiguration({ editorAssociations: true }));
+    getConfigurationStub.onCall(1).returns(createConfiguration({ editorAssociations: false }));
 
     const service = new ConfigService();
-    expect(service.getConfig().enabled).to.equal(true);
+    expect(service.getConfig().editorAssociations).to.equal(true);
 
     service.clearCache();
-    expect(service.getConfig().enabled).to.equal(false);
-  });
-
-  it('matches exclude patterns case-insensitively and with dotfiles', () => {
-    sinon
-      .stub(vscode.workspace, 'getConfiguration')
-      .returns(createConfiguration({ excludePatterns: ['**/DOCS/**', '**/.git/**'] }));
-    sinon
-      .stub(vscode.workspace, 'asRelativePath')
-      .callsFake((pathOrUri: string | vscode.Uri) =>
-        typeof pathOrUri === 'string' ? pathOrUri : pathOrUri.fsPath
-      );
-
-    const service = new ConfigService();
-    expect(service.isExcluded(vscode.Uri.file('/workspace/docs/README.md'))).to.equal(true);
-    expect(service.isExcluded(vscode.Uri.file('/workspace/.git/config'))).to.equal(true);
+    expect(service.getConfig().editorAssociations).to.equal(false);
   });
 });

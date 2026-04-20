@@ -1,8 +1,10 @@
+| Column 1 | Column 2 |
+| --- | --- |
+| Value 1 | Value 2 |
+
 # Research: Markdown Reader Extension
 
-**Date**: 2025-12-24 | **Updated**: 2025-12-24
-**Feature**: [spec.md](./spec.md)
-**Plan**: [plan.md](./plan.md)
+**Date**: 2025-12-24 | **Updated**: 2025-12-24 **Feature**: [spec.md](./spec.md) **Plan**: [plan.md](./plan.md)
 
 ## Executive Summary
 
@@ -73,6 +75,7 @@ await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 ```
 
 **Sequence for Preview-by-Default**:
+
 1. Detect markdown file open via `onDidOpenTextDocument`
 2. Execute `markdown.showPreview` to open preview
 3. Close the raw editor that triggered the open
@@ -147,6 +150,7 @@ await editor.edit(editBuilder => {
 ### Formatting Implementation Patterns
 
 **Bold** (`**text**`):
+
 ```typescript
 function applyBold(editor: vscode.TextEditor) {
     const selection = editor.selection;
@@ -158,6 +162,7 @@ function applyBold(editor: vscode.TextEditor) {
 ```
 
 **Wrap with Markers** (generic):
+
 ```typescript
 function wrapWithMarkers(
     editor: vscode.TextEditor,
@@ -182,6 +187,7 @@ function wrapWithMarkers(
 ```
 
 **Toggle Line Prefix** (lists, headings):
+
 ```typescript
 function toggleLinePrefix(editor: vscode.TextEditor, prefix: string) {
     const line = editor.document.lineAt(editor.selection.active.line);
@@ -246,9 +252,10 @@ function getConfig() {
 ### Workspace vs Global Settings
 
 Configuration supports multiple scopes:
-- **Global**: User settings (applies everywhere)
-- **Workspace**: `.vscode/settings.json` (project-specific)
-- **Workspace Folder**: Multi-root workspace folder settings
+
+* **Global**: User settings (applies everywhere)
+* **Workspace**: `.vscode/settings.json` (project-specific)
+* **Workspace Folder**: Multi-root workspace folder settings
 
 ```typescript
 // Check if setting is workspace-scoped
@@ -445,9 +452,10 @@ if (hasConflicts) {
 ### Unit Tests (Mocked vscode API)
 
 Use `jest` or `mocha` with mocked VS Code modules for:
-- Formatting service functions
-- Configuration parsing
-- State management
+
+* Formatting service functions
+* Configuration parsing
+* State management
 
 ### Integration Tests (@vscode/test-electron)
 
@@ -472,35 +480,36 @@ suite('Extension Test Suite', () => {
 ### Test Fixtures
 
 Create test markdown files of various sizes and content types:
-- `simple.md` - Basic markdown
-- `large.md` - >1MB file
-- `with-frontmatter.md` - YAML frontmatter
-- `conflict.md` - Git conflict markers
+
+* `simple.md` - Basic markdown
+* `large.md` - >1MB file
+* `with-frontmatter.md` - YAML frontmatter
+* `conflict.md` - Git conflict markers
 
 ## 10. Performance Considerations
 
 ### Startup Impact
 
-- Use lazy activation (`onLanguage:markdown`) instead of `*`
-- Defer non-critical initialization
-- Target: <50ms added to VS Code startup
+* Use lazy activation (`onLanguage:markdown`) instead of `*`
+* Defer non-critical initialization
+* Target: <50ms added to VS Code startup
 
 ### Preview Switch Performance
 
-- Native `markdown.showPreview` is fast (<500ms)
-- State management should be O(1) lookup
-- Target: <500ms for mode switch
+* Native `markdown.showPreview` is fast (<500ms)
+* State management should be O(1) lookup
+* Target: <500ms for mode switch
 
 ### Formatting Performance
 
-- Direct `TextEditorEdit` operations are fast (<100ms)
-- No need for debouncing for single operations
-- Target: <100ms per formatting action
+* Direct `TextEditorEdit` operations are fast (<100ms)
+* No need for debouncing for single operations
+* Target: <100ms per formatting action
 
 ## References
 
-- [VS Code Extension API](https://code.visualstudio.com/api)
-- [Activation Events](https://code.visualstudio.com/api/references/activation-events)
-- [When Clause Contexts](https://code.visualstudio.com/api/references/when-clause-contexts)
-- [Contribution Points](https://code.visualstudio.com/api/references/contribution-points)
-- [Commands API](https://code.visualstudio.com/api/extension-guides/command)
+* [VS Code Extension API](https://code.visualstudio.com/api)
+* [Activation Events](https://code.visualstudio.com/api/references/activation-events)
+* [When Clause Contexts](https://code.visualstudio.com/api/references/when-clause-contexts)
+* [Contribution Points](https://code.visualstudio.com/api/references/contribution-points)
+* [Commands API](https://code.visualstudio.com/api/extension-guides/command)

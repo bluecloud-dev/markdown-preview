@@ -1,52 +1,52 @@
-import { expect, browser } from '@wdio/globals';
+import { browser } from '@wdio/globals';
 import {
-  focusWorkspaceFile,
   openWorkspaceFile,
-  readEditorState,
-  waitForEditMode,
-  waitForPreviewMode,
+  readWorkspaceFileText,
+  waitForCustomEditor,
 } from './helpers.mjs';
 
+const executeUntil = async (command, predicate, errorMessage) => {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await browser.executeWorkbench(async (vscode, commandName) => {
+      await vscode.commands.executeCommand(commandName);
+    }, command);
+    await browser.pause(180);
+
+    const text = await readWorkspaceFileText('with-formatting.md');
+    if (predicate(text)) {
+      return;
+    }
+  }
+  throw new Error(errorMessage);
+};
+
 describe('Formatting journey', () => {
-  it('formats selected text with command execution in edit mode', async () => {
+  it('toggles bold and italic on/off without stacking markers', async () => {
     await openWorkspaceFile('with-formatting.md');
-    await waitForPreviewMode('with-formatting.md');
-    await focusWorkspaceFile('with-formatting.md');
+    await waitForCustomEditor('with-formatting.md');
 
-    await browser.executeWorkbench(async (vscode) => {
-      await vscode.commands.executeCommand('muninn.enterEditMode');
-    });
-    await waitForEditMode();
-
-    await browser.executeWorkbench(async (vscode) => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        throw new Error('No active markdown editor to prepare formatting test.');
-      }
-
-      const heading = editor.document.lineAt(0).text;
-      const token = 'Formatting';
-      const start = heading.indexOf(token);
-      if (start === -1) {
-        throw new Error('Formatting fixture heading did not include expected token.');
-      }
-
-      editor.selection = new vscode.Selection(new vscode.Position(0, start), new vscode.Position(0, start + token.length));
-      await vscode.commands.executeCommand('muninn.formatBold');
-    });
-
-    await browser.waitUntil(
-      async () => {
-        const state = await readEditorState();
-        return state.documentText?.includes('**Formatting**');
-      },
-      {
-        timeout: 15_000,
-        timeoutMsg: 'Expected bold formatting command to wrap selected heading text.',
-      }
+    await executeUntil(
+      'muninn.toggleBold',
+      (text) => text.includes('**Formatting**'),
+      'Expected first bold toggle to apply markdown emphasis.'
     );
 
-    const state = await readEditorState();
-    expect(state.documentText).toContain('**Formatting**');
+    await executeUntil(
+      'muninn.toggleBold',
+      (text) => !text.includes('**Formatting**'),
+      'Expected second bold toggle to remove markdown emphasis.'
+    );
+
+    await executeUntil(
+      'muninn.toggleItalic',
+      (text) => text.includes('_Formatting_') || text.includes('*Formatting*'),
+      'Expected italic toggle to apply emphasis after bold toggles.'
+    );
+
+    await executeUntil(
+      'muninn.toggleItalic',
+      (text) => !text.includes('_Formatting_') && !text.includes('*Formatting*'),
+      'Expected second italic toggle to remove emphasis cleanly.'
+    );
   });
 });

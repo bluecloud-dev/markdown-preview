@@ -40,6 +40,16 @@ class Range {
   }
 }
 
+class WorkspaceEdit {
+  constructor() {
+    this.replacements = [];
+  }
+
+  replace(uri, range, text) {
+    this.replacements.push({ uri, range, text });
+  }
+}
+
 class Selection extends Range {
   constructor(anchor, active) {
     super(anchor, active);
@@ -62,6 +72,7 @@ const workspaceFs = {
 
 const workspace = {
   fs: workspaceFs,
+  applyEdit: async () => true,
   getConfiguration: () => ({
     get: () => undefined,
     inspect: () => undefined,
@@ -75,6 +86,7 @@ const workspace = {
   onDidCloseTextDocument: () => ({ dispose: () => {} }),
   onDidDeleteFiles: () => ({ dispose: () => {} }),
   onDidChangeConfiguration: () => ({ dispose: () => {} }),
+  onDidChangeTextDocument: () => ({ dispose: () => {} }),
 };
 
 const window = {
@@ -82,6 +94,7 @@ const window = {
   showWarningMessage: async () => undefined,
   showErrorMessage: async () => undefined,
   showInputBox: async () => undefined,
+  showOpenDialog: async () => undefined,
   showTextDocument: async () => undefined,
   setStatusBarMessage: () => undefined,
   createOutputChannel: () => ({
@@ -90,9 +103,13 @@ const window = {
     clear: () => {},
     dispose: () => {},
   }),
+  createTextEditorDecorationType: () => ({
+    dispose: () => {},
+  }),
   activeTextEditor: undefined,
   visibleTextEditors: [],
   onDidChangeActiveTextEditor: () => ({ dispose: () => {} }),
+  registerCustomEditorProvider: () => ({ dispose: () => {} }),
   tabGroups: {
     onDidChangeTabs: () => ({ dispose: () => {} }),
     onDidChangeTabGroups: () => ({ dispose: () => {} }),
@@ -162,6 +179,7 @@ module.exports = {
   Uri,
   Position,
   Range,
+  WorkspaceEdit,
   Selection,
   ViewColumn,
   ConfigurationTarget,

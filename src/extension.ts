@@ -1,64 +1,13 @@
-/**
- * @fileoverview Extension entry point for Markdown Preview.
- *
- * This module handles the activation and deactivation lifecycle of the extension.
- * It is responsible for:
- * - Creating and wiring all service instances (dependency injection)
- * - Registering all commands with VS Code
- * - Setting up event listeners for configuration changes
- * - Managing the extension's disposables for proper cleanup
- *
- * The extension activates on `onStartupFinished` to sync editor associations,
- * and on `onLanguage:markdown` to handle preview behavior when markdown is opened.
- *
- * @module extension
- * @see {@link https://code.visualstudio.com/api/references/activation-events}
- */
-
 import * as vscode from 'vscode';
-import {
-  formatBold,
-  formatBlockQuote,
-  formatBulletList,
-  formatCodeBlock,
-  formatHeading1,
-  formatHeading2,
-  formatHeading3,
-  formatHorizontalRule,
-  formatImage,
-  formatInlineCode,
-  formatItalic,
-  formatLink,
-  formatNumberedList,
-  formatStrikethrough,
-  formatTaskList,
-} from './commands/format-commands';
-import { MarkdownFileHandler } from './handlers/markdown-file-handler';
-import { enterEditMode, exitEditMode, toggleEditMode } from './commands/mode-commands';
 import { ConfigInspection, ConfigService } from './services/config-service';
-import { FormattingService } from './services/formatting-service';
 import { Logger } from './services/logger';
-import { PreviewService } from './services/preview-service';
-import { StateService } from './services/state-service';
-import { ValidationService } from './services/validation-service';
-import { TitleBarController } from './ui/title-bar-controller';
 import { t } from './utils/l10n';
+import {
+  MUNINN_MARKDOWN_EDITOR_VIEW_TYPE,
+  MuninnCustomEditorProvider,
+} from './custom-editor/muninn-custom-editor-provider';
+import { ViewEditorCommand } from './custom-editor/protocol';
 
-/**
- * Format a configuration inspection result for display in the output channel.
- *
- * Transforms the VS Code configuration inspection object into a human-readable
- * string showing values at each scope level (default, user, workspace, folder).
- *
- * @param inspect - The configuration inspection result from VS Code
- * @returns A formatted string showing the value at each defined scope
- *
- * @example
- * // Returns: "default=true | user=false"
- * formatInspectValue({ defaultValue: true, globalValue: false });
- *
- * @internal
- */
 const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
   if (!inspect) {
     return 'unavailable';
@@ -75,9 +24,7 @@ const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
     return 'unset';
   }
 
-  return parts
-    .map(([label, value]) => `${label}=${JSON.stringify(value)}`)
-    .join(' | ');
+  return parts.map(([label, value]) => `${label}=${JSON.stringify(value)}`).join(' | ');
 };
 
 type EditorAssociationEntry = Readonly<{
@@ -89,8 +36,8 @@ type EditorAssociationRecord = Readonly<Record<string, string>>;
 type EditorAssociations = ReadonlyArray<EditorAssociationEntry> | EditorAssociationRecord;
 
 const MARKDOWN_ASSOCIATION_PATTERNS = ['*.md', '*.markdown'];
-const MARKDOWN_ASSOCIATION_VIEW = 'vscode.markdown.preview.editor';
-const MARKDOWN_ASSOCIATION_STATE_KEY = 'markdownReader.editorAssociationsAdded';
+const MARKDOWN_ASSOCIATION_VIEW = MUNINN_MARKDOWN_EDITOR_VIEW_TYPE;
+const MARKDOWN_ASSOCIATION_STATE_KEY = 'muninn.editorAssociationsAdded';
 
 type AssociationState = {
   patterns: string[];
@@ -100,56 +47,77 @@ const matchesAssociationPattern = (pattern: string, candidate: string): boolean 
   candidate === pattern || candidate === `**/${pattern}`;
 
 const addMarkdownAssociation = (
-  current: unknown
+  current: unknown,
 ): { updated: boolean; value: EditorAssociations; addedPatterns: string[] } => {
   if (Array.isArray(current)) {
     const entries = current as ReadonlyArray<EditorAssociationEntry>;
-    const addedPatterns: string[] = [];
+    const changedPatterns: string[] = [];
     const nextEntries = [...entries];
+
     for (const pattern of MARKDOWN_ASSOCIATION_PATTERNS) {
-      const hasAssociation = entries.some((entry) =>
-        matchesAssociationPattern(pattern, entry.filenamePattern)
+      const existingIndex = nextEntries.findIndex((entry) =>
+        matchesAssociationPattern(pattern, entry.filenamePattern),
       );
-      if (!hasAssociation) {
+      if (existingIndex === -1) {
         nextEntries.push({
           filenamePattern: pattern,
           viewType: MARKDOWN_ASSOCIATION_VIEW,
         });
-        addedPatterns.push(pattern);
+        changedPatterns.push(pattern);
+        continue;
+      }
+
+      const existingEntry = nextEntries[existingIndex];
+      if (existingEntry.viewType !== MARKDOWN_ASSOCIATION_VIEW) {
+        nextEntries[existingIndex] = {
+          ...existingEntry,
+          viewType: MARKDOWN_ASSOCIATION_VIEW,
+        };
+        changedPatterns.push(pattern);
       }
     }
+
     return {
-      updated: addedPatterns.length > 0,
+      updated: changedPatterns.length > 0,
       value: nextEntries,
-      addedPatterns,
+      addedPatterns: changedPatterns,
     };
   }
 
   if (current && typeof current === 'object') {
     const record = current as EditorAssociationRecord;
-    const addedPatterns: string[] = [];
+    const changedPatterns: string[] = [];
     const nextRecord: Record<string, string> = { ...record };
+
     for (const pattern of MARKDOWN_ASSOCIATION_PATTERNS) {
-      if (record[pattern] || record[`**/${pattern}`]) {
+      const directPattern = pattern;
+      const nestedPattern = `**/${pattern}`;
+      if (record[directPattern] === MARKDOWN_ASSOCIATION_VIEW) {
         continue;
       }
-      nextRecord[pattern] = MARKDOWN_ASSOCIATION_VIEW;
-      addedPatterns.push(pattern);
+      if (record[nestedPattern] === MARKDOWN_ASSOCIATION_VIEW) {
+        continue;
+      }
+
+      if (record[nestedPattern] !== undefined) {
+        delete nextRecord[nestedPattern];
+      }
+
+      nextRecord[directPattern] = MARKDOWN_ASSOCIATION_VIEW;
+      changedPatterns.push(pattern);
     }
+
     return {
-      updated: addedPatterns.length > 0,
+      updated: changedPatterns.length > 0,
       value: nextRecord,
-      addedPatterns,
+      addedPatterns: changedPatterns,
     };
   }
 
   return {
     updated: true,
     value: Object.fromEntries(
-      MARKDOWN_ASSOCIATION_PATTERNS.map((pattern) => [
-        pattern,
-        MARKDOWN_ASSOCIATION_VIEW,
-      ])
+      MARKDOWN_ASSOCIATION_PATTERNS.map((pattern) => [pattern, MARKDOWN_ASSOCIATION_VIEW]),
     ),
     addedPatterns: [...MARKDOWN_ASSOCIATION_PATTERNS],
   };
@@ -157,14 +125,14 @@ const addMarkdownAssociation = (
 
 const removeMarkdownAssociation = (
   current: unknown,
-  patterns: string[]
+  patterns: string[],
 ): { updated: boolean; value: EditorAssociations; removedPatterns: string[] } => {
   if (Array.isArray(current)) {
     const entries = current as ReadonlyArray<EditorAssociationEntry>;
     const removedPatterns = new Set<string>();
     const nextEntries = entries.filter((entry) => {
       const match = patterns.find((pattern) =>
-        matchesAssociationPattern(pattern, entry.filenamePattern)
+        matchesAssociationPattern(pattern, entry.filenamePattern),
       );
       if (!match) {
         return true;
@@ -221,7 +189,7 @@ const isAssociationsEmpty = (value: EditorAssociations): boolean => {
 const syncMarkdownAssociations = async (
   context: vscode.ExtensionContext,
   configService: ConfigService,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> => {
   const hasWorkspace =
     (vscode.workspace.workspaceFolders?.length ?? 0) > 0 ||
@@ -231,9 +199,9 @@ const syncMarkdownAssociations = async (
   }
 
   const config = configService.getConfig();
-  const shouldSet = config.enabled && config.editorAssociations;
+  const shouldSet = config.editorAssociations;
   const state = context.workspaceState.get<AssociationState | undefined>(
-    MARKDOWN_ASSOCIATION_STATE_KEY
+    MARKDOWN_ASSOCIATION_STATE_KEY,
   );
 
   try {
@@ -244,20 +212,17 @@ const syncMarkdownAssociations = async (
       if (!state?.patterns?.length) {
         return;
       }
-      const { updated, value } = removeMarkdownAssociation(
-        current,
-        state.patterns
-      );
+      const { updated, value } = removeMarkdownAssociation(current, state.patterns);
       if (!updated) {
         return;
       }
       await workbenchConfig.update(
         'editorAssociations',
         isAssociationsEmpty(value) ? undefined : value,
-        vscode.ConfigurationTarget.Workspace
+        vscode.ConfigurationTarget.Workspace,
       );
       await context.workspaceState.update(MARKDOWN_ASSOCIATION_STATE_KEY, void 0);
-      logger.info(t('Removed workspace editor association for markdown preview.'));
+      logger.info(t('Removed workspace editor association for Muninn markdown editor.'));
       return;
     }
 
@@ -265,219 +230,180 @@ const syncMarkdownAssociations = async (
     if (!updated) {
       return;
     }
-    await workbenchConfig.update(
-      'editorAssociations',
-      value,
-      vscode.ConfigurationTarget.Workspace
-    );
+    await workbenchConfig.update('editorAssociations', value, vscode.ConfigurationTarget.Workspace);
     if (addedPatterns.length > 0) {
       await context.workspaceState.update(MARKDOWN_ASSOCIATION_STATE_KEY, {
         patterns: addedPatterns,
       });
     }
-    logger.info(t('Set workspace editor association for markdown preview.'));
+    logger.info(t('Set workspace editor association for Muninn markdown editor.'));
   } catch (error) {
-    logger.warn(t('Failed to update workspace editor association for markdown preview.'));
+    logger.warn(t('Failed to update workspace editor association for Muninn markdown editor.'));
     logger.error(t('Editor association update error.'), error);
   }
 };
 
-/**
- * Activate the Markdown Preview extension.
- *
- * This is the main entry point called by VS Code when the extension is activated.
- * Activation occurs after startup and when a markdown file is opened
- * (via `onStartupFinished` and `onLanguage:markdown`).
- *
- * The function performs the following setup:
- * 1. Creates all service instances with proper dependency injection
- * 2. Registers command handlers for mode switching and formatting
- * 3. Sets up configuration change listeners
- * 4. Initializes the file handler and UI controllers
- *
- * All disposables are registered with the extension context to ensure proper
- * cleanup when the extension is deactivated.
- *
- * @param context - Extension activation context provided by VS Code, used for
- *                  state persistence and disposable management
- *
- * @example
- * // Called automatically by VS Code, not intended for direct invocation
- * // Activation events in package.json: "onStartupFinished", "onLanguage:markdown"
- */
+const getActiveMarkdownResource = (): vscode.Uri | undefined => {
+  const activeTab = vscode.window.tabGroups.activeTabGroup?.activeTab;
+  if (
+    activeTab?.input instanceof vscode.TabInputCustom &&
+    activeTab.input.viewType === MUNINN_MARKDOWN_EDITOR_VIEW_TYPE
+  ) {
+    return activeTab.input.uri;
+  }
+
+  return vscode.window.activeTextEditor?.document.uri;
+};
+
+const dispatchEditorCommand = async (
+  provider: MuninnCustomEditorProvider,
+  command: ViewEditorCommand,
+): Promise<void> => {
+  await provider.executeCommandInActiveEditor(command);
+};
+
+const registerCommands = (
+  entries: ReadonlyArray<Readonly<{ id: string; run: () => unknown }>>,
+): vscode.Disposable[] =>
+  entries.map((entry) => vscode.commands.registerCommand(entry.id, entry.run));
+
 export function activate(context: vscode.ExtensionContext): void {
-  const disposables: vscode.Disposable[] = [];
-
-  // Core services are shared across commands for consistent state management.
-  // The service layer follows a dependency injection pattern where each service
-  // receives its dependencies through the constructor.
-  const stateService = new StateService();
-  const configService = new ConfigService();
-  const outputChannel = vscode.window.createOutputChannel(t('Markdown Reader'));
+  const outputChannel = vscode.window.createOutputChannel(t('Muninn for VS Code'));
   const logger = new Logger(outputChannel);
-  const validationService = new ValidationService();
-  const formattingService = new FormattingService();
-  const previewService = new PreviewService(
-    stateService,
+  const configService = new ConfigService();
+  const customEditorProvider = new MuninnCustomEditorProvider(
+    context.extensionUri,
     configService,
-    validationService,
-    context.workspaceState,
-    logger
+    logger,
   );
-
-  const fileHandler = new MarkdownFileHandler(
-    previewService,
-    stateService,
-    configService,
-    validationService,
-    context.globalState,
-    logger
-  );
-  const titleBarController = new TitleBarController(stateService);
-
-  logger.info(t('Markdown Preview activated.'));
-  void syncMarkdownAssociations(context, configService, logger);
 
   const logConfigInspection = (resource?: vscode.Uri): void => {
     const inspection = configService.inspect(resource);
     outputChannel.clear();
-    outputChannel.appendLine(t('Markdown Reader configuration'));
+    outputChannel.appendLine(t('Muninn for VS Code configuration'));
+    outputChannel.appendLine(t('Resource: {0}', resource?.toString() ?? 'global'));
     outputChannel.appendLine(
-      t('Resource: {0}', resource?.toString() ?? 'global')
-    );
-    outputChannel.appendLine(
-      t('enabled: {0}', formatInspectValue(inspection.enabled))
-    );
-    outputChannel.appendLine(
-      t('excludePatterns: {0}', formatInspectValue(inspection.excludePatterns))
-    );
-    outputChannel.appendLine(
-      t('maxFileSize: {0}', formatInspectValue(inspection.maxFileSize))
+      t('integrations.mermaid.enabled: {0}', formatInspectValue(inspection.mermaidEnabled)),
     );
     outputChannel.appendLine(
       t(
-        'editorAssociations: {0}',
-        formatInspectValue(inspection.editorAssociations)
-      )
+        'integrations.mermaid.allowInUntrustedWorkspaces: {0}',
+        formatInspectValue(inspection.mermaidAllowInUntrustedWorkspaces),
+      ),
     );
+    outputChannel.appendLine(t('toolbar.mode: {0}', formatInspectValue(inspection.toolbarMode)));
     outputChannel.show(true);
   };
 
-  fileHandler.register();
-  titleBarController.register();
-  disposables.push(
-    fileHandler,
-    titleBarController,
-    outputChannel,
-    vscode.workspace.onDidChangeConfiguration((event) => {
-      const resource = vscode.window.activeTextEditor?.document.uri;
-      const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
-      const affectedFolders = workspaceFolders.filter((folder) =>
-        event.affectsConfiguration('markdownReader', folder.uri)
-      );
-      const affectsResource =
-        resource !== undefined &&
-        event.affectsConfiguration('markdownReader', resource);
-      const affectsGlobal = event.affectsConfiguration('markdownReader');
+  const showTableActions = async (provider: MuninnCustomEditorProvider): Promise<void> => {
+    const selected = await vscode.window.showQuickPick(
+      [
+        {
+          label: t('Insert New Table'),
+          command: 'insertTable' as ViewEditorCommand,
+        },
+        {
+          label: t('Add Table Row'),
+          command: 'addTableRow' as ViewEditorCommand,
+        },
+        {
+          label: t('Add Table Column'),
+          command: 'addTableColumn' as ViewEditorCommand,
+        },
+      ],
+      {
+        title: t('Muninn Table Actions'),
+        placeHolder: t('Select a table operation'),
+      },
+    );
 
-      if (!affectsGlobal && !affectsResource && affectedFolders.length === 0) {
+    if (!selected) {
+      return;
+    }
+
+    await dispatchEditorCommand(provider, selected.command);
+  };
+
+  const editorCommandEntries: ReadonlyArray<Readonly<{ id: string; command: ViewEditorCommand }>> =
+    [
+      { id: 'muninn.toggleBold', command: 'toggleBold' },
+      { id: 'muninn.toggleItalic', command: 'toggleItalic' },
+      { id: 'muninn.setHeading1', command: 'setHeading1' },
+      { id: 'muninn.setHeading2', command: 'setHeading2' },
+      { id: 'muninn.setHeading3', command: 'setHeading3' },
+      { id: 'muninn.setParagraph', command: 'setParagraph' },
+      { id: 'muninn.toggleBulletList', command: 'toggleBulletList' },
+      { id: 'muninn.toggleNumberedList', command: 'toggleNumberedList' },
+      { id: 'muninn.insertLink', command: 'insertLink' },
+      { id: 'muninn.insertMermaidBlock', command: 'insertMermaidBlock' },
+      { id: 'muninn.insertTable', command: 'insertTable' },
+      { id: 'muninn.addTableRow', command: 'addTableRow' },
+      { id: 'muninn.addTableColumn', command: 'addTableColumn' },
+    ];
+
+  const commandDisposables = registerCommands([
+    {
+      id: 'muninn.inspectConfiguration',
+      run: () => {
+        logConfigInspection(getActiveMarkdownResource());
+      },
+    },
+    {
+      id: 'muninn.openRawMarkdown',
+      run: async () => {
+        await customEditorProvider.openRawMarkdownForActiveEditor();
+      },
+    },
+    {
+      id: 'muninn.insertCodeBlock',
+      run: async () => {
+        await dispatchEditorCommand(customEditorProvider, 'insertCodeBlock');
+      },
+    },
+    {
+      id: 'muninn.tableActions',
+      run: async () => {
+        await showTableActions(customEditorProvider);
+      },
+    },
+    ...editorCommandEntries.map((entry) => ({
+      id: entry.id,
+      run: async () => {
+        await dispatchEditorCommand(customEditorProvider, entry.command);
+      },
+    })),
+  ]);
+
+  const disposables: vscode.Disposable[] = [
+    outputChannel,
+    customEditorProvider,
+    vscode.window.registerCustomEditorProvider(
+      MUNINN_MARKDOWN_EDITOR_VIEW_TYPE,
+      customEditorProvider,
+      {
+        webviewOptions: {
+          retainContextWhenHidden: true,
+        },
+        supportsMultipleEditorsPerDocument: false,
+      },
+    ),
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (!event.affectsConfiguration('muninn')) {
         return;
       }
-
-      logger.info(
-        t(
-          'Configuration changed; reloading settings for {0}.',
-          resource?.toString() ?? 'global'
-        )
-      );
       configService.clearCache();
-
-      if (affectsGlobal) {
-        configService.reload();
-      }
-
-      for (const folder of affectedFolders) {
-        configService.reload(folder.uri);
-      }
-
-      if (affectsResource) {
-        configService.reload(resource);
-      }
-
+      logger.info(t('Muninn configuration cache cleared after settings change.'));
       void syncMarkdownAssociations(context, configService, logger);
+      void customEditorProvider.notifyConfigurationChanged();
     }),
-    vscode.commands.registerCommand('markdownReader.inspectConfiguration', () =>
-      logConfigInspection(vscode.window.activeTextEditor?.document.uri)
-    ),
-    vscode.commands.registerCommand('markdownReader.enterEditMode', () =>
-      enterEditMode(previewService)
-    ),
-    vscode.commands.registerCommand('markdownReader.exitEditMode', () =>
-      exitEditMode(previewService)
-    ),
-    vscode.commands.registerCommand('markdownReader.toggleEditMode', () =>
-      toggleEditMode(previewService, stateService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatBold', (editor) =>
-      formatBold(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatItalic', (editor) =>
-      formatItalic(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand(
-      'markdownReader.formatStrikethrough',
-      (editor) => formatStrikethrough(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatBulletList', (editor) =>
-      formatBulletList(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand(
-      'markdownReader.formatNumberedList',
-      (editor) => formatNumberedList(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand(
-      'markdownReader.formatTaskList',
-      (editor) => formatTaskList(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand(
-      'markdownReader.formatBlockQuote',
-      (editor) => formatBlockQuote(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand(
-      'markdownReader.formatHorizontalRule',
-      (editor) => formatHorizontalRule(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatInlineCode', (editor) =>
-      formatInlineCode(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatCodeBlock', (editor) =>
-      formatCodeBlock(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatLink', (editor) =>
-      formatLink(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatImage', (editor) =>
-      formatImage(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatHeading1', (editor) =>
-      formatHeading1(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatHeading2', (editor) =>
-      formatHeading2(editor, formattingService)
-    ),
-    vscode.commands.registerTextEditorCommand('markdownReader.formatHeading3', (editor) =>
-      formatHeading3(editor, formattingService)
-    )
-  );
+    ...commandDisposables,
+  ];
 
   context.subscriptions.push(...disposables);
+  void syncMarkdownAssociations(context, configService, logger);
+  logger.info(t('Muninn custom markdown editor activated.'));
 }
 
-/**
- * Deactivate the extension.
- * @returns void
- * @throws No errors expected.
- */
 export function deactivate(): void {
   // No-op.
 }

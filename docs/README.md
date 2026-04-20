@@ -1,6 +1,6 @@
 # Documentation
 
-Welcome to the **Markdown Preview** extension engineering documentation. This folder contains guides for developers who want to understand, contribute to, or maintain this VS Code extension.
+Welcome to the **Muninn for VS Code** extension engineering documentation. This folder contains guides for developers who want to understand, contribute to, or maintain this VS Code extension.
 
 > **Note:** For end-user guidance, installation instructions, and feature overview, see the [root README](../README.md).
 
@@ -15,6 +15,8 @@ Welcome to the **Markdown Preview** extension engineering documentation. This fo
 | [RELEASE.md](RELEASE.md) | Release process checklist and versioning guidelines | Maintainers |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues and solutions for developers | All |
 | [ROADMAP.md](ROADMAP.md) | Feature roadmap and milestone planning | All |
+| [BRAND_NAMING_CONTRACT.md](BRAND_NAMING_CONTRACT.md) | Canonical naming, IDs, and logo rules for the Muninn suite | Maintainers, Product |
+| [MIGRATION_FROM_MARKDOWN_PREVIEW.md](MIGRATION_FROM_MARKDOWN_PREVIEW.md) | Hard-break migration from legacy extension ID and namespaces | Maintainers, Users |
 
 ## Quick Links
 
@@ -27,18 +29,20 @@ Welcome to the **Markdown Preview** extension engineering documentation. This fo
 ## Project Structure Overview
 
 ```
-markdown-reader/
+muninn-vscode/
 ├── src/                    # Extension source code
-│   ├── extension.ts        # Entry point (activation/deactivation)
-│   ├── commands/           # Command handlers (mode, formatting)
-│   ├── services/           # Business logic services
-│   ├── handlers/           # Event handlers (file open)
-│   ├── ui/                 # UI controllers (title bar)
+│   ├── extension.ts        # Extension host activation + command wiring
+│   ├── custom-editor/      # CustomTextEditorProvider host + protocol + sync
+│   ├── integrations/       # Integration adapters (Mermaid trust/config gate)
+│   ├── providers/          # Optional provider helpers (paste/drop)
+│   ├── services/           # Shared services (config, logger)
 │   ├── types/              # TypeScript type definitions
-│   └── utils/              # Utility functions (localization)
+│   ├── utils/              # Utility functions (localization)
+│   └── webview/editor/     # Webview editor application (ProseMirror + Mermaid/table UI)
 ├── tests/                  # Test suites
 │   ├── unit/               # Unit tests (mocked VS Code APIs)
-│   ├── integration/        # Integration tests (real VS Code)
+│   ├── integration-cli/    # Integration tests via @vscode/test-cli
+│   └── e2e/                # WDIO end-to-end tests
 │   └── fixtures/           # Test data files
 ├── docs/                   # This documentation folder
 ├── assets/                 # Images and icons
@@ -48,28 +52,24 @@ markdown-reader/
 
 ## Key Concepts
 
-### Preview Mode vs Edit Mode
+### Custom Editor Default
 
-- **Preview Mode:** Read-only rendered markdown using VS Code's native preview
-- **Edit Mode:** Split view with text editor (left) and live preview (right)
+- Markdown files open in `muninn.markdownEditor` by default.
+- The webview editor is the primary editing surface.
+- `muninn.openRawMarkdown` is the explicit escape hatch to VS Code's default text editor.
 
-### Services Architecture
+### Host/Webview Split
 
-The extension uses a service-oriented architecture:
-
-- **PreviewService:** Manages preview/edit mode transitions
-- **StateService:** Tracks per-file state (mode, cursor position)
-- **ConfigService:** Reads and caches user settings
-- **ValidationService:** Validates files (size, type, conflicts)
-- **FormattingService:** Text transformation operations
+- Extension host handles activation, command registration, trust-aware config, and `TextDocument` synchronization.
+- Webview app handles rich editing UI, formatting actions, and inline Mermaid/table rendering.
 
 ### Event-Driven Design
 
 The extension responds to VS Code events:
 
-1. `onDidOpenTextDocument` - Intercepts markdown file opens
-2. `onDidChangeConfiguration` - Reacts to settings changes
-3. `tabGroups.onDidChangeTabs` - Tracks editor visibility
+1. `onCustomEditor:muninn.markdownEditor` - Activates custom editor provider
+2. `workspace.onDidChangeTextDocument` - Propagates document updates to webview sessions
+3. `onDidChangeConfiguration` - Clears config cache and resyncs editor associations
 
 ## Contributing
 
@@ -77,6 +77,6 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root for contribution g
 
 ## Need Help?
 
-- **Bugs:** [Open an issue](https://github.com/bluecloud-dev/markdown-preview/issues)
+- **Bugs:** [Open an issue](https://github.com/bluecloud-dev/muninn-vscode/issues)
 - **Questions:** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) first
-- **Feature Requests:** [Open a feature request](https://github.com/bluecloud-dev/markdown-preview/issues/new?template=feature_request.md)
+- **Feature Requests:** [Open a feature request](https://github.com/bluecloud-dev/muninn-vscode/issues/new?template=feature_request.md)

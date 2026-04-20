@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-This guide helps you diagnose and resolve common issues with the Markdown Preview extension.
+This guide helps you diagnose and resolve common issues with the Muninn for VS Code extension.
 
 ## Table of Contents
 
@@ -22,16 +22,16 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
 
 1. **Extension is disabled**
    - Open Settings (`Ctrl+,`)
-   - Search for `markdownReader.enabled`
+   - Search for `muninn.enabled`
    - Ensure it's set to `true`
 
 2. **File is in excluded path**
-   - Check `markdownReader.excludePatterns` setting
+   - Check `muninn.excludePatterns` setting
    - Common exclusions: `**/node_modules/**`, `**/.git/**`
    - Remove the pattern if you want preview for that path
 
 3. **File exceeds size limit**
-   - Default limit is 1MB (`markdownReader.maxFileSize`)
+   - Default limit is 1MB (`muninn.maxFileSize`)
    - For large files, you'll see an info message with option to preview anyway
    - Increase the limit if needed (value is in bytes)
 
@@ -45,7 +45,7 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
 # Check if extension is active
 # Open Command Palette (Ctrl+Shift+P)
 # Type: "Developer: Show Running Extensions"
-# Look for "Markdown Preview" in the list
+# Look for "Muninn for VS Code" in the list
 ```
 
 ### Preview shows but is blank or broken
@@ -56,7 +56,7 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
 
 1. **Check the Output panel for errors**
    - View > Output (`Ctrl+Shift+U`)
-   - Select "Markdown Reader" from dropdown
+   - Select "Muninn for VS Code" from dropdown
    - Look for error messages
 
 2. **Try VS Code's native preview**
@@ -103,7 +103,7 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
    - Look for conflicting commands
 
 3. **Use Command Palette instead**
-   - `Ctrl+Shift+P` > "Markdown Preview: Enter Edit Mode"
+   - `Ctrl+Shift+P` > "Muninn for VS Code: Enter Edit Mode"
 
 ### Edit mode shows wrong layout
 
@@ -156,7 +156,7 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
 **Requirements for toolbar visibility:**
 
 1. File must be markdown (`resourceLangId == markdown`)
-2. Edit mode must be active (`markdownReader.editMode == true`)
+2. Edit mode must be active (`muninn.editMode == true`)
 3. Text editor must be focused (not preview pane)
 
 **Verification:**
@@ -229,8 +229,8 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
    - Command Palette > "Developer: Reload Window"
 
 3. **Check correct setting name**
-   - All settings use `markdownReader.` prefix
-   - Example: `markdownReader.enabled`, not just `enabled`
+   - All settings use `muninn.` prefix
+   - Example: `muninn.enabled`, not just `enabled`
 
 ### Exclude patterns not working
 
@@ -262,7 +262,7 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
 
 1. Open Settings (`Ctrl+,`)
 2. Click "Workspace" tab
-3. Search for `markdownReader`
+3. Search for `muninn`
 4. Ensure settings are defined at workspace level
 
 ## Performance Issues
@@ -346,7 +346,7 @@ This guide helps you diagnose and resolve common issues with the Markdown Previe
 
 2. **Check extension is installed**
    - Extensions view (`Ctrl+Shift+X`)
-   - Search for "Markdown Preview"
+   - Search for "Muninn for VS Code"
 
 3. **Reinstall extension**
    - Uninstall, reload, reinstall
@@ -361,7 +361,7 @@ Collect this information:
    - Help > About
 
 2. **Extension version**
-   - Extensions view > Markdown Preview > Version
+   - Extensions view > Muninn for VS Code > Version
 
 3. **Operating system**
    - Windows/macOS/Linux + version
@@ -371,12 +371,12 @@ Collect this information:
    - Expected vs actual behavior
 
 5. **Error messages**
-   - From Output panel ("Markdown Reader" channel)
+   - From Output panel ("Muninn for VS Code" channel)
    - From Developer Tools Console
 
 ### Where to report issues
 
-- **GitHub Issues:** [Open an issue](https://github.com/bluecloud-dev/markdown-preview/issues)
+- **GitHub Issues:** [Open an issue](https://github.com/bluecloud-dev/muninn-vscode/issues)
 - **Feature Requests:** Use the "feature request" template
 
 ### Quick diagnostics
@@ -390,7 +390,7 @@ Run these commands to gather diagnostic info:
    - Command Palette > "Developer: Open Extension Logs Folder"
 
 3. **Inspect configuration:**
-   - Command Palette > "Markdown Preview: Inspect Configuration"
+   - Command Palette > "Muninn for VS Code: Inspect Configuration"
    - Check Output panel for effective settings
 
 ## Related Documentation

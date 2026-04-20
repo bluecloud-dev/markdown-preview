@@ -1,34 +1,42 @@
 import { expect, browser } from '@wdio/globals';
 import {
-  focusWorkspaceFile,
   openWorkspaceFile,
   readEditorState,
-  waitForEditMode,
-  waitForPreviewMode,
+  readWorkspaceFileText,
+  waitForCustomEditor,
+  waitForRawEditor,
+  withCustomEditorWebview,
 } from './helpers.mjs';
 
 describe('Edit mode workflow', () => {
-  it('toggles preview <-> edit using extension commands', async () => {
+  it('accepts editing commands immediately and supports raw fallback command', async () => {
     await openWorkspaceFile('sample.md');
-    await waitForPreviewMode('sample.md');
-    await focusWorkspaceFile('sample.md');
+    await waitForCustomEditor('sample.md');
 
-    await browser.executeWorkbench(async (vscode) => {
-      await vscode.commands.executeCommand('muninn.enterEditMode');
+    await browser.waitUntil(async () => {
+      await browser.executeWorkbench(async (vscode) => {
+        await vscode.commands.executeCommand('muninn.toggleBold');
+      });
+      const text = await readWorkspaceFileText('sample.md');
+      return text.includes('**Sample**');
+    }, {
+      timeout: 20_000,
+      timeoutMsg: 'Expected custom editor to process bold command immediately.',
     });
-    await waitForEditMode();
 
-    const editState = await readEditorState();
-    expect(editState.activeEditor).toBe(true);
-    expect(editState.languageId).toBe('markdown');
-    expect(editState.tabGroups).toBeGreaterThan(0);
-
-    await browser.executeWorkbench(async (vscode) => {
-      await vscode.commands.executeCommand('muninn.exitEditMode');
+    await withCustomEditorWebview(async () => {
+      const rawButton = await browser.$('button[data-command="openRawMarkdown"]');
+      await rawButton.waitForDisplayed({ timeout: 5_000 });
+      await rawButton.click();
     });
-    await waitForPreviewMode('sample.md');
+    await waitForRawEditor('sample.md');
 
-    const previewState = await readEditorState();
-    expect(previewState.activeEditor).toBe(false);
+    const rawState = await readEditorState();
+    expect(rawState.activeEditor).toBe(true);
+    expect(rawState.languageId).toBe('markdown');
+    expect(rawState.activeTextUri?.toLowerCase()).toContain('/sample.md');
+    const text = await readWorkspaceFileText('sample.md');
+    expect(text).toContain('# Sample Markdown');
+    expect(text).toContain('**Bold**');
   });
 });

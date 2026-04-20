@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'
 
 permissions:
   contents: write
@@ -26,6 +26,12 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: TypeScript build
         run: npm run compile
@@ -90,7 +96,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Markdown Reader ${{ github.ref_name }}
+          name: Muninn for VS Code ${{ github.ref_name }}
           body_path: release-notes.md
           files: |
-            markdown-reader-*.vsix
+            muninn-vscode-*.vsix

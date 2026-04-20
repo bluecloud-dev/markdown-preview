@@ -2,6 +2,7 @@
 # These directories contain local development tooling and should not be committed
 .claude/
 .specify/
+.remember/
 
 # Node.js
 node_modules/
@@ -12,6 +13,8 @@ yarn-error.log*
 # Build output
 out/
 dist/
+media/
+artifacts/
 *.vsix
 
 # TypeScript
@@ -49,3 +52,4 @@ logs/
 .vscode-test
 AGENTS.md
 CLAUDE.md
+settings.json

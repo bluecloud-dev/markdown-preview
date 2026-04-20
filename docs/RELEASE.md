@@ -1,6 +1,6 @@
 # Release Guide
 
-This guide covers the complete release process for the Markdown Preview extension, from preparation to publication.
+This guide covers the complete release process for the Muninn for VS Code extension, from preparation to publication.
 
 ## Table of Contents
 
@@ -115,7 +115,7 @@ Follow [Keep a Changelog](https://keepachangelog.com/) format:
 # Create VSIX package
 npm run package
 
-# This creates: markdown-preview-X.Y.Z.vsix
+# This creates: muninn-vscode-X.Y.Z.vsix
 ```
 
 **Verify package contents:**
@@ -197,7 +197,7 @@ After publishing, verify the release works correctly.
 
 1. **Search for extension**
    - Open VS Code Extensions view
-   - Search "Markdown Preview"
+   - Search "Muninn for VS Code"
    - Verify correct version appears
 
 2. **Fresh install**
@@ -216,6 +216,17 @@ After publishing, verify the release works correctly.
 - [ ] Monitor marketplace reviews for feedback
 - [ ] Respond to any critical issues within 24 hours
 
+## Legacy Listing Deprecation
+
+When publishing `blueclouddev.muninn-vscode`, keep `blueclouddev.markdown-preview` as a deprecated migration listing for a limited window.
+
+Checklist:
+
+- [ ] Add deprecation banner on the legacy listing README
+- [ ] Link to migration guide: `docs/MIGRATION_FROM_MARKDOWN_PREVIEW.md`
+- [ ] State hard-break namespace migration (`markdownReader.*` -> `muninn.*`)
+- [ ] Stop feature development on the legacy listing
+
 ## Rollback Procedure
 
 If a critical bug is found after release:
@@ -224,7 +235,7 @@ If a critical bug is found after release:
 
 ```bash
 # Unpublish specific version (requires vsce)
-npx vsce unpublish blueclouddev.markdown-preview@1.1.0
+npx vsce unpublish blueclouddev.muninn-vscode@2.0.0
 ```
 
 **Note:** Users who already installed won't be affected.
@@ -284,7 +295,7 @@ npx vsce publish
 npx vsce publish 1.1.0
 
 # Or publish from VSIX
-npx vsce publish --packagePath markdown-preview-1.1.0.vsix
+npx vsce publish --packagePath muninn-vscode-1.1.0.vsix
 ```
 
 ### Marketplace Metadata
@@ -293,8 +304,8 @@ Ensure `package.json` has all required fields:
 
 ```json
 {
-  "name": "markdown-preview",
-  "displayName": "Markdown Preview",
+  "name": "muninn-vscode",
+  "displayName": "Muninn for VS Code",
   "description": "Open markdown files in preview mode by default.",
   "version": "1.1.0",
   "publisher": "blueclouddev",
@@ -302,7 +313,7 @@ Ensure `package.json` has all required fields:
   "icon": "assets/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bluecloud-dev/markdown-preview"
+    "url": "https://github.com/bluecloud-dev/muninn-vscode"
   },
   "categories": ["Other"],
   "keywords": [

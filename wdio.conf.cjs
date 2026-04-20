@@ -118,7 +118,10 @@ exports.config = {
     try {
       const screenshotBase64 = await browser.takeScreenshot();
       if (typeof screenshotBase64 === 'string' && screenshotBase64.length > 0) {
-        fs.writeFileSync(path.join(targetDir, `${testName}.png`), Buffer.from(screenshotBase64, 'base64'));
+        fs.writeFileSync(
+          path.join(targetDir, `${testName}.png`),
+          Buffer.from(screenshotBase64, 'base64'),
+        );
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

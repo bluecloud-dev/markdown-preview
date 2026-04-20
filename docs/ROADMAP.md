@@ -1,4 +1,4 @@
-# Markdown Preview - Roadmap
+# Muninn for VS Code - Roadmap
 
 > Open markdown files in preview mode by default, optimizing the reading experience for developers.
 
@@ -75,7 +75,7 @@ These features are explicitly out of scope per the [Project Constitution](../.sp
 
 ## Contributing
 
-Have a feature request? Check the existing [GitHub Issues](https://github.com/bluecloud-dev/markdown-preview/issues) or open a new one.
+Have a feature request? Check the existing [GitHub Issues](https://github.com/bluecloud-dev/muninn-vscode/issues) or open a new one.
 
 For implementation details, see:
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System design

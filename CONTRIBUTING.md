@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to Markdown Preview!
+Thanks for your interest in contributing to Muninn for VS Code!
 
 ## Ways to Help
 

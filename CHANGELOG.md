@@ -9,14 +9,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Task list, block quote, horizontal rule, and image insertion commands
 - Preview title bar pencil button for entering edit mode
 - esbuild bundling pipeline for a single runtime entrypoint
+- Brand naming contract for the Muninn suite
+- Migration guide from `blueclouddev.markdown-preview` to `blueclouddev.muninn-vscode`
 
 ### Changed
 - Marketplace metadata (category, banner, badges) and description refresh
 - Packaging now uses bundled output in `dist/extension.js`
 - Default task list toggle keybinding (`Ctrl+Alt+T` / `Cmd+Alt+T`)
+- Rebrand to **Muninn for VS Code** across UI, docs, and release metadata
+- Extension ID and package name changed to `blueclouddev.muninn-vscode`
+- Command/config/context namespaces changed from `markdownReader.*` to `muninn.*`
 
 ### Fixed
 - Markdown open debounce now matches documented 75ms behavior
+
+### Deprecated
+- `blueclouddev.markdown-preview` listing is now migration-only and no longer receives feature updates
+
+## [2.0.0] - 2026-02-21
+
+### Changed
+- First major rebrand release under the Muninn suite identity
+
+### Breaking
+- New extension identifier: `blueclouddev.muninn-vscode`
+- Hard namespace break:
+  - Settings: `markdownReader.*` → `muninn.*`
+  - Commands: `markdownReader.*` → `muninn.*`
+  - Context keys: `markdownReader.*` → `muninn.*`
+- Existing user/workspace settings and custom keybindings using `markdownReader.*` must be migrated manually
 
 ## [1.0.1] - 2025-12-28
 

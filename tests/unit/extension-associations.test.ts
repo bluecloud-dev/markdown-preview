@@ -35,9 +35,9 @@ describe('extension association helpers', () => {
   it('formats inspection values for undefined, unset, and defined scopes', () => {
     expect(__testing.formatInspectValue()).to.equal('unavailable');
     expect(__testing.formatInspectValue({})).to.equal('unset');
-    expect(
-      __testing.formatInspectValue({ defaultValue: true, globalValue: false })
-    ).to.equal('default=true | user=false');
+    expect(__testing.formatInspectValue({ defaultValue: true, globalValue: false })).to.equal(
+      'default=true | user=false',
+    );
   });
 
   it('matches association patterns with workspace variants', () => {
@@ -68,15 +68,10 @@ describe('extension association helpers', () => {
       '*.md': __testing.MARKDOWN_ASSOCIATION_VIEW,
       '*.markdown': 'custom.editor',
     };
-    const removal = __testing.removeMarkdownAssociation(record, [
-      '*.md',
-      '*.markdown',
-    ]);
+    const removal = __testing.removeMarkdownAssociation(record, ['*.md', '*.markdown']);
 
     expect(removal.updated).to.equal(true);
-    expect((removal.value as Record<string, string>)['*.markdown']).to.equal(
-      'custom.editor'
-    );
+    expect((removal.value as Record<string, string>)['*.markdown']).to.equal('custom.editor');
   });
 
   it('detects empty association containers', () => {
@@ -104,21 +99,25 @@ describe('extension association helpers', () => {
     } as unknown as vscode.WorkspaceConfiguration);
 
     const configService = {
-      getConfig: () => ({ enabled: true, editorAssociations: true }),
+      getConfig: () => ({ editorAssociations: true }),
     } as unknown as import('../../src/services/config-service').ConfigService;
-    const logger = { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() } as unknown as import('../../src/services/logger').Logger;
+    const logger = {
+      info: sinon.stub(),
+      warn: sinon.stub(),
+      error: sinon.stub(),
+    } as unknown as import('../../src/services/logger').Logger;
 
     await __testing.syncMarkdownAssociations(context, configService, logger);
 
     expect(updateStub.calledOnce).to.equal(true);
     const state = workspaceState.get<{ patterns: string[] }>(
       __testing.MARKDOWN_ASSOCIATION_STATE_KEY,
-      { patterns: [] }
+      { patterns: [] },
     );
     expect(state.patterns.length).to.equal(2);
   });
 
-  it('removes workspace editor associations when disabled', async () => {
+  it('removes workspace editor associations when editor associations are disabled', async () => {
     const workspaceState = createMemento();
     await workspaceState.update(__testing.MARKDOWN_ASSOCIATION_STATE_KEY, {
       patterns: [...__testing.MARKDOWN_ASSOCIATION_PATTERNS],
@@ -140,9 +139,13 @@ describe('extension association helpers', () => {
     } as unknown as vscode.WorkspaceConfiguration);
 
     const configService = {
-      getConfig: () => ({ enabled: false, editorAssociations: true }),
+      getConfig: () => ({ editorAssociations: false }),
     } as unknown as import('../../src/services/config-service').ConfigService;
-    const logger = { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() } as unknown as import('../../src/services/logger').Logger;
+    const logger = {
+      info: sinon.stub(),
+      warn: sinon.stub(),
+      error: sinon.stub(),
+    } as unknown as import('../../src/services/logger').Logger;
 
     await __testing.syncMarkdownAssociations(context, configService, logger);
 
@@ -171,9 +174,13 @@ describe('extension association helpers', () => {
     } as unknown as vscode.WorkspaceConfiguration);
 
     const configService = {
-      getConfig: () => ({ enabled: true, editorAssociations: true }),
+      getConfig: () => ({ editorAssociations: true }),
     } as unknown as import('../../src/services/config-service').ConfigService;
-    const logger = { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() } as unknown as import('../../src/services/logger').Logger;
+    const logger = {
+      info: sinon.stub(),
+      warn: sinon.stub(),
+      error: sinon.stub(),
+    } as unknown as import('../../src/services/logger').Logger;
 
     await __testing.syncMarkdownAssociations(context, configService, logger);
 

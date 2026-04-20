@@ -7,12 +7,11 @@ before(async () => {
   ({ expect } = await import('chai'));
 });
 
-
-
 const createChannel = (
   appendLine: sinon.SinonStub,
-  showStub?: sinon.SinonStub
-): vscode.OutputChannel => ({
+  showStub?: sinon.SinonStub,
+): vscode.OutputChannel =>
+  ({
     name: 'test',
     append: sinon.stub(),
     appendLine,
