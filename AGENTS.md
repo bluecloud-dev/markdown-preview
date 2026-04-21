@@ -4,7 +4,7 @@
 
 - Treat Muninn as a desktop-first VS Code custom editor extension, not as a native preview-wrapper extension.
 - Preserve the current custom editor architecture unless there is a strong product or maintenance reason to change it.
-- Before changing behavior, inspect `package.json`, [`src/extension.ts`](/C:/Users/hammo/Documents/GitHub/bluecloud-dev/markdown-preview/src/extension.ts), and the custom editor/webview files under [`src/custom-editor/`](/C:/Users/hammo/Documents/GitHub/bluecloud-dev/markdown-preview/src/custom-editor/) and [`src/webview/editor/`](/C:/Users/hammo/Documents/GitHub/bluecloud-dev/markdown-preview/src/webview/editor/).
+- Before changing behavior, inspect `package.json`, [`src/extension.ts`](src/extension.ts), and the custom editor/webview files under [`src/custom-editor/`](src/custom-editor/) and [`src/webview/editor/`](src/webview/editor/).
 
 ## Source of truth
 

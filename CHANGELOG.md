@@ -26,6 +26,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Deprecated
 - `blueclouddev.markdown-preview` listing is now migration-only and no longer receives feature updates
 
+### Removed
+- `muninn.editorAssociations` setting and the activation-time sync that wrote to `workbench.editorAssociations`. Ownership of `.md`/`.markdown` now comes from the custom editor contribution alone.
+
+### Breaking
+- New workspaces no longer have `.md`/`.markdown` auto-registered with `muninn.markdownEditor` on first activation. Use `Reopen With…` and pick `Muninn Markdown Editor`, or set `workbench.editorAssociations` manually. Existing workspaces that already have the association are unaffected — Muninn no longer touches that setting either way.
+
+### Internal
+- One-time cleanup of the orphaned `muninn.editorAssociationsAdded` `workspaceState` key for users upgrading from previous versions.
+
 ## [2.0.0] - 2026-02-21
 
 ### Changed
