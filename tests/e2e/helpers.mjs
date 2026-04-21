@@ -2,6 +2,11 @@ import { browser } from '@wdio/globals';
 
 export const getWorkbench = async () => browser.getWorkbench();
 
+// Snapshots the on-disk contents the first time a fixture is opened, so later
+// opens can restore the original bytes before `vscode.open` runs. Callers MUST
+// `openWorkspaceFile(file)` before any test mutates `file` — otherwise the
+// snapshot captures the already-mutated state and subsequent opens will
+// "restore" to the wrong baseline for the rest of the run.
 const originalWorkspaceFiles = new Map();
 
 export const resetEditors = async () => {
