@@ -2,47 +2,12 @@ import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { activate } from '../../src/extension';
 import { ConfigService } from '../../src/services/config-service';
+import { createMemento, createOutputChannel } from './helpers/activation-fixtures';
 let expect: Chai.ExpectStatic;
 
 before(async () => {
   ({ expect } = await import('chai'));
 });
-
-const createOutputChannel = (): vscode.LogOutputChannel => ({
-  name: 'Muninn for VS Code',
-  logLevel: 0 as unknown as vscode.LogLevel,
-  onDidChangeLogLevel: sinon.stub() as unknown as vscode.Event<vscode.LogLevel>,
-  trace: () => {},
-  debug: () => {},
-  info: () => {},
-  warn: () => {},
-  error: () => {},
-  append: () => {},
-  appendLine: () => {},
-  replace: () => {},
-  clear: () => {},
-  show: ((...arguments_: unknown[]) => {
-    void arguments_;
-  }) as unknown as vscode.LogOutputChannel['show'],
-  hide: () => {},
-  dispose: () => {},
-});
-
-const createMemento = (): vscode.Memento => {
-  const store = new Map<string, unknown>();
-  return {
-    get: <T>(key: string, defaultValue?: T): T => {
-      if (store.has(key)) {
-        return store.get(key) as T;
-      }
-      return defaultValue as T;
-    },
-    update: async (key: string, value: unknown): Promise<void> => {
-      store.set(key, value);
-    },
-    keys: () => [...store.keys()],
-  } as vscode.Memento;
-};
 
 describe('extension activation', () => {
   afterEach(() => {

@@ -1,63 +1,18 @@
 import sinon from 'sinon';
 import * as vscode from 'vscode';
 import { __testing, activate } from '../../src/extension';
+import { createMemento, createOutputChannel } from './helpers/activation-fixtures';
 let expect: Chai.ExpectStatic;
 
 before(async () => {
   ({ expect } = await import('chai'));
 });
 
-const createOutputChannel = (): vscode.LogOutputChannel => ({
-  name: 'Muninn for VS Code',
-  logLevel: 0 as unknown as vscode.LogLevel,
-  onDidChangeLogLevel: sinon.stub() as unknown as vscode.Event<vscode.LogLevel>,
-  trace: () => {},
-  debug: () => {},
-  info: () => {},
-  warn: () => {},
-  error: () => {},
-  append: () => {},
-  appendLine: () => {},
-  replace: () => {},
-  clear: () => {},
-  show: ((...arguments_: unknown[]) => {
-    void arguments_;
-  }) as unknown as vscode.LogOutputChannel['show'],
-  hide: () => {},
-  dispose: () => {},
-});
-
-const createMemento = (): vscode.Memento => {
-  const store = new Map<string, unknown>();
-  return {
-    get: <T>(key: string, defaultValue?: T): T => {
-      if (store.has(key)) {
-        return store.get(key) as T;
-      }
-      return defaultValue as T;
-    },
-    update: async (key: string, value: unknown): Promise<void> => {
-      if (value === undefined) {
-        store.delete(key);
-        return;
-      }
-      store.set(key, value);
-    },
-    keys: () => [...store.keys()],
-  } as vscode.Memento;
-};
-
 const createMuninnConfiguration = (): vscode.WorkspaceConfiguration =>
   ({
-    get: (key: string, defaultValue: unknown) => {
-      void key;
-      return defaultValue;
-    },
+    get: (_key: string, defaultValue: unknown) => defaultValue,
     has: () => true,
-    inspect: (key: string) => {
-      void key;
-      return { defaultValue: true, globalValue: true };
-    },
+    inspect: () => ({ defaultValue: true, globalValue: true }),
     update: sinon.stub(),
   }) as unknown as vscode.WorkspaceConfiguration;
 
@@ -82,7 +37,7 @@ describe('extension activation behavior', () => {
       configurable: true,
     });
     Object.defineProperty(vscode.workspace, 'workspaceFile', {
-      value: void 0,
+      value: undefined,
       configurable: true,
     });
     sinon.stub(vscode.window, 'createOutputChannel').returns(createOutputChannel());
@@ -92,7 +47,7 @@ describe('extension activation behavior', () => {
     sinon.stub(vscode.workspace, 'getConfiguration').callsFake((section?: string) => {
       if (section === 'workbench') {
         return {
-          get: sinon.stub().returns(void 0),
+          get: sinon.stub(),
           update: workbenchUpdate,
         } as unknown as vscode.WorkspaceConfiguration;
       }

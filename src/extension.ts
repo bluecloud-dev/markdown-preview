@@ -184,7 +184,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(...disposables);
 
-  void context.workspaceState.update('muninn.editorAssociationsAdded', undefined);
+  const LEGACY_EDITOR_ASSOCIATIONS_STATE_KEY = 'muninn.editorAssociationsAdded';
+  if (context.workspaceState.get(LEGACY_EDITOR_ASSOCIATIONS_STATE_KEY) !== undefined) {
+    // Memento.update(key, undefined) is the documented way to delete a key.
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    void context.workspaceState.update(LEGACY_EDITOR_ASSOCIATIONS_STATE_KEY, undefined);
+  }
 
   logger.info(t('Muninn custom markdown editor activated.'));
 }
