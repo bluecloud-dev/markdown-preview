@@ -81,6 +81,22 @@
         "shortTitle": "%command.muninn.openRawMarkdown.shortTitle%"
       },
       {
+        "command": "muninn.toggleFocusMode",
+        "title": "%command.muninn.toggleFocusMode.title%",
+        "category": "%command.category%",
+        "icon": "$(focus)",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.toggleFocusMode.shortTitle%"
+      },
+      {
+        "command": "muninn.goToSection",
+        "title": "%command.muninn.goToSection.title%",
+        "category": "%command.category%",
+        "icon": "$(list-tree)",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.goToSection.shortTitle%"
+      },
+      {
         "command": "muninn.toggleBold",
         "title": "%command.muninn.toggleBold.title%",
         "category": "%command.category%",
@@ -253,6 +269,14 @@
           "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
+          "command": "muninn.toggleFocusMode",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
+        },
+        {
+          "command": "muninn.goToSection",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
+        },
+        {
           "command": "muninn.inspectConfiguration"
         },
         {
@@ -277,6 +301,15 @@
         }
       ]
     },
+    "views": {
+      "explorer": [
+        {
+          "id": "muninn.outline",
+          "name": "%view.muninn.outline.name%",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "muninn.toggleBold",
@@ -291,6 +324,48 @@
         "when": "activeCustomEditorId == muninn.markdownEditor"
       },
       {
+        "command": "muninn.insertLink",
+        "key": "ctrl+k",
+        "mac": "cmd+k",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.setHeading1",
+        "key": "ctrl+alt+1",
+        "mac": "cmd+alt+1",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.setHeading2",
+        "key": "ctrl+alt+2",
+        "mac": "cmd+alt+2",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.setHeading3",
+        "key": "ctrl+alt+3",
+        "mac": "cmd+alt+3",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.setParagraph",
+        "key": "ctrl+alt+0",
+        "mac": "cmd+alt+0",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.toggleBulletList",
+        "key": "ctrl+shift+8",
+        "mac": "cmd+shift+8",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.toggleNumberedList",
+        "key": "ctrl+shift+7",
+        "mac": "cmd+shift+7",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
         "command": "muninn.insertMermaidBlock",
         "key": "ctrl+alt+m",
         "mac": "cmd+alt+m",
@@ -300,6 +375,12 @@
         "command": "muninn.insertTable",
         "key": "ctrl+alt+t",
         "mac": "cmd+alt+t",
+        "when": "activeCustomEditorId == muninn.markdownEditor"
+      },
+      {
+        "command": "muninn.insertCodeBlock",
+        "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c",
         "when": "activeCustomEditorId == muninn.markdownEditor"
       },
       {

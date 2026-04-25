@@ -6,9 +6,13 @@ Muninn is a reading-first markdown workspace for specs, ADRs, RFCs, and long-for
 
 - Desktop-first VS Code custom editor for `.md` and `.markdown`
 - Single-pane reading surface with a built-in authoring toolbar
+- Focus mode that hides authoring chrome and constrains line width for long reads
+- Native Explorer outline for jumping through sections in specs and docs
+- Keyboard-first authoring commands for headings, lists, links, code blocks, and tables
 - Raw markdown escape hatch via `muninn.openRawMarkdown`
 - Trust-aware Mermaid rendering
 - Source-preserving table editing
+- File-based note taking only: no backlinks, graph, daily notes, templates, vault system, or separate note database
 - No telemetry
 
 Muninn no longer rewrites `workbench.editorAssociations`. Markdown ownership comes from the custom editor contribution itself, which keeps activation lazy and avoids mutating workspace settings on startup.
@@ -16,6 +20,8 @@ Muninn no longer rewrites `workbench.editorAssociations`. Markdown ownership com
 ## Commands
 
 - `muninn.openRawMarkdown`
+- `muninn.toggleFocusMode`
+- `muninn.goToSection`
 - `muninn.toggleBold`
 - `muninn.toggleItalic`
 - `muninn.setHeading1`
@@ -39,16 +45,20 @@ Muninn no longer rewrites `workbench.editorAssociations`. Markdown ownership com
 - `muninn.integrations.mermaid.allowInUntrustedWorkspaces`
 - `muninn.toolbar.mode`
 
+`muninn.toolbar.mode` controls editing density only: `basic` keeps the default reading-oriented toolbar, `advanced` adds expanded authoring controls, and focus mode ignores both while staying minimal.
+
 ## Development
 
 ```bash
 npm ci
 npm run lint
 npm run typecheck
+npm run bundle
 npm test
 ```
 
 Run `npm run coverage` when changing host-side services or document sync behavior, and run `npm run test:e2e` when changing webview/editor UX, toolbar behavior, table flows, or Mermaid behavior.
+`npm run bundle` emits bundle metadata and enforces the initial webview payload budget.
 
 ## Docs
 

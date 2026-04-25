@@ -23,6 +23,14 @@ describe('Table delete workflow', () => {
       const deleteButton = await tableNode.$('[data-testid="muninn-table-delete"]');
       await deleteButton.waitForDisplayed({ timeout: 5_000 });
       await deleteButton.click();
+      await tableNode.waitForExist({ reverse: true, timeout: 2_000 }).catch(async (error) => {
+        const debug = await browser.execute(() => ({
+          status: document.querySelector('#status-message')?.textContent ?? '',
+          tableCount: document.querySelectorAll('[data-testid="muninn-table-node"]').length,
+        }));
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`${message} debug=${JSON.stringify(debug)}`);
+      });
     });
 
     const text = await waitForWorkspaceMarkdown(

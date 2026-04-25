@@ -2,8 +2,6 @@ import type { Node as ProseMirrorNode, Schema } from 'prosemirror-model';
 import type { EditorView, NodeView, NodeViewConstructor } from 'prosemirror-view';
 import { CODE_LANGUAGE_OPTIONS } from '../../../shared/code-languages';
 import type { CodeLanguageOption } from '../../../shared/code-languages';
-import { escapeHtml, sanitizeMermaidSvg } from '../preview';
-import { renderMermaidDiagram } from '../renderers/mermaid-renderer';
 import {
   normalizeTableSource,
   parseMarkdownTable,
@@ -79,9 +77,6 @@ class GenericCodeBlockNodeView implements NodeView {
   private readonly languageSelect = document.createElement('select');
   private readonly body = document.createElement('pre');
   private readonly code = document.createElement('code');
-  private readonly mermaidPreview = document.createElement('div');
-  private renderSerial = 0;
-  private renderTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private node: ProseMirrorNode,
@@ -103,10 +98,8 @@ class GenericCodeBlockNodeView implements NodeView {
     this.body.className = 'muninn-code-node-body';
     this.body.append(this.code);
     this.contentDOM = this.code;
-    this.mermaidPreview.className = 'muninn-code-node-mermaid-preview muninn-mermaid-preview-body';
-    this.mermaidPreview.hidden = true;
 
-    this.dom.append(this.header, this.body, this.mermaidPreview);
+    this.dom.append(this.header, this.body);
     this.languageSelect.addEventListener('input', () => {
       this.applySelectedLanguage();
     });
@@ -114,7 +107,6 @@ class GenericCodeBlockNodeView implements NodeView {
       this.applySelectedLanguage();
     });
     this.syncLanguageSelect();
-    this.scheduleMermaidPreviewRender();
   }
 
   update(node: ProseMirrorNode): boolean {
@@ -123,7 +115,6 @@ class GenericCodeBlockNodeView implements NodeView {
     }
     this.node = node;
     this.syncLanguageSelect();
-    this.scheduleMermaidPreviewRender();
     return true;
   }
 
@@ -134,14 +125,6 @@ class GenericCodeBlockNodeView implements NodeView {
 
   ignoreMutation(): boolean {
     return false;
-  }
-
-  destroy(): void {
-    if (!this.renderTimer) {
-      return;
-    }
-    clearTimeout(this.renderTimer);
-    this.renderTimer = undefined;
   }
 
   private syncLanguageSelect(): void {
@@ -197,47 +180,6 @@ class GenericCodeBlockNodeView implements NodeView {
       (candidate) => candidate.value === selectedLanguage,
     );
     this.options.setStatus(`Code block language set to ${option?.label ?? selectedLanguage}.`);
-  }
-
-  private scheduleMermaidPreviewRender(): void {
-    if (this.renderTimer) {
-      return;
-    }
-
-    this.renderTimer = setTimeout(() => {
-      this.renderTimer = undefined;
-      this.renderSerial += 1;
-      void this.renderMermaidPreview(this.renderSerial);
-    }, 120);
-  }
-
-  private async renderMermaidPreview(serialAtStart: number): Promise<void> {
-    if (getCodeBlockLanguage(this.node) !== 'mermaid') {
-      this.mermaidPreview.hidden = true;
-      this.mermaidPreview.innerHTML = '';
-      return;
-    }
-
-    const source = this.node.textContent.trim();
-    if (source.length === 0) {
-      this.mermaidPreview.hidden = true;
-      this.mermaidPreview.innerHTML = '';
-      return;
-    }
-
-    const renderId = `muninn-inline-mermaid-${Date.now()}`;
-    const result = await renderMermaidDiagram(source, renderId);
-    if (serialAtStart !== this.renderSerial) {
-      return;
-    }
-
-    this.mermaidPreview.hidden = false;
-    if (!result.ok) {
-      this.mermaidPreview.innerHTML = `<div class="muninn-mermaid-error">${escapeHtml(result.error)}</div>`;
-      return;
-    }
-
-    this.mermaidPreview.innerHTML = sanitizeMermaidSvg(result.svg);
   }
 
   private resolveNodePosition(): number | undefined {
@@ -510,7 +452,7 @@ class TableCodeBlockNodeView implements NodeView {
       return;
     }
 
-    const transaction = this.view.state.tr.deleteRange(position, position + this.node.nodeSize);
+    const transaction = this.view.state.tr.delete(position, position + this.node.nodeSize);
     this.view.dispatch(transaction.scrollIntoView());
     this.options.setStatus('Deleted table.');
   }

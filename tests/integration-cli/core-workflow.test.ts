@@ -133,7 +133,16 @@ describe('Integration CLI: core workflow', () => {
     const initialFenceCount = document.getText().match(/^```/gm)?.length ?? 0;
 
     await vscode.commands.executeCommand('muninn.insertLink');
-    await waitFor(() => document.getText().includes('https://example.com/docs'));
+    await waitFor(() => document.getText().includes('https://example.com/docs')).catch(
+      (error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `${message} inputCalled=${inputStub.called} markdown=${JSON.stringify(
+            document.getText(),
+          )}`,
+        );
+      },
+    );
 
     await vscode.commands.executeCommand('muninn.insertCodeBlock');
     await waitFor(() => (document.getText().match(/^```/gm)?.length ?? 0) > initialFenceCount);

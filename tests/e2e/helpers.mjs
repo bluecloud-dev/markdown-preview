@@ -183,15 +183,17 @@ export const waitForWorkspaceMarkdown = async (
   errorMessage,
   { fileName = 'sample.md', attempts = 10, pauseMs = 200 } = {},
 ) => {
+  let lastText = '';
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const text = await readWorkspaceFileText(fileName);
+    lastText = text;
     if (predicate(text)) {
       return text;
     }
     await browser.pause(pauseMs);
   }
 
-  throw new Error(errorMessage);
+  throw new Error(`${errorMessage}\nLast markdown:\n${lastText}`);
 };
 
 export const withCustomEditorWebview = async (runInWebview) => {

@@ -2,11 +2,14 @@ import * as vscode from 'vscode';
 import { ConfigInspection, ConfigService } from './services/config-service';
 import { Logger } from './services/logger';
 import { t } from './utils/l10n';
+import { FocusModeState } from './custom-editor/focus-mode-state';
 import {
   MUNINN_MARKDOWN_EDITOR_VIEW_TYPE,
   MuninnCustomEditorProvider,
 } from './custom-editor/muninn-custom-editor-provider';
-import { ViewEditorCommand } from './custom-editor/protocol';
+import { SectionRevealTarget, ViewEditorCommand } from './custom-editor/protocol';
+import { MarkdownOutlineSection, toSectionRevealTarget } from './outline/markdown-outline';
+import { MUNINN_OUTLINE_VIEW_ID, MuninnOutlineProvider } from './outline/muninn-outline-provider';
 
 const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
   if (!inspect) {
@@ -27,7 +30,7 @@ const formatInspectValue = <T>(inspect?: ConfigInspection<T>): string => {
   return parts.map(([label, value]) => `${label}=${JSON.stringify(value)}`).join(' | ');
 };
 
-const getActiveMarkdownResource = (): vscode.Uri | undefined => {
+const getActiveCustomEditorResource = (): vscode.Uri | undefined => {
   const activeTab = vscode.window.tabGroups.activeTabGroup?.activeTab;
   if (
     activeTab?.input instanceof vscode.TabInputCustom &&
@@ -36,7 +39,37 @@ const getActiveMarkdownResource = (): vscode.Uri | undefined => {
     return activeTab.input.uri;
   }
 
+  return undefined;
+};
+
+const getActiveMarkdownResource = (): vscode.Uri | undefined => {
+  const customEditorResource = getActiveCustomEditorResource();
+  if (customEditorResource) {
+    return customEditorResource;
+  }
+
   return vscode.window.activeTextEditor?.document.uri;
+};
+
+const findOpenTextDocument = (resource: vscode.Uri): vscode.TextDocument | undefined =>
+  vscode.workspace.textDocuments.find(
+    (document) => document.uri.toString() === resource.toString(),
+  );
+
+const isSectionRevealTarget = (value: unknown): value is SectionRevealTarget => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const candidate = value as Partial<SectionRevealTarget>;
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.title === 'string' &&
+    typeof candidate.normalizedTitle === 'string' &&
+    typeof candidate.level === 'number' &&
+    typeof candidate.line === 'number' &&
+    typeof candidate.occurrence === 'number'
+  );
 };
 
 const dispatchEditorCommand = async (
@@ -55,11 +88,19 @@ export function activate(context: vscode.ExtensionContext): void {
   const outputChannel = vscode.window.createOutputChannel(t('Muninn for VS Code'));
   const logger = new Logger(outputChannel);
   const configService = new ConfigService();
+  const focusModeState = new FocusModeState(context.workspaceState);
   const customEditorProvider = new MuninnCustomEditorProvider(
     context.extensionUri,
     configService,
+    focusModeState,
     logger,
   );
+  const outlineProvider = new MuninnOutlineProvider();
+
+  const refreshOutlineForActiveEditor = (): void => {
+    const resource = getActiveCustomEditorResource();
+    outlineProvider.setDocument(resource ? findOpenTextDocument(resource) : undefined);
+  };
 
   const logConfigInspection = (resource?: vscode.Uri): void => {
     const inspection = configService.inspect(resource);
@@ -108,6 +149,47 @@ export function activate(context: vscode.ExtensionContext): void {
     await dispatchEditorCommand(provider, selected.command);
   };
 
+  const pickSection = async (): Promise<MarkdownOutlineSection | undefined> => {
+    const sections = outlineProvider.getFlatSections();
+    if (sections.length === 0) {
+      void vscode.window.showInformationMessage(
+        t('No headings found in the active Muninn editor.'),
+      );
+      return;
+    }
+
+    const selected = await vscode.window.showQuickPick(
+      sections.map((section) => ({
+        label: `${'  '.repeat(Math.max(0, section.level - 1))}${section.title}`,
+        description: t('Line {0}', String(section.line + 1)),
+        section,
+      })),
+      {
+        title: t('Go to Section'),
+        placeHolder: t('Select a document heading'),
+        matchOnDescription: true,
+      },
+    );
+
+    return selected?.section;
+  };
+
+  const resolveSectionTarget = async (
+    section?: MarkdownOutlineSection | SectionRevealTarget | string,
+  ): Promise<SectionRevealTarget | undefined> => {
+    if (typeof section === 'string') {
+      const found = outlineProvider.findSectionById(section);
+      return found ? toSectionRevealTarget(found) : undefined;
+    }
+
+    if (isSectionRevealTarget(section)) {
+      return section;
+    }
+
+    const selected = await pickSection();
+    return selected ? toSectionRevealTarget(selected) : undefined;
+  };
+
   const editorCommandEntries: ReadonlyArray<Readonly<{ id: string; command: ViewEditorCommand }>> =
     [
       { id: 'muninn.toggleBold', command: 'toggleBold' },
@@ -136,6 +218,23 @@ export function activate(context: vscode.ExtensionContext): void {
       id: 'muninn.openRawMarkdown',
       run: async () => {
         await customEditorProvider.openRawMarkdownForActiveEditor();
+      },
+    },
+    {
+      id: 'muninn.toggleFocusMode',
+      run: async () => {
+        await focusModeState.toggle();
+        await customEditorProvider.notifyFocusModeChanged();
+      },
+    },
+    {
+      id: 'muninn.goToSection',
+      run: async (section?: MarkdownOutlineSection | SectionRevealTarget | string) => {
+        const target = await resolveSectionTarget(section);
+        if (!target) {
+          return;
+        }
+        await customEditorProvider.revealSectionInActiveEditor(target);
       },
     },
     {
@@ -171,6 +270,13 @@ export function activate(context: vscode.ExtensionContext): void {
         supportsMultipleEditorsPerDocument: false,
       },
     ),
+    vscode.window.registerTreeDataProvider(MUNINN_OUTLINE_VIEW_ID, outlineProvider),
+    vscode.window.tabGroups.onDidChangeTabs(refreshOutlineForActiveEditor),
+    vscode.window.tabGroups.onDidChangeTabGroups(refreshOutlineForActiveEditor),
+    vscode.window.onDidChangeActiveTextEditor(refreshOutlineForActiveEditor),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      outlineProvider.refreshDocument(event.document);
+    }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (!event.affectsConfiguration('muninn')) {
         return;
@@ -190,6 +296,8 @@ export function activate(context: vscode.ExtensionContext): void {
     // eslint-disable-next-line unicorn/no-useless-undefined
     void context.workspaceState.update(LEGACY_EDITOR_ASSOCIATIONS_STATE_KEY, undefined);
   }
+
+  refreshOutlineForActiveEditor();
 
   logger.info(t('Muninn custom markdown editor activated.'));
 }

@@ -105,11 +105,21 @@ body {
   padding-bottom: 16px;
 }
 
+.muninn-focus-mode .muninn-editor-shell {
+  padding-bottom: 0;
+}
+
 .ProseMirror {
   min-height: 100%;
   padding: 18px 22px 40px;
   outline: none;
   line-height: 1.6;
+}
+
+.muninn-focus-mode .ProseMirror {
+  max-width: 78ch;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
 }
 
 .ProseMirror p,
@@ -392,8 +402,26 @@ body {
 }
 
 .muninn-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   border-top: 1px solid var(--vscode-editorGroup-border);
   padding: 6px 10px;
   font-size: 12px;
   color: var(--vscode-descriptionForeground);
+}
+
+#status-message {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#selection-feedback {
+  flex: 0 0 auto;
+  color: var(--vscode-editor-foreground);
+  opacity: 0.8;
+  white-space: nowrap;
 }

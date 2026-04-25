@@ -1,6 +1,15 @@
 export type DocumentRevision = number;
 export type ToolbarMode = 'basic' | 'advanced';
 
+export type SectionRevealTarget = {
+  id: string;
+  title: string;
+  normalizedTitle: string;
+  level: number;
+  line: number;
+  occurrence: number;
+};
+
 export type ViewEditorCommand =
   | 'toggleBold'
   | 'toggleItalic'
@@ -23,6 +32,7 @@ export type HostToViewMessage =
       payload: SerializedMarkdownPayload & {
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
+        focusModeEnabled: boolean;
       };
     }
   | {
@@ -41,6 +51,16 @@ export type HostToViewMessage =
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
       };
+    }
+  | {
+      type: 'host.focusModeChanged';
+      payload: {
+        focusModeEnabled: boolean;
+      };
+    }
+  | {
+      type: 'host.revealSection';
+      payload: SectionRevealTarget;
     }
   | {
       type: 'host.insertLink';
@@ -119,6 +139,20 @@ const isViewEditorCommand = (value: unknown): value is ViewEditorCommand =>
 const isToolbarMode = (value: unknown): value is ToolbarMode =>
   value === 'basic' || value === 'advanced';
 
+const isPositiveInteger = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0;
+
+const isSectionRevealTarget = (value: unknown): value is SectionRevealTarget =>
+  isObject(value) &&
+  isString(value.id) &&
+  isString(value.title) &&
+  isString(value.normalizedTitle) &&
+  isPositiveInteger(value.level) &&
+  value.level >= 1 &&
+  value.level <= 6 &&
+  isPositiveInteger(value.line) &&
+  isPositiveInteger(value.occurrence);
+
 export const isViewToHostMessage = (value: unknown): value is ViewToHostMessage => {
   if (!isObject(value) || !isString(value.type)) {
     return false;
@@ -157,7 +191,8 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
       isSerializedMarkdownPayload(payload) &&
       isObject(payload) &&
       typeof (payload as { mermaidEnabled?: unknown }).mermaidEnabled === 'boolean' &&
-      isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode)
+      isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode) &&
+      typeof (payload as { focusModeEnabled?: unknown }).focusModeEnabled === 'boolean'
     );
   }
 
@@ -175,6 +210,14 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
       typeof value.payload.mermaidEnabled === 'boolean' &&
       isToolbarMode(value.payload.toolbarMode)
     );
+  }
+
+  if (value.type === 'host.focusModeChanged') {
+    return isObject(value.payload) && typeof value.payload.focusModeEnabled === 'boolean';
+  }
+
+  if (value.type === 'host.revealSection') {
+    return isSectionRevealTarget(value.payload);
   }
 
   if (value.type === 'host.insertLink') {

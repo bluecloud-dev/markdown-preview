@@ -17,6 +17,14 @@ class Uri {
     return new Uri(value, scheme, fsPath);
   }
 
+  static joinPath(base, ...segments) {
+    const joined = [base.fsPath, ...segments]
+      .map((segment) => String(segment).replace(/^[/\\]+|[/\\]+$/g, ''))
+      .filter((segment) => segment.length > 0)
+      .join('/');
+    return Uri.file(`/${joined}`);
+  }
+
   toString() {
     return this._value;
   }
@@ -59,6 +67,44 @@ class Selection extends Range {
 
   get isEmpty() {
     return this.anchor.line === this.active.line && this.anchor.character === this.active.character;
+  }
+}
+
+class EventEmitter {
+  constructor() {
+    this.listeners = [];
+    this.event = (listener) => {
+      this.listeners.push(listener);
+      return {
+        dispose: () => {
+          this.listeners = this.listeners.filter((candidate) => candidate !== listener);
+        },
+      };
+    };
+  }
+
+  fire(value) {
+    for (const listener of this.listeners) {
+      listener(value);
+    }
+  }
+
+  dispose() {
+    this.listeners = [];
+  }
+}
+
+class TreeItem {
+  constructor(label, collapsibleState = 0) {
+    this.label = label;
+    this.collapsibleState = collapsibleState;
+  }
+}
+
+class ThemeIcon {
+  constructor(id, color) {
+    this.id = id;
+    this.color = color;
   }
 }
 
@@ -110,6 +156,7 @@ const window = {
   visibleTextEditors: [],
   onDidChangeActiveTextEditor: () => ({ dispose: () => {} }),
   registerCustomEditorProvider: () => ({ dispose: () => {} }),
+  registerTreeDataProvider: () => ({ dispose: () => {} }),
   tabGroups: {
     onDidChangeTabs: () => ({ dispose: () => {} }),
     onDidChangeTabGroups: () => ({ dispose: () => {} }),
@@ -184,12 +231,22 @@ const LogLevel = {
   Error: 5,
 };
 
+const TreeItemCollapsibleState = {
+  None: 0,
+  Collapsed: 1,
+  Expanded: 2,
+};
+
 module.exports = {
   Uri,
   Position,
   Range,
   WorkspaceEdit,
   Selection,
+  EventEmitter,
+  TreeItem,
+  ThemeIcon,
+  TreeItemCollapsibleState,
   ViewColumn,
   ConfigurationTarget,
   LogLevel,

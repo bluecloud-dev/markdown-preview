@@ -1,5 +1,6 @@
 import type {
   HostToViewMessage,
+  SectionRevealTarget,
   ToolbarMode,
   ViewEditorCommand,
 } from '../../custom-editor/protocol';
@@ -11,10 +12,13 @@ type HostMessageHandlers = {
     revision: number;
     mermaidEnabled: boolean;
     toolbarMode: ToolbarMode;
+    focusModeEnabled: boolean;
   }) => void;
   onDocumentChanged: (payload: { markdown: string; revision: number }) => void;
   onExecuteCommand: (command: ViewEditorCommand) => void;
   onSettingsChanged: (payload: { mermaidEnabled: boolean; toolbarMode: ToolbarMode }) => void;
+  onFocusModeChanged: (focusModeEnabled: boolean) => void;
+  onRevealSection: (section: SectionRevealTarget) => void;
   onInsertLink: (payload: { href: string; text?: string }) => void;
   onError: (payload: { code: 'revision_mismatch' | 'apply_failed'; message: string }) => void;
 };
@@ -38,6 +42,14 @@ export const dispatchHostMessage = (
     }
     case 'host.settingsChanged': {
       handlers.onSettingsChanged(message.payload);
+      return;
+    }
+    case 'host.focusModeChanged': {
+      handlers.onFocusModeChanged(message.payload.focusModeEnabled);
+      return;
+    }
+    case 'host.revealSection': {
+      handlers.onRevealSection(message.payload);
       return;
     }
     case 'host.insertLink': {
