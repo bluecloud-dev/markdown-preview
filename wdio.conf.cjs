@@ -106,12 +106,7 @@ exports.config = {
       },
     },
   ],
-  services: [
-    [
-      vscodeDirectServicePath,
-      { cachePath: path.join(__dirname, '.vscode-test') },
-    ],
-  ],
+  services: [[vscodeDirectServicePath, { cachePath: path.join(__dirname, '.vscode-test') }]],
   reporters,
   afterTest: async (test, _context, result) => {
     if (result.passed) {

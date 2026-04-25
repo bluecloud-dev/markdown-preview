@@ -19,7 +19,11 @@ describe('Integration CLI: activation', () => {
     expect(extension).to.not.equal(undefined);
 
     const workbenchConfig = vscode.workspace.getConfiguration('workbench');
-    await workbenchConfig.update('editorAssociations', undefined, vscode.ConfigurationTarget.Workspace);
+    await workbenchConfig.update(
+      'editorAssociations',
+      undefined,
+      vscode.ConfigurationTarget.Workspace,
+    );
     const beforeActivation = workbenchConfig.get('editorAssociations');
 
     await extension?.activate();
