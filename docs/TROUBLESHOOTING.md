@@ -13,6 +13,7 @@ Muninn does not rewrite `workbench.editorAssociations`, so ownership conflicts s
 - Confirm the file is a normal `.md` or `.markdown` resource.
 - Check whether you previously selected another editor for that file type.
 - Use `Reopen With...` to switch back to Muninn while testing.
+- Source-control resources such as Git revisions intentionally open in VS Code's default editor so comparison views can show textual changes.
 
 ## Mermaid Does Not Render
 

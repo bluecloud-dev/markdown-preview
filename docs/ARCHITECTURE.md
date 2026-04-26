@@ -65,7 +65,8 @@ flowchart LR
 
 ## Activation Model
 
-- Markdown files are owned by the `muninn.markdownEditor` custom editor contribution.
+- Writable Markdown files are owned by the `muninn.markdownEditor` custom editor contribution.
+- Read-only source-control resources such as `git:` Markdown revisions are delegated back to VS Code's default editor so SCM and worktree comparisons keep their native text/diff behavior.
 - User-facing commands also activate the extension when invoked.
 - Muninn does not mutate `workbench.editorAssociations` on startup.
 

@@ -45,9 +45,11 @@ const createPanel = (): {
   panel: vscode.WebviewPanel;
   postedMessages: HostToViewMessage[];
   emitMessage: (message: unknown) => Promise<void>;
+  dispose: sinon.SinonStub;
 } => {
   const postedMessages: HostToViewMessage[] = [];
   let messageListener: ((message: unknown) => unknown) | undefined;
+  const dispose = sinon.stub();
 
   const webview = {
     options: {},
@@ -67,12 +69,14 @@ const createPanel = (): {
   return {
     panel: {
       webview,
+      dispose,
       onDidDispose: () => ({ dispose: () => {} }),
     } as unknown as vscode.WebviewPanel,
     postedMessages,
     emitMessage: async (message: unknown): Promise<void> => {
       await messageListener?.(message);
     },
+    dispose,
   };
 };
 
@@ -186,5 +190,28 @@ describe('MuninnCustomEditorProvider', () => {
     expect(html).to.include('editor-webview.js');
     expect(html).to.match(/script-src [^"]*vscode-webview-resource:/);
     expect(html).to.not.include('<script nonce="');
+  });
+
+  it('delegates read-only source control resources to the default editor', async () => {
+    const uri = vscode.Uri.parse('git:/workspace/readme.md');
+    const provider = createProvider();
+    const panel = createPanel();
+    const executeCommand = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    sinon
+      .stub(vscode.workspace.fs, 'isWritableFileSystem')
+      .callsFake((scheme: string) => scheme !== 'git');
+
+    await provider.resolveCustomTextEditor(createDocument(uri), panel.panel);
+
+    expect(panel.dispose.calledOnce).to.equal(true);
+    expect(
+      executeCommand.calledOnceWith(
+        'vscode.openWith',
+        uri,
+        'default',
+        sinon.match({ preview: true }),
+      ),
+    ).to.equal(true);
+    expect(panel.panel.webview.html).to.equal('');
   });
 });

@@ -114,6 +114,7 @@ const workspaceFs = {
     return { size: stats.size };
   },
   readFile: async (uri) => fs.readFile(uri.fsPath),
+  isWritableFileSystem: () => true,
 };
 
 const workspace = {

@@ -16,6 +16,8 @@ import {
 
 export const MUNINN_MARKDOWN_EDITOR_VIEW_TYPE = 'muninn.markdownEditor';
 
+const ALWAYS_DEFAULT_EDITOR_SCHEMES = new Set(['git']);
+
 type EditorSession = {
   document: vscode.TextDocument;
   panel: vscode.WebviewPanel;
@@ -69,6 +71,11 @@ export class MuninnCustomEditorProvider
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel,
   ): Promise<void> {
+    if (this.shouldDelegateToDefaultEditor(document.uri)) {
+      await this.delegateToDefaultEditor(document.uri, webviewPanel);
+      return;
+    }
+
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
@@ -318,16 +325,43 @@ export class MuninnCustomEditorProvider
   }
 
   private async openRawMarkdown(uri: vscode.Uri): Promise<void> {
+    await this.openInDefaultEditor(uri, { preview: false });
+  }
+
+  private shouldDelegateToDefaultEditor(uri: vscode.Uri): boolean {
+    if (uri.scheme === 'file' || uri.scheme === 'untitled') {
+      return false;
+    }
+
+    if (ALWAYS_DEFAULT_EDITOR_SCHEMES.has(uri.scheme)) {
+      return true;
+    }
+
+    return vscode.workspace.fs.isWritableFileSystem(uri.scheme) === false;
+  }
+
+  private async delegateToDefaultEditor(
+    uri: vscode.Uri,
+    webviewPanel: vscode.WebviewPanel,
+  ): Promise<void> {
+    const viewColumn = webviewPanel.viewColumn;
+    webviewPanel.dispose();
+    await this.openInDefaultEditor(uri, { preview: true, viewColumn });
+  }
+
+  private async openInDefaultEditor(
+    uri: vscode.Uri,
+    options: { preview: boolean; viewColumn?: vscode.ViewColumn },
+  ): Promise<void> {
     try {
-      await vscode.commands.executeCommand('vscode.openWith', uri, 'default', {
-        preview: false,
-      });
+      await vscode.commands.executeCommand('vscode.openWith', uri, 'default', options);
       return;
     } catch {
       const document = await vscode.workspace.openTextDocument(uri);
       await vscode.window.showTextDocument(document, {
-        preview: false,
+        preview: options.preview,
         preserveFocus: false,
+        viewColumn: options.viewColumn,
       });
     }
   }
