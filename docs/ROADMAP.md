@@ -1,87 +1,55 @@
-# Muninn for VS Code - Roadmap
+# Roadmap
 
-> Open markdown files in preview mode by default, optimizing the reading experience for developers.
+Muninn is being repositioned as a reading-first markdown workspace for specs and long-form developer documentation, with a credible built-in editor instead of a preview-first workflow.
 
----
+## Current Product Truth
 
-## Current State: v1.0.0 (Stable)
+Today Muninn ships:
 
-The extension has reached its first stable release with all core features implemented:
+- A VS Code custom editor for markdown
+- A built-in authoring toolbar
+- Focus mode for reading long-form specs and docs without formatting chrome
+- A native Explorer `Muninn Outline` view backed by host-side heading parsing
+- Section navigation through `muninn.goToSection`
+- Keyboard-first authoring commands for headings, lists, links, code blocks, and tables
+- Raw markdown fallback through `muninn.openRawMarkdown`
+- Trust-aware Mermaid rendering
+- Table editing that round-trips back to markdown source
 
-### Shipped Features
+Muninn does not currently ship broader note-taking platform features such as backlinks, graphs, daily notes, or vault databases.
+Muninn also does not ship AI, chat, assistant, MCP, or agentic UI surfaces.
 
-| Feature | Description | Priority |
-|---------|-------------|:--------:|
-| **Preview by Default** | Markdown files open in rendered preview mode | P0 |
-| **Edit Mode Toggle** | Split view with text editor and live preview | P0 |
-| **Formatting Toolbar** | Bold, italic, strikethrough, lists, code, links, headings | P1 |
-| **Context Menu** | Format submenu with heading and code submenus | P2 |
-| **Keyboard Shortcuts** | Ctrl+Shift+V toggle, Ctrl+B bold, Ctrl+I italic | P2 |
-| **Configuration** | Enable/disable, exclude patterns, max file size | P2 |
-| **Accessibility** | ARIA labels, keyboard navigation, status bar announcements | P0 |
+## Milestone 1: Product Truth, Trust, and Stability
 
-### Quality Metrics Achieved
+- Align README, docs, roadmap, and contributor guidance with the shipped custom-editor product
+- Remove the public `muninn.editorAssociations` setting
+- Stop mutating `workbench.editorAssociations` during activation
+- Keep only `Open Raw Markdown` in the editor title bar
+- Keep formatting and insertion actions in the Muninn toolbar and command palette
+- Maintain regression coverage for table editing flows before new UX work
 
-| Metric | Target | Status |
-|--------|--------|:------:|
-| Test Coverage | 80%+ | :white_check_mark: |
-| Startup Impact | <50ms | :white_check_mark: |
-| Mode Switch | <500ms | :white_check_mark: |
-| Formatting | <100ms | :white_check_mark: |
-| TypeScript Strict | Enabled | :white_check_mark: |
-| No Telemetry | Verified | :white_check_mark: |
+## Milestone 2: Reading-First UX
 
----
+- Add `muninn.toggleFocusMode`
+- Persist focus mode in workspace state
+- Introduce a native `Muninn Outline` Explorer view
+- Add `muninn.goToSection`
+- Drive outline and section reveal from a host-owned heading model
 
-## Design Principles
+## Milestone 3: Authoring Polish Without Product Sprawl
 
-These principles guide all development decisions:
+- Improve command stability for headings, lists, links, code blocks, and tables
+- Keep note-taking intentionally file-based and lightweight
+- Keep `muninn.toolbar.mode` as editing-density control only: `basic` for the reading-oriented toolbar, `advanced` for expanded editing controls, and focus mode as minimal chrome
+- Refactor the webview into smaller modules with clearer editor runtime, formatting command, table command, toolbar state, and optional renderer boundaries
 
-1. **Native Integration** - Use VS Code's built-in APIs only (no custom webviews)
-2. **Reading-First** - Preview mode is the default; editing is opt-in
-3. **Zero Configuration** - Works immediately after installation
-4. **Non-Intrusive** - Respects user intent; no auto-return to preview on save
-5. **Privacy-First** - No telemetry collection
+## Milestone 4: Performance, Test Depth, and Showcase
 
----
+- Code-split Mermaid and other optional heavy webview paths through ESM webview chunks
+- Add a bundle budget gate for the initial webview payload with generated build metadata
+- Expand regression coverage for focus mode, outline navigation, table deletion, raw markdown round-tripping, and Mermaid trust behavior
+- Produce updated showcase assets and benchmarks
 
-## Future Considerations
+## Legacy Material
 
-The following features may be considered for future releases based on user feedback:
-
-### Potential Enhancements
-
-| Feature | Description | Complexity |
-|---------|-------------|:----------:|
-| Table Formatting | Insert/edit markdown tables | Medium |
-| Image Insertion | Insert images with file picker | Low |
-| Task Lists | Toggle checkbox `[ ]` / `[x]` | Low |
-| Block Quotes | Toggle `> ` prefix | Low |
-| Horizontal Rule | Insert `---` | Low |
-| Custom Keybindings | More default shortcuts beyond bold/italic | Low |
-
-### Not Planned
-
-These features are explicitly out of scope per the [Project Constitution](../.specify/memory/constitution.md):
-
-- Custom markdown themes/styling
-- Export to PDF/HTML
-- WYSIWYG editing
-- Custom markdown parser/renderer
-- Other markup formats (AsciiDoc, reStructuredText)
-- Inline preview in editor
-
----
-
-## Contributing
-
-Have a feature request? Check the existing [GitHub Issues](https://github.com/bluecloud-dev/muninn-vscode/issues) or open a new one.
-
-For implementation details, see:
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System design
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Development setup
-- [CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution guidelines
-
----
-
-*Roadmap v2.0 - Reflects v1.0.0 stable release*
+Preview-first planning material under `specs/markdown-preview/` is retained only as legacy reference. The current implementation, this roadmap, and `docs/ARCHITECTURE.md` are the live source of truth.

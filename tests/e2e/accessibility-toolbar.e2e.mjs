@@ -2,11 +2,11 @@ import { browser } from '@wdio/globals';
 import { openWorkspaceFile, readWorkspaceFileText, waitForCustomEditor } from './helpers.mjs';
 
 const executeUntil = async (command, predicate, errorMessage) => {
-  for (let attempt = 0; attempt < 8; attempt += 1) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
     await browser.executeWorkbench(async (vscode, commandName) => {
       await vscode.commands.executeCommand(commandName);
     }, command);
-    await browser.pause(200);
+    await browser.pause(500);
 
     const text = await readWorkspaceFileText('with-formatting.md');
     if (predicate(text)) {

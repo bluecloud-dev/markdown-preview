@@ -1,4 +1,5 @@
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
@@ -15,9 +16,16 @@ const logsDir = path.join(artifactsBaseDir, 'logs');
 const junitDir = path.join(artifactsBaseDir, 'junit');
 const videosDir = path.join(artifactsBaseDir, 'videos');
 const videoRawDir = path.join(artifactsBaseDir, 'video-raw');
-const e2eRunRoot = path.join('/tmp', 'mn-e2e', runKey);
+const e2eRunRoot = path.join(os.tmpdir(), 'mn-e2e', runKey);
 const workspacePath = path.join(e2eRunRoot, 'workspace');
 const fixturesPath = path.join(__dirname, 'tests', 'fixtures');
+const toWdioAbsoluteImportPath = (value) => {
+  const normalized = value.replaceAll('\\', '/');
+  return normalized.startsWith('/') ? normalized : `/${normalized}`;
+};
+const vscodeDirectServicePath = toWdioAbsoluteImportPath(
+  path.join(__dirname, 'tests/e2e/services/vscode-direct-service.mjs'),
+);
 
 fs.mkdirSync(artifactsBaseDir, { recursive: true });
 fs.mkdirSync(screenshotsDir, { recursive: true });
@@ -98,12 +106,7 @@ exports.config = {
       },
     },
   ],
-  services: [
-    [
-      path.join(__dirname, 'tests/e2e/services/vscode-direct-service.mjs'),
-      { cachePath: path.join(__dirname, '.vscode-test') },
-    ],
-  ],
+  services: [[vscodeDirectServicePath, { cachePath: path.join(__dirname, '.vscode-test') }]],
   reporters,
   afterTest: async (test, _context, result) => {
     if (result.passed) {

@@ -36,7 +36,7 @@ describe('Edit mode workflow', () => {
     expect(rawState.languageId).toBe('markdown');
     expect(rawState.activeTextUri?.toLowerCase()).toContain('/sample.md');
     const text = await readWorkspaceFileText('sample.md');
-    expect(text).toContain('# Sample Markdown');
+    expect(text).toContain('# **Sample** Markdown');
     expect(text).toContain('**Bold**');
   });
 });

@@ -11,6 +11,8 @@ specs/**
 .vscode-test/**
 .specify/**
 .codex/**
+.claude/**
+graphify-out/**
 scripts/**
 node_modules/**
 **/*.ts

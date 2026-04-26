@@ -55,6 +55,7 @@ describe('custom editor protocol guards', () => {
           revision: 1,
           mermaidEnabled: true,
           toolbarMode: 'basic',
+          focusModeEnabled: false,
         },
       }),
     ).to.equal(true);
@@ -82,6 +83,25 @@ describe('custom editor protocol guards', () => {
         payload: { code: 'revision_mismatch', message: 'nope' },
       }),
     ).to.equal(true);
+    expect(
+      isHostToViewMessage({
+        type: 'host.focusModeChanged',
+        payload: { focusModeEnabled: true },
+      }),
+    ).to.equal(true);
+    expect(
+      isHostToViewMessage({
+        type: 'host.revealSection',
+        payload: {
+          id: 'h2-l4-goals',
+          title: 'Goals',
+          normalizedTitle: 'goals',
+          level: 2,
+          line: 3,
+          occurrence: 0,
+        },
+      }),
+    ).to.equal(true);
   });
 
   it('rejects malformed host-to-view payloads', () => {
@@ -90,6 +110,17 @@ describe('custom editor protocol guards', () => {
       isHostToViewMessage({
         type: 'host.init',
         payload: { markdown: '', revision: 0, mermaidEnabled: true },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.init',
+        payload: {
+          markdown: '',
+          revision: 0,
+          mermaidEnabled: true,
+          toolbarMode: 'basic',
+        },
       }),
     ).to.equal(false);
     expect(
@@ -108,6 +139,18 @@ describe('custom editor protocol guards', () => {
       isHostToViewMessage({
         type: 'host.settingsChanged',
         payload: { mermaidEnabled: true, toolbarMode: 'unknown' },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.focusModeChanged',
+        payload: { focusModeEnabled: 'yes' },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.revealSection',
+        payload: { id: 'missing-fields' },
       }),
     ).to.equal(false);
   });

@@ -4,9 +4,11 @@ import { Logger } from '../services/logger';
 import { isMermaidIntegrationActive } from '../integrations/mermaid-adapter';
 import { t } from '../utils/l10n';
 import { DocumentSync } from './document-sync';
+import { FocusModeState } from './focus-mode-state';
 import {
   HostToViewMessage,
   isViewToHostMessage,
+  SectionRevealTarget,
   ToolbarMode,
   ViewEditorCommand,
   ViewToHostMessage,
@@ -14,17 +16,21 @@ import {
 
 export const MUNINN_MARKDOWN_EDITOR_VIEW_TYPE = 'muninn.markdownEditor';
 
+const ALWAYS_DEFAULT_EDITOR_SCHEMES = new Set(['git']);
+
 type EditorSession = {
   document: vscode.TextDocument;
   panel: vscode.WebviewPanel;
   sync: DocumentSync;
   ready: boolean;
+  pendingMessages: HostToViewMessage[];
   disposables: vscode.Disposable[];
 };
 
 type SessionSettings = {
   mermaidEnabled: boolean;
   toolbarMode: ToolbarMode;
+  focusModeEnabled: boolean;
 };
 
 export class MuninnCustomEditorProvider
@@ -38,6 +44,7 @@ export class MuninnCustomEditorProvider
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly configService: ConfigService,
+    private readonly focusModeState: FocusModeState,
     private readonly logger: Logger,
   ) {
     this.disposables.push(
@@ -64,6 +71,11 @@ export class MuninnCustomEditorProvider
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel,
   ): Promise<void> {
+    if (this.shouldDelegateToDefaultEditor(document.uri)) {
+      await this.delegateToDefaultEditor(document.uri, webviewPanel);
+      return;
+    }
+
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
@@ -78,6 +90,7 @@ export class MuninnCustomEditorProvider
       panel: webviewPanel,
       sync,
       ready: false,
+      pendingMessages: [],
       disposables: [],
     };
     this.sessions.set(sessionId, session);
@@ -116,14 +129,27 @@ export class MuninnCustomEditorProvider
 
   async executeCommandInActiveEditor(command: ViewEditorCommand): Promise<void> {
     const session = this.getActiveSession();
-    if (!session || !session.ready) {
+    if (!session) {
       return;
     }
 
-    await this.postMessage(session.panel.webview, {
+    await this.postSessionMessage(session, {
       type: 'host.executeCommand',
       payload: { command },
     });
+  }
+
+  async revealSectionInActiveEditor(section: SectionRevealTarget): Promise<boolean> {
+    const session = this.getActiveSession();
+    if (!session) {
+      return false;
+    }
+
+    await this.postSessionMessage(session, {
+      type: 'host.revealSection',
+      payload: section,
+    });
+    return true;
   }
 
   async notifyConfigurationChanged(): Promise<void> {
@@ -135,6 +161,19 @@ export class MuninnCustomEditorProvider
       await this.postMessage(session.panel.webview, {
         type: 'host.settingsChanged',
         payload: settings,
+      });
+    }
+  }
+
+  async notifyFocusModeChanged(): Promise<void> {
+    const focusModeEnabled = this.focusModeState.isEnabled();
+    for (const session of this.sessions.values()) {
+      if (!session.ready) {
+        continue;
+      }
+      await this.postMessage(session.panel.webview, {
+        type: 'host.focusModeChanged',
+        payload: { focusModeEnabled },
       });
     }
   }
@@ -156,6 +195,7 @@ export class MuninnCustomEditorProvider
             ...settings,
           },
         });
+        await this.flushPendingMessages(session);
         return;
       }
       case 'view.executeCommand': {
@@ -236,6 +276,7 @@ export class MuninnCustomEditorProvider
     return {
       mermaidEnabled: isMermaidIntegrationActive(this.configService, resource),
       toolbarMode: this.configService.getToolbarMode(resource),
+      focusModeEnabled: this.focusModeState.isEnabled(),
     };
   }
 
@@ -284,16 +325,43 @@ export class MuninnCustomEditorProvider
   }
 
   private async openRawMarkdown(uri: vscode.Uri): Promise<void> {
+    await this.openInDefaultEditor(uri, { preview: false });
+  }
+
+  private shouldDelegateToDefaultEditor(uri: vscode.Uri): boolean {
+    if (uri.scheme === 'file' || uri.scheme === 'untitled') {
+      return false;
+    }
+
+    if (ALWAYS_DEFAULT_EDITOR_SCHEMES.has(uri.scheme)) {
+      return true;
+    }
+
+    return vscode.workspace.fs.isWritableFileSystem(uri.scheme) === false;
+  }
+
+  private async delegateToDefaultEditor(
+    uri: vscode.Uri,
+    webviewPanel: vscode.WebviewPanel,
+  ): Promise<void> {
+    const viewColumn = webviewPanel.viewColumn;
+    webviewPanel.dispose();
+    await this.openInDefaultEditor(uri, { preview: true, viewColumn });
+  }
+
+  private async openInDefaultEditor(
+    uri: vscode.Uri,
+    options: { preview: boolean; viewColumn?: vscode.ViewColumn },
+  ): Promise<void> {
     try {
-      await vscode.commands.executeCommand('vscode.openWith', uri, 'default', {
-        preview: false,
-      });
+      await vscode.commands.executeCommand('vscode.openWith', uri, 'default', options);
       return;
     } catch {
       const document = await vscode.workspace.openTextDocument(uri);
       await vscode.window.showTextDocument(document, {
-        preview: false,
+        preview: options.preview,
         preserveFocus: false,
+        viewColumn: options.viewColumn,
       });
     }
   }
@@ -327,19 +395,39 @@ export class MuninnCustomEditorProvider
     if (!sessionIds || sessionIds.size === 0) {
       return undefined;
     }
+    let latestSession: EditorSession | undefined;
     for (const sessionId of sessionIds) {
       const session = this.sessions.get(sessionId);
       if (session) {
-        return session;
+        latestSession = session;
       }
     }
-    return undefined;
+    return latestSession;
   }
 
   private async postMessage(webview: vscode.Webview, message: HostToViewMessage): Promise<void> {
     const sent = await webview.postMessage(message);
     if (!sent) {
       this.logger.warn('Failed to post message to Muninn webview editor.');
+    }
+  }
+
+  private async postSessionMessage(
+    session: EditorSession,
+    message: HostToViewMessage,
+  ): Promise<void> {
+    if (!session.ready) {
+      session.pendingMessages.push(message);
+      return;
+    }
+
+    await this.postMessage(session.panel.webview, message);
+  }
+
+  private async flushPendingMessages(session: EditorSession): Promise<void> {
+    const pendingMessages = session.pendingMessages.splice(0);
+    for (const message of pendingMessages) {
+      await this.postMessage(session.panel.webview, message);
     }
   }
 
@@ -359,14 +447,14 @@ export class MuninnCustomEditorProvider
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta
     http-equiv="Content-Security-Policy"
-    content="default-src 'none'; img-src ${webview.cspSource} data: https:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';"
+    content="default-src 'none'; img-src ${webview.cspSource} data: https:; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'nonce-${nonce}';"
   />
   <link rel="stylesheet" href="${styleUri}" />
   <title>Muninn</title>
 </head>
 <body>
   <div id="app"></div>
-  <script nonce="${nonce}" src="${scriptUri}"></script>
+  <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
   }

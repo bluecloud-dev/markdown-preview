@@ -9,7 +9,6 @@ export type ConfigInspection<T> = {
 };
 
 const DEFAULT_CONFIG: ExtensionConfiguration = {
-  editorAssociations: true,
   mermaidEnabled: true,
   mermaidAllowInUntrustedWorkspaces: false,
   toolbarMode: 'basic',
@@ -17,10 +16,6 @@ const DEFAULT_CONFIG: ExtensionConfiguration = {
 
 export class ConfigService {
   private readonly cachedConfigs = new Map<string, ExtensionConfiguration>();
-
-  getEditorAssociations(resource?: vscode.Uri): boolean {
-    return this.getConfig(resource).editorAssociations;
-  }
 
   getMermaidEnabled(resource?: vscode.Uri): boolean {
     return this.getConfig(resource).mermaidEnabled;
@@ -57,14 +52,12 @@ export class ConfigService {
   }
 
   inspect(resource?: vscode.Uri): {
-    editorAssociations?: ConfigInspection<boolean>;
     mermaidEnabled?: ConfigInspection<boolean>;
     mermaidAllowInUntrustedWorkspaces?: ConfigInspection<boolean>;
     toolbarMode?: ConfigInspection<'basic' | 'advanced'>;
   } {
     const config = vscode.workspace.getConfiguration('muninn', resource);
     return {
-      editorAssociations: config.inspect<boolean>('editorAssociations'),
       mermaidEnabled: config.inspect<boolean>('integrations.mermaid.enabled'),
       mermaidAllowInUntrustedWorkspaces: config.inspect<boolean>(
         'integrations.mermaid.allowInUntrustedWorkspaces',
@@ -80,7 +73,6 @@ export class ConfigService {
   private loadConfig(resource?: vscode.Uri): ExtensionConfiguration {
     const config = vscode.workspace.getConfiguration('muninn', resource);
     return {
-      editorAssociations: config.get('editorAssociations', DEFAULT_CONFIG.editorAssociations),
       mermaidEnabled: config.get('integrations.mermaid.enabled', DEFAULT_CONFIG.mermaidEnabled),
       mermaidAllowInUntrustedWorkspaces: config.get(
         'integrations.mermaid.allowInUntrustedWorkspaces',

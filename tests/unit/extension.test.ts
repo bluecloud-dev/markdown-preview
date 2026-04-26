@@ -1,48 +1,15 @@
 import sinon from 'sinon';
 import * as vscode from 'vscode';
+import { MuninnCustomEditorProvider } from '../../src/custom-editor/muninn-custom-editor-provider';
+import { SectionRevealTarget } from '../../src/custom-editor/protocol';
 import { activate } from '../../src/extension';
 import { ConfigService } from '../../src/services/config-service';
+import { createMemento, createOutputChannel } from './helpers/activation-fixtures';
 let expect: Chai.ExpectStatic;
 
 before(async () => {
   ({ expect } = await import('chai'));
 });
-
-const createOutputChannel = (): vscode.LogOutputChannel => ({
-  name: 'Muninn for VS Code',
-  logLevel: 0 as unknown as vscode.LogLevel,
-  onDidChangeLogLevel: sinon.stub() as unknown as vscode.Event<vscode.LogLevel>,
-  trace: () => {},
-  debug: () => {},
-  info: () => {},
-  warn: () => {},
-  error: () => {},
-  append: () => {},
-  appendLine: () => {},
-  replace: () => {},
-  clear: () => {},
-  show: ((...arguments_: unknown[]) => {
-    void arguments_;
-  }) as unknown as vscode.LogOutputChannel['show'],
-  hide: () => {},
-  dispose: () => {},
-});
-
-const createMemento = (): vscode.Memento => {
-  const store = new Map<string, unknown>();
-  return {
-    get: <T>(key: string, defaultValue?: T): T => {
-      if (store.has(key)) {
-        return store.get(key) as T;
-      }
-      return defaultValue as T;
-    },
-    update: async (key: string, value: unknown): Promise<void> => {
-      store.set(key, value);
-    },
-    keys: () => [...store.keys()],
-  } as vscode.Memento;
-};
 
 describe('extension activation', () => {
   afterEach(() => {
@@ -81,6 +48,8 @@ describe('extension activation', () => {
     const registeredCommands = registerCommandStub.getCalls().map((call) => call.args[0]);
     expect(registeredCommands).to.include('muninn.inspectConfiguration');
     expect(registeredCommands).to.include('muninn.tableActions');
+    expect(registeredCommands).to.include('muninn.toggleFocusMode');
+    expect(registeredCommands).to.include('muninn.goToSection');
     expect(registerCustomEditorProviderStub.calledOnce).to.equal(true);
 
     const inspectCommand = registerCommandStub
@@ -101,7 +70,6 @@ describe('extension activation', () => {
 
     sinon.stub(ConfigService.prototype, 'clearCache');
     sinon.stub(ConfigService.prototype, 'getConfig').returns({
-      editorAssociations: true,
       mermaidEnabled: true,
       mermaidAllowInUntrustedWorkspaces: false,
       toolbarMode: 'basic',
@@ -175,5 +143,54 @@ describe('extension activation', () => {
     } as vscode.ConfigurationChangeEvent);
 
     expect(configClearCacheStub.called).to.equal(false);
+  });
+
+  it('routes focus mode and section navigation commands through host services', async () => {
+    const registeredCommands = new Map<string, (...arguments_: unknown[]) => unknown>();
+    sinon.stub(vscode.window, 'createOutputChannel').returns(createOutputChannel());
+    sinon.stub(vscode.window, 'registerCustomEditorProvider').returns({ dispose: () => {} });
+    sinon.stub(vscode.window, 'registerTreeDataProvider').returns({ dispose: () => {} });
+    sinon.stub(vscode.workspace, 'onDidChangeConfiguration').returns({ dispose: () => {} });
+    sinon.stub(vscode.commands, 'registerCommand').callsFake((command, callback) => {
+      registeredCommands.set(command, callback as (...arguments_: unknown[]) => unknown);
+      return { dispose: () => {} };
+    });
+    sinon.stub(vscode.workspace, 'getConfiguration').returns({
+      get: (_key: string, defaultValue: unknown) => defaultValue,
+      has: () => true,
+      inspect: () => ({ defaultValue: true, globalValue: true }),
+      update: sinon.stub(),
+    } as unknown as vscode.WorkspaceConfiguration);
+    const notifyFocusModeChangedStub = sinon
+      .stub(MuninnCustomEditorProvider.prototype, 'notifyFocusModeChanged')
+      .resolves();
+    const revealSectionStub = sinon
+      .stub(MuninnCustomEditorProvider.prototype, 'revealSectionInActiveEditor')
+      .resolves(true);
+
+    const context = {
+      subscriptions: [],
+      extensionUri: vscode.Uri.file('/extension'),
+      globalState: createMemento(),
+      workspaceState: createMemento(),
+    } as unknown as vscode.ExtensionContext;
+
+    activate(context);
+
+    await registeredCommands.get('muninn.toggleFocusMode')?.();
+    expect(context.workspaceState.get('muninn.focusMode.enabled')).to.equal(true);
+    expect(notifyFocusModeChangedStub.calledOnce).to.equal(true);
+
+    const section: SectionRevealTarget = {
+      id: 'h2-l3-goals',
+      title: 'Goals',
+      normalizedTitle: 'goals',
+      level: 2,
+      line: 2,
+      occurrence: 0,
+    };
+    await registeredCommands.get('muninn.goToSection')?.(section);
+
+    expect(revealSectionStub.calledOnceWith(section)).to.equal(true);
   });
 });

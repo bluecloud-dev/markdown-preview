@@ -1,10 +1,17 @@
-import { renderMermaidDiagram } from './renderers/mermaid-renderer';
-
 type MermaidPreviewOptions = {
   panel: HTMLElement;
   body: HTMLDivElement;
   getSelectedMermaidSource: () => string | undefined;
   renderDelayMs: number;
+};
+
+type MermaidRenderer = typeof import('./renderers/mermaid-renderer.js');
+
+let mermaidRendererPromise: Promise<MermaidRenderer> | undefined;
+
+const loadMermaidRenderer = async (): Promise<MermaidRenderer> => {
+  mermaidRendererPromise ??= import('./renderers/mermaid-renderer.js');
+  return mermaidRendererPromise;
 };
 
 export class MermaidPreviewController {
@@ -54,6 +61,7 @@ export class MermaidPreviewController {
 
     const serialAtStart = this.renderSerial;
     const renderId = `muninn-mermaid-${Date.now()}`;
+    const { renderMermaidDiagram } = await loadMermaidRenderer();
     const result = await renderMermaidDiagram(source, renderId);
     if (serialAtStart !== this.renderSerial) {
       return;

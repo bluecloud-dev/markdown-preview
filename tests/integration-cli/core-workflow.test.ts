@@ -8,6 +8,8 @@ before(async () => {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+const normalizeNewlines = (value: string): string => value.replaceAll('\r\n', '\n');
+
 const waitFor = async (
   predicate: () => boolean,
   timeoutMs = 15_000,
@@ -103,7 +105,7 @@ describe('Integration CLI: core workflow', () => {
     }
     expect(commandApplied).to.equal(true);
 
-    const text = document.getText();
+    const text = normalizeNewlines(document.getText());
     expect(text).to.include('| Name | Value |');
     expect(text).to.include('| --- | --- |');
     expect(text).to.include('\n| A | 1 |\n');
@@ -131,7 +133,16 @@ describe('Integration CLI: core workflow', () => {
     const initialFenceCount = document.getText().match(/^```/gm)?.length ?? 0;
 
     await vscode.commands.executeCommand('muninn.insertLink');
-    await waitFor(() => document.getText().includes('https://example.com/docs'));
+    await waitFor(() => document.getText().includes('https://example.com/docs')).catch(
+      (error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `${message} inputCalled=${inputStub.called} markdown=${JSON.stringify(
+            document.getText(),
+          )}`,
+        );
+      },
+    );
 
     await vscode.commands.executeCommand('muninn.insertCodeBlock');
     await waitFor(() => (document.getText().match(/^```/gm)?.length ?? 0) > initialFenceCount);

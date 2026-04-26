@@ -29,6 +29,8 @@ describe('Integration CLI: command registration', () => {
     expect(commands).to.include('muninn.addTableRow');
     expect(commands).to.include('muninn.addTableColumn');
     expect(commands).to.include('muninn.tableActions');
+    expect(commands).to.include('muninn.toggleFocusMode');
+    expect(commands).to.include('muninn.goToSection');
     expect(commands).to.include('muninn.inspectConfiguration');
   });
 });

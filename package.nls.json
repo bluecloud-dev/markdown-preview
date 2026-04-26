@@ -4,6 +4,10 @@
   "command.category": "Muninn for VS Code",
   "command.muninn.openRawMarkdown.title": "Open Raw Markdown",
   "command.muninn.openRawMarkdown.shortTitle": "Raw",
+  "command.muninn.toggleFocusMode.title": "Toggle Focus Mode",
+  "command.muninn.toggleFocusMode.shortTitle": "Focus",
+  "command.muninn.goToSection.title": "Go to Section",
+  "command.muninn.goToSection.shortTitle": "Section",
   "command.muninn.toggleBold.title": "Toggle Bold",
   "command.muninn.toggleBold.shortTitle": "Bold",
   "command.muninn.toggleItalic.title": "Toggle Italic",
@@ -36,9 +40,9 @@
   "command.muninn.tableActions.shortTitle": "Table Actions",
   "command.muninn.inspectConfiguration.title": "Inspect Configuration",
   "command.muninn.inspectConfiguration.shortTitle": "Inspect Config",
+  "view.muninn.outline.name": "Muninn Outline",
   "configuration.title": "Muninn for VS Code",
-  "configuration.editorAssociations.description": "Automatically set workspace markdown files to open with Muninn's custom markdown editor.",
   "configuration.integrations.mermaid.enabled.description": "Enable inline Mermaid rendering inside the Muninn custom markdown editor.",
   "configuration.integrations.mermaid.allowInUntrustedWorkspaces.description": "Allow Mermaid rendering in restricted workspaces (disabled by default for safety).",
-  "configuration.toolbar.mode.description": "Choose the Muninn toolbar mode. Basic shows core actions, advanced shows the full authoring toolbar."
+  "configuration.toolbar.mode.description": "Choose authoring toolbar density. Basic keeps the reading-oriented core actions visible, advanced adds expanded editing controls, and focus mode stays minimal."
 }

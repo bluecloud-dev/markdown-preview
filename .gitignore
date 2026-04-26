@@ -50,6 +50,7 @@ logs/
 .claude
 .codex
 .vscode-test
-AGENTS.md
+!AGENTS.md
 CLAUDE.md
 settings.json
+graphify-out/

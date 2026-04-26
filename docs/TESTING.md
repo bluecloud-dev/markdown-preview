@@ -1,121 +1,48 @@
-# Testing Guide
+# Testing
 
-This guide documents the complete automated and manual QA strategy for Muninn for VS Code.
+Muninn uses three test layers:
 
-## Test Stack
+- Unit tests for isolated logic and services
+- Integration CLI tests for real VS Code extension-host behavior
+- WDIO E2E tests for desktop UI flows
 
-| Layer       | Tooling                                      | Scope                                              |
-| ----------- | -------------------------------------------- | -------------------------------------------------- |
-| Unit        | Mocha + Chai + Sinon                         | Isolated logic and service behavior                |
-| Integration | `@vscode/test-cli` + `@vscode/test-electron` | Real extension host behavior in VS Code desktop    |
-| UI E2E      | WebdriverIO + `wdio-vscode-service`          | Click-through user journeys in the real VS Code UI |
+## Verification Commands
 
-## Commands
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run bundle
+```
 
-| Command                    | Purpose                                                          |
-| -------------------------- | ---------------------------------------------------------------- |
-| `npm run lint`             | Static checks for source and tests                               |
-| `npm run format:check`     | Formatting gate (Prettier)                                       |
-| `npm run typecheck`        | Type-only TypeScript validation (`--noEmit`)                     |
-| `npm run compile`          | Build extension + tests                                          |
-| `npm test`                 | Standard integration suite (`@vscode/test-cli`)                  |
-| `npm run test:integration` | Explicit integration run                                         |
-| `npm run test:e2e`         | Desktop UI E2E tests with WDIO                                   |
-| `npm run test:e2e:headed`  | Desktop UI E2E tests (same suite, explicit local run entrypoint) |
-| `npm run test:web`         | Web test status check (currently not supported)                  |
-| `npm run coverage`         | Unit coverage run                                                |
+Run these when the change requires deeper coverage:
 
-## Integration Tests (`@vscode/test-cli`)
+- `npm run coverage`
+  Use when changing host-side services or document sync behavior.
+- `npm run test:e2e`
+  Use when changing webview/editor UX, toolbar behavior, table flows, or Mermaid behavior.
+- `npm run bundle`
+  Use when changing webview imports or build scripts. The bundle step emits `media/bundle-metadata.json` and enforces the initial webview payload budget.
 
-- Configuration file: `/Users/aymenhammouda/workspace/markdown-reader/.vscode-test.mjs`
-- Test files loaded:
-  - `out/tests/integration-cli/**/*.test.js`
-- Runner behavior:
-  - Uses VS Code stable by default
-  - Creates an isolated run directory per invocation under `/tmp/muninn-vscode-test/<run-id>/`
-  - Copies `tests/fixtures` into a run-scoped workspace to avoid cross-test contamination
-  - Uses isolated user-data and extensions directories via launch args
+## Test Layout
 
-## Debugging Integration Tests in VS Code
+- `tests/unit/`
+  VS Code API mocks and focused logic tests
+- `tests/integration-cli/`
+  Extension-host tests through `@vscode/test-cli`
+- `tests/e2e/`
+  Desktop interaction flows through WebdriverIO
+- `tests/fixtures/`
+  Run-scoped fixture workspace copied into integration and E2E sessions
 
-Use the launch configuration in `/Users/aymenhammouda/workspace/markdown-reader/.vscode/launch.json`:
+## What The Suites Protect
 
-- **Extension Tests**
-- It references `testConfiguration: ${workspaceFolder}/.vscode-test.mjs`
-
-Typical flow:
-
-1. Run `npm run compile`
-2. Open Run and Debug
-3. Start **Extension Tests**
-
-## UI E2E Tests (WebdriverIO)
-
-- WDIO config: `/Users/aymenhammouda/workspace/markdown-reader/wdio.conf.cjs`
-- Launcher script: `/Users/aymenhammouda/workspace/markdown-reader/scripts/run-e2e.js`
-- Specs:
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/reading-first.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/edit-mode.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/formatting-mermaid.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/mermaid.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/table.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/accessibility-toolbar.e2e.mjs`
-
-`table.e2e.mjs` includes source-panel apply verification (button + `Ctrl/Cmd+Enter`) and markdown persistence checks.
-`mermaid.e2e.mjs` includes a regression assertion that Mermaid preview renders visible SVG label text.
-
-### Stability Controls
-
-- `maxInstances: 1`
-- explicit waits with `browser.waitUntil`
-- run-scoped workspace copy under `.vscode-test/e2e-runs/<run-id>/workspace`
-- deterministic artifact tree per date and run-id (`WDIO_RUN_ID`)
-- `WDIO_RUN_ID` is auto-generated per invocation by `scripts/run-e2e.js` and shared across workers
-
-### Artifacts
-
-Artifacts are stored under:
-
-`artifacts/e2e/<YYYY-MM-DD>/<run-id>/`
-
-Includes:
-
-- `screenshots/` (captured on every failed test)
-- `videos/` (failure-focused via `saveAllVideos: false`, enabled in CI by default)
-- `junit/` (CI-friendly XML)
-- `logs/`
-
-By default, local runs disable video (`E2E_VIDEO=0`) and CI enables it (`E2E_VIDEO=1`).
-
-## VS Code Web Test Support
-
-This extension is currently **desktop-only** (no `browser` entry in `package.json`), so `@vscode/test-web` is not enabled.
-
-If web support is added later:
-
-1. Add a web entrypoint in `package.json`
-2. Add `test:web` runner using `@vscode/test-web`
-3. Add a dedicated CI job for web extension validation
-
-## CI
-
-CI runs:
-
-1. lint
-2. format check
-3. typecheck
-4. compile + bundle
-5. unit coverage
-6. integration tests (`npm test`)
-7. desktop E2E (`npm run test:e2e`)
-8. artifact upload (VSIX + E2E screenshots/videos/junit)
-
-### Notes on Local macOS
-
-If E2E startup fails before test execution with a session bootstrap error (e.g., Chromedriver unable to attach to VS Code pages), this is environment-specific and not assertion flakiness. In that case, use Linux CI (xvfb) as the source of truth while keeping local runs for quick smoke attempts.
-
-## Manual QA
-
-Manual verification checklist:
-
-- `/Users/aymenhammouda/workspace/markdown-reader/MANUAL_QA.md`
+- Activation stays lazy and does not rewrite workspace editor associations
+- Focus mode persists as workspace UI state without becoming a public setting
+- Native outline and section navigation stay backed by the host heading model
+- Markdown round-trips through the custom editor without leaking internal table fences
+- Raw markdown fallback remains available
+- Mermaid respects workspace trust policy
+- Mermaid stays out of the initial webview payload and loads from generated chunks only when needed
+- The initial webview payload remains under the milestone-4 bundle budget
+- Table editing and command-driven authoring flows remain stable
