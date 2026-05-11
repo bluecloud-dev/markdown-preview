@@ -339,7 +339,8 @@ class TableCodeBlockNodeView implements NodeView {
 
     this.sourceShortcutHint.className = 'muninn-table-node-source-hint';
     this.sourceShortcutHint.id = this.sourceShortcutHintId;
-    this.sourceShortcutHint.textContent = 'Press Ctrl/Cmd+Enter to apply';
+    this.sourceShortcutHint.textContent =
+      'Edit Markdown table source. Press Ctrl/Cmd+Enter to apply changes.';
 
     this.sourceFeedback.className = 'muninn-table-node-source-feedback';
     this.sourceFeedback.dataset.testid = 'muninn-table-source-feedback';

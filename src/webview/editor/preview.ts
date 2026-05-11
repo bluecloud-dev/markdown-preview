@@ -48,7 +48,8 @@ export class MermaidPreviewController {
 
     this.options.panel.hidden = false;
     if (!this.enabled) {
-      this.options.body.textContent = 'Mermaid rendering is disabled for this workspace.';
+      this.options.body.textContent =
+        'Mermaid preview is disabled for this workspace. Enable muninn.integrations.mermaid.enabled and trust the workspace, or allow Mermaid in restricted workspaces.';
       return;
     }
 

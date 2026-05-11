@@ -69,6 +69,35 @@ const TRANSIENT_ACTIVE_COMMANDS = new Set<string>([
   'openRawMarkdown',
 ]);
 
+const COMMAND_LABELS = new Map<ViewEditorCommand | 'openRawMarkdown', string>([
+  ['toggleBold', 'Bold'],
+  ['toggleItalic', 'Italic'],
+  ['setHeading1', 'Heading 1'],
+  ['setHeading2', 'Heading 2'],
+  ['setHeading3', 'Heading 3'],
+  ['setParagraph', 'Paragraph'],
+  ['toggleBulletList', 'Bullet list'],
+  ['toggleNumberedList', 'Numbered list'],
+  ['insertLink', 'Link'],
+  ['insertMermaidBlock', 'Mermaid diagram'],
+  ['insertTable', 'Table'],
+  ['insertCodeBlock', 'Code block'],
+  ['addTableRow', 'Add table row'],
+  ['addTableColumn', 'Add table column'],
+  ['openRawMarkdown', 'Source editor'],
+]);
+
+const formatCommandFailure = (command: string): string => {
+  if (command === 'addTableRow') {
+    return 'Insert a table first before adding a row.';
+  }
+  if (command === 'addTableColumn') {
+    return 'Insert a table first before adding a column.';
+  }
+  const label = COMMAND_LABELS.get(command as ViewEditorCommand | 'openRawMarkdown') ?? command;
+  return `Could not run ${label}. Place the cursor in editable text and try again.`;
+};
+
 const markdownItParser = MarkdownIt('commonmark', {
   html: false,
   linkify: true,
@@ -626,7 +655,7 @@ for (const [command, button] of toolbarButtons.entries()) {
 
     const executed = executeEditorCommand(command as ViewEditorCommand);
     if (!executed) {
-      setStatus(`Command failed: ${command}`);
+      setStatus(formatCommandFailure(command));
     }
     if (executed && TRANSIENT_ACTIVE_COMMANDS.has(command)) {
       button.classList.add('is-active');
@@ -779,7 +808,7 @@ const detachHostMessageListener = attachHostMessageListener({
   onExecuteCommand: (command) => {
     const executed = executeEditorCommand(command);
     if (!executed) {
-      setStatus(`Command failed: ${command}`);
+      setStatus(formatCommandFailure(command));
     }
   },
   onSettingsChanged: (payload) => {
