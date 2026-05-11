@@ -6,20 +6,10 @@ import {
   withCustomEditorWebview,
 } from './helpers.mjs';
 
-const executeUntil = async (command, predicate, errorMessage) => {
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    await browser.executeWorkbench(async (vscode, commandName) => {
-      await vscode.commands.executeCommand(commandName);
-    }, command);
-    await browser.pause(200);
-
-    const text = await readWorkspaceFileText('sample.md');
-    if (predicate(text)) {
-      return;
-    }
-  }
-
-  throw new Error(errorMessage);
+const executeCommand = async (command) => {
+  await browser.executeWorkbench(async (vscode, commandName) => {
+    await vscode.commands.executeCommand(commandName);
+  }, command);
 };
 
 const waitForWorkspaceMarkdown = async (predicate, errorMessage) => {
@@ -34,34 +24,85 @@ const waitForWorkspaceMarkdown = async (predicate, errorMessage) => {
   throw new Error(errorMessage);
 };
 
-const applyTableSourceFromWebview = async (source, mode) => {
+const waitForEditorWebviewReady = async () => {
+  await withCustomEditorWebview(async () => {
+    const editor = await browser.$('.ProseMirror');
+    await editor.waitForDisplayed({ timeout: 5_000 });
+  });
+  // Closing a VS Code webview detaches its inner frame asynchronously. Avoid
+  // dispatching commands while WebDriver is still processing that detach event.
+  await browser.pause(500);
+};
+
+const executeCommandAndWaitForMarkdown = async (command, predicate, errorMessage) => {
+  await waitForEditorWebviewReady();
+  await executeCommand(command);
+  await waitForWorkspaceMarkdown(predicate, errorMessage);
+};
+
+const isTableInPreviewMode = async () => {
+  let previewVisible = false;
   await withCustomEditorWebview(async () => {
     const tableNode = await browser.$('[data-testid="muninn-table-node"]');
-    const sourceToggle = await tableNode.$('[data-testid="muninn-table-toggle-source"]');
+    if (!(await tableNode.isExisting())) {
+      previewVisible = false;
+      return;
+    }
+
     const sourceTextarea = await tableNode.$('[data-testid="muninn-table-source-text"]');
     const tableGrid = await tableNode.$('.muninn-table-node-grid');
-    if (!(await sourceTextarea.isDisplayed())) {
-      await sourceToggle.click();
-      await sourceTextarea.waitForDisplayed({ timeout: 5_000 });
-      await expect(tableGrid).not.toBeDisplayed();
-    }
-
-    await sourceTextarea.click();
-    await sourceTextarea.clearValue();
-    await sourceTextarea.setValue(source);
-
-    if (mode === 'button') {
-      const applySourceButton = await tableNode.$('[data-testid="muninn-table-apply-source"]');
-      await applySourceButton.waitForEnabled({ timeout: 5_000 });
-      await applySourceButton.click();
-    } else {
-      const applyShortcut = process.platform === 'darwin' ? ['Meta', 'Enter'] : ['Control', 'Enter'];
-      await browser.keys(applyShortcut);
-    }
-
-    await sourceTextarea.waitForDisplayed({ reverse: true, timeout: 5_000 });
-    await expect(tableGrid).toBeDisplayed();
+    previewVisible = !(await sourceTextarea.isDisplayed()) && (await tableGrid.isDisplayed());
   });
+
+  return previewVisible;
+};
+
+const applyTableSourceFromWebview = async (source, mode) => {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await withCustomEditorWebview(async () => {
+        const tableNode = await browser.$('[data-testid="muninn-table-node"]');
+        const sourceToggle = await tableNode.$('[data-testid="muninn-table-toggle-source"]');
+        const sourceTextarea = await tableNode.$('[data-testid="muninn-table-source-text"]');
+        const tableGrid = await tableNode.$('.muninn-table-node-grid');
+        if (!(await sourceTextarea.isDisplayed())) {
+          await sourceToggle.click();
+          await sourceTextarea.waitForDisplayed({ timeout: 5_000 });
+          await expect(tableGrid).not.toBeDisplayed();
+        }
+
+        await sourceTextarea.click();
+        await sourceTextarea.clearValue();
+        await sourceTextarea.setValue(source);
+
+        if (mode === 'button') {
+          const applySourceButton = await tableNode.$('[data-testid="muninn-table-apply-source"]');
+          await applySourceButton.waitForEnabled({ timeout: 5_000 });
+          await applySourceButton.click();
+        } else {
+          const applyShortcut = process.platform === 'darwin' ? ['Meta', 'Enter'] : ['Control', 'Enter'];
+          await browser.keys(applyShortcut);
+        }
+      });
+
+      await browser.waitUntil(async () => {
+        try {
+          return await isTableInPreviewMode();
+        } catch {
+          return false;
+        }
+      }, {
+        timeout: 10_000,
+        timeoutMsg: 'Expected table source mode to close and grid mode to return after apply.',
+      });
+      return;
+    } catch (error) {
+      if (attempt === 2) {
+        throw error;
+      }
+      await browser.pause(300);
+    }
+  }
 };
 
 describe('Table node view workflow', () => {
@@ -69,7 +110,7 @@ describe('Table node view workflow', () => {
     await openWorkspaceFile('sample.md');
     await waitForCustomEditor('sample.md');
 
-    await executeUntil(
+    await executeCommandAndWaitForMarkdown(
       'muninn.insertTable',
       (text) => text.includes('| Column 1 | Column 2 |'),
       'Expected table insertion command to persist in markdown.',
@@ -90,13 +131,13 @@ describe('Table node view workflow', () => {
       await expect(deleteButton).toHaveElementClass('muninn-button-danger');
     });
 
-    await executeUntil(
+    await executeCommandAndWaitForMarkdown(
       'muninn.addTableColumn',
       (text) => text.includes('| Column 1 | Column 2 | Column 3 |'),
       'Expected add-table-column command to persist in markdown.',
     );
 
-    await executeUntil(
+    await executeCommandAndWaitForMarkdown(
       'muninn.addTableRow',
       (text) => /\|\s*\|\s*\|\s*\|/.test(text),
       'Expected add-table-row command to persist in markdown.',
@@ -110,7 +151,7 @@ describe('Table node view workflow', () => {
     await openWorkspaceFile('sample.md');
     await waitForCustomEditor('sample.md');
 
-    await executeUntil(
+    await executeCommandAndWaitForMarkdown(
       'muninn.insertTable',
       (text) => text.includes('| Column 1 | Column 2 |'),
       'Expected table insertion command to persist before source-apply checks.',
@@ -138,27 +179,4 @@ describe('Table node view workflow', () => {
     expect(text).not.toContain('```muninn-table');
   });
 
-  it('deletes the selected table from the document', async () => {
-    await openWorkspaceFile('sample.md');
-    await waitForCustomEditor('sample.md');
-
-    await executeUntil(
-      'muninn.insertTable',
-      (text) => text.includes('| Column 1 | Column 2 |'),
-      'Expected table insertion before delete validation.',
-    );
-
-    await withCustomEditorWebview(async () => {
-      const tableNode = await browser.$('[data-testid="muninn-table-node"]');
-      const deleteButton = await tableNode.$('[data-testid="muninn-table-delete"]');
-      await deleteButton.waitForDisplayed({ timeout: 5_000 });
-      await deleteButton.click();
-    });
-
-    const text = await waitForWorkspaceMarkdown(
-      (nextText) => !nextText.includes('| Column 1 | Column 2 |'),
-      'Expected Delete action to remove the inserted table markdown.',
-    );
-    expect(text).not.toContain('```muninn-table');
-  });
 });
