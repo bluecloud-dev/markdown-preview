@@ -88,23 +88,45 @@ const markdownSerializer = new MarkdownSerializer(
 
 const { editorContainer, statusLine, mermaidPreviewPanel, mermaidPreviewBody, toolbarButtons } =
   bootstrapEditorApp();
+const moreButton = document.querySelector<HTMLButtonElement>('[data-testid="muninn-toolbar-more"]');
 
 let view: EditorView | undefined;
 let toolbarMode: ToolbarMode = 'basic';
+let advancedActionsVisible = false;
 let lastMermaidInsertAt = 0;
 
 const setStatus = (message: string): void => {
   statusLine.textContent = message;
 };
 
-const setToolbarMode = (mode: ToolbarMode): void => {
-  toolbarMode = mode;
+const updateAdvancedToolbarVisibility = (): void => {
+  const showAdvancedActions = toolbarMode === 'advanced' || advancedActionsVisible;
   for (const [command, button] of toolbarButtons.entries()) {
     if (!ADVANCED_TOOLBAR_COMMANDS.has(command)) {
       continue;
     }
-    button.hidden = toolbarMode === 'basic';
+    button.hidden = !showAdvancedActions;
   }
+
+  if (moreButton) {
+    moreButton.hidden = toolbarMode === 'advanced';
+    moreButton.setAttribute('aria-expanded', advancedActionsVisible ? 'true' : 'false');
+  }
+};
+
+const getFirstAdvancedToolbarButton = (): HTMLButtonElement | undefined => {
+  for (const [command, button] of toolbarButtons.entries()) {
+    if (ADVANCED_TOOLBAR_COMMANDS.has(command)) {
+      return button;
+    }
+  }
+  return undefined;
+};
+
+const setToolbarMode = (mode: ToolbarMode): void => {
+  toolbarMode = mode;
+  advancedActionsVisible = false;
+  updateAdvancedToolbarVisibility();
 };
 
 const serializeMarkdownForHost = (): string => {
@@ -615,6 +637,16 @@ for (const [command, button] of toolbarButtons.entries()) {
     view?.focus();
   });
 }
+
+moreButton?.addEventListener('click', () => {
+  advancedActionsVisible = !advancedActionsVisible;
+  updateAdvancedToolbarVisibility();
+  if (toolbarMode === 'basic' && advancedActionsVisible) {
+    getFirstAdvancedToolbarButton()?.focus();
+    return;
+  }
+  moreButton.focus();
+});
 
 const updateToolbarPressedState = (command: string, pressed: boolean): void => {
   const button = toolbarButtons.get(command);
