@@ -23,6 +23,26 @@ const executeUntil = async (command, predicate, errorMessage) => {
 };
 
 describe('Toolbar accessibility workflow', () => {
+  it('shows the editor shell focus ring when the document is focused', async () => {
+    await openWorkspaceFile('with-formatting.md');
+    await waitForCustomEditor('with-formatting.md');
+
+    await withCustomEditorWebview(async () => {
+      const editor = await browser.$('.ProseMirror');
+      await editor.click();
+      await expect(editor).toBeFocused();
+
+      const shell = await browser.$('.muninn-editor-shell');
+      const outlineStyle = await shell.getCSSProperty('outline-style');
+      const outlineWidth = await shell.getCSSProperty('outline-width');
+      const outlineColor = await shell.getCSSProperty('outline-color');
+      expect(outlineStyle.value).toBe('solid');
+      expect(outlineWidth.value).not.toBe('0px');
+      expect(outlineColor.value.replace(/\s/g, '')).not.toBe('rgba(0,0,0,0)');
+      expect(outlineColor.value).not.toBe('transparent');
+    });
+  });
+
   it('labels toolbar groups and exposes the More affordance', async () => {
     await openWorkspaceFile('with-formatting.md');
     await waitForCustomEditor('with-formatting.md');

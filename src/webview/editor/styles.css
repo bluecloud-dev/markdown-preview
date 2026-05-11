@@ -146,7 +146,13 @@ body {
 .muninn-editor-shell {
   flex: 1;
   overflow: auto;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
   padding-bottom: 16px;
+}
+
+.muninn-editor-shell:focus-within {
+  outline-color: var(--vscode-focusBorder);
 }
 
 .ProseMirror {
