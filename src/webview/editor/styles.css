@@ -286,6 +286,15 @@ body {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
+.muninn-table-node-actions button.muninn-button-danger {
+  color: var(--vscode-errorForeground);
+  border-color: color-mix(in srgb, var(--vscode-errorForeground) 45%, transparent);
+}
+
+.muninn-table-node-actions button.muninn-button-danger:hover {
+  background: color-mix(in srgb, var(--vscode-errorForeground) 12%, var(--vscode-button-secondaryBackground));
+}
+
 .muninn-table-node-actions button:focus-visible,
 .muninn-table-node-source button:focus-visible {
   outline: 2px solid var(--vscode-focusBorder);

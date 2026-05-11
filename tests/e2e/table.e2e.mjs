@@ -75,6 +75,21 @@ describe('Table node view workflow', () => {
       'Expected table insertion command to persist in markdown.',
     );
 
+    await withCustomEditorWebview(async () => {
+      const tableNode = await browser.$('[data-testid="muninn-table-node"]');
+      const firstCell = await tableNode.$('.muninn-table-node-cell');
+      await firstCell.waitForDisplayed({ timeout: 5_000 });
+      await expect(firstCell).toHaveAttribute(
+        'aria-label',
+        expect.stringContaining('Header column 1'),
+      );
+
+      const deleteButton = await tableNode.$('[data-testid="muninn-table-delete"]');
+      await deleteButton.waitForDisplayed({ timeout: 5_000 });
+      await expect(deleteButton).toHaveAttribute('aria-label', 'Delete table');
+      await expect(deleteButton).toHaveElementClass('muninn-button-danger');
+    });
+
     await executeUntil(
       'muninn.addTableColumn',
       (text) => text.includes('| Column 1 | Column 2 | Column 3 |'),

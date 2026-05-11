@@ -49,6 +49,8 @@ type TableNodeViewOptions = {
   setStatus: (message: string) => void;
 };
 
+let tableNodeViewCounter = 0;
+
 const getCodeBlockLanguage = (node: ProseMirrorNode): string =>
   ((node.attrs.params as string | undefined) ?? '').trim().toLowerCase();
 
@@ -280,6 +282,7 @@ class TableCodeBlockNodeView implements NodeView {
   private readonly addRowButton = document.createElement('button');
   private readonly addColumnButton = document.createElement('button');
   private readonly deleteTableButton = document.createElement('button');
+  private readonly sourceShortcutHintId = `muninn-table-source-hint-${++tableNodeViewCounter}`;
 
   private sourceVisible = false;
   private sourceDraft = '';
@@ -307,6 +310,8 @@ class TableCodeBlockNodeView implements NodeView {
     this.deleteTableButton.type = 'button';
     this.deleteTableButton.textContent = 'Delete';
     this.deleteTableButton.dataset.testid = 'muninn-table-delete';
+    this.deleteTableButton.setAttribute('aria-label', 'Delete table');
+    this.deleteTableButton.classList.add('muninn-button-danger');
     this.sourceToggleButton.type = 'button';
     this.sourceToggleButton.textContent = 'View Source';
     this.sourceToggleButton.dataset.testid = 'muninn-table-toggle-source';
@@ -324,6 +329,7 @@ class TableCodeBlockNodeView implements NodeView {
     this.sourceContainer.className = 'muninn-table-node-source';
     this.sourceTextarea.className = 'muninn-table-node-source-text';
     this.sourceTextarea.setAttribute('aria-label', 'Markdown table source');
+    this.sourceTextarea.setAttribute('aria-describedby', this.sourceShortcutHintId);
     this.sourceTextarea.dataset.testid = 'muninn-table-source-text';
     this.applySourceButton.type = 'button';
     this.applySourceButton.textContent = 'Apply Source';
@@ -332,6 +338,7 @@ class TableCodeBlockNodeView implements NodeView {
     this.applySourceButton.dataset.testid = 'muninn-table-apply-source';
 
     this.sourceShortcutHint.className = 'muninn-table-node-source-hint';
+    this.sourceShortcutHint.id = this.sourceShortcutHintId;
     this.sourceShortcutHint.textContent = 'Press Ctrl/Cmd+Enter to apply';
 
     this.sourceFeedback.className = 'muninn-table-node-source-feedback';
@@ -459,6 +466,12 @@ class TableCodeBlockNodeView implements NodeView {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'muninn-table-node-cell';
+    input.setAttribute(
+      'aria-label',
+      rowIndex < 0
+        ? `Header column ${columnIndex + 1}`
+        : `Row ${rowIndex + 1} column ${columnIndex + 1}`,
+    );
     input.value = value;
     input.addEventListener('change', () => {
       this.updateCell(rowIndex, columnIndex, input.value);
