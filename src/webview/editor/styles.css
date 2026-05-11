@@ -26,6 +26,40 @@ body {
   height: 100%;
 }
 
+.muninn-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--vscode-editorGroup-border);
+  background: var(--vscode-sideBar-background, var(--vscode-editorWidget-background));
+  color: var(--vscode-sideBar-foreground, var(--vscode-editor-foreground));
+}
+
+.muninn-editor-identity {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.muninn-editor-identity strong {
+  color: var(--vscode-sideBarTitle-foreground, var(--vscode-editor-foreground));
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.muninn-editor-identity span,
+.muninn-editor-help {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+
+.muninn-editor-help {
+  text-align: right;
+}
+
 .muninn-toolbar {
   display: flex;
   align-items: center;

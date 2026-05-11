@@ -15,6 +15,13 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
   }
 
   app.innerHTML = `
+  <header class="muninn-editor-header" data-testid="muninn-editor-header">
+    <div class="muninn-editor-identity">
+      <strong>Muninn</strong>
+      <span>Markdown editor</span>
+    </div>
+    <div class="muninn-editor-help">Use Source to open raw Markdown in VS Code.</div>
+  </header>
   <div class="muninn-toolbar" role="toolbar" aria-label="Muninn markdown toolbar">
     <div class="muninn-toolbar-group" data-group="text">
       <button type="button" data-command="toggleBold" data-pressable="true" aria-pressed="false">Bold</button>
@@ -33,7 +40,7 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
       <button type="button" data-command="insertTable">Table</button>
       <button type="button" data-command="insertCodeBlock">Code</button>
       <button type="button" data-command="insertMermaidBlock" data-advanced="true">Mermaid</button>
-      <button type="button" data-command="openRawMarkdown">Raw</button>
+      <button type="button" data-command="openRawMarkdown" title="Open raw Markdown source in VS Code">Source</button>
     </div>
   </div>
   <div class="muninn-editor-shell" id="editor-shell">
