@@ -119,3 +119,14 @@ If E2E startup fails before test execution with a session bootstrap error (e.g.,
 Manual verification checklist:
 
 - `/Users/aymenhammouda/workspace/markdown-reader/MANUAL_QA.md`
+
+## Manual Visual QA
+
+1. Open Extension Development Host.
+2. Open `tests/fixtures/sample.md`.
+3. Capture editor overview in light and dark themes.
+4. Tab through toolbar, editor, table controls, and Source button.
+5. Confirm visible focus rings on every interactive control.
+6. Insert a table and confirm Delete is visually dangerous.
+7. Insert Mermaid and confirm disabled/enabled states are understandable.
+8. Compare screenshots against `docs/design/MUNINN_VISUAL_QA.md`.

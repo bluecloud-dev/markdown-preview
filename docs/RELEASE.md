@@ -69,6 +69,16 @@ npm run coverage
 - [ ] **CHANGELOG.md** - New section for this version
 - [ ] **CHANGELOG.md** - All changes since last release documented
 
+#### Visual QA
+
+- [ ] `assets/hero.png` uses Muninn branding.
+- [ ] `assets/icon.png` is 128x128 and readable at small sizes.
+- [ ] Light theme screenshot reviewed.
+- [ ] Dark theme screenshot reviewed.
+- [ ] High contrast focus screenshot reviewed.
+- [ ] Table source mode screenshot reviewed.
+- [ ] Mermaid preview screenshot reviewed.
+
 ### 3. Version Bump
 
 Update version in `package.json`:
