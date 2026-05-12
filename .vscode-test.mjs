@@ -27,6 +27,8 @@ export default defineConfig({
   launchArgs: [
     '--disable-extensions',
     '--disable-workspace-trust',
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
     `--user-data-dir=${userDataDir}`,
     `--extensions-dir=${extensionsDir}`,
   ],

@@ -11,6 +11,11 @@ specs/**
 .vscode-test/**
 .specify/**
 .codex/**
+.claude/**
+.claudeignore
+.remember/**
+graphify-out/**
+docs/superpowers/**
 scripts/**
 node_modules/**
 **/*.ts

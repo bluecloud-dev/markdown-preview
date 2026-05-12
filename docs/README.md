@@ -6,17 +6,17 @@ Welcome to the **Muninn for VS Code** extension engineering documentation. This 
 
 ## Documentation Index
 
-| Document | Description | Audience |
-|----------|-------------|----------|
-| [GETTING_STARTED.md](GETTING_STARTED.md) | New contributor onboarding, first run, and common commands | Newcomers |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | System design, module overview, and data flow diagrams | Developers, Contributors |
-| [DEVELOPMENT.md](DEVELOPMENT.md) | Setup guide, development workflow, and debugging tips | New Contributors |
-| [TESTING.md](TESTING.md) | Test structure, running tests, and writing new tests | Developers, QA |
-| [RELEASE.md](RELEASE.md) | Release process checklist and versioning guidelines | Maintainers |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues and solutions for developers | All |
-| [ROADMAP.md](ROADMAP.md) | Feature roadmap and milestone planning | All |
-| [BRAND_NAMING_CONTRACT.md](BRAND_NAMING_CONTRACT.md) | Canonical naming, IDs, and logo rules for the Muninn suite | Maintainers, Product |
-| [MIGRATION_FROM_MARKDOWN_PREVIEW.md](MIGRATION_FROM_MARKDOWN_PREVIEW.md) | Hard-break migration from legacy extension ID and namespaces | Maintainers, Users |
+| Document                                                                 | Description                                                  | Audience                 |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------ |
+| [GETTING_STARTED.md](GETTING_STARTED.md)                                 | New contributor onboarding, first run, and common commands   | Newcomers                |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                                       | System design, module overview, and data flow diagrams       | Developers, Contributors |
+| [DEVELOPMENT.md](DEVELOPMENT.md)                                         | Setup guide, development workflow, and debugging tips        | New Contributors         |
+| [TESTING.md](TESTING.md)                                                 | Test structure, running tests, and writing new tests         | Developers, QA           |
+| [RELEASE.md](RELEASE.md)                                                 | Release process checklist and versioning guidelines          | Maintainers              |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                                 | Common issues and solutions for developers                   | All                      |
+| [ROADMAP.md](ROADMAP.md)                                                 | Feature roadmap and milestone planning                       | All                      |
+| [BRAND_NAMING_CONTRACT.md](BRAND_NAMING_CONTRACT.md)                     | Canonical naming, IDs, and logo rules for the Muninn suite   | Maintainers, Product     |
+| [MIGRATION_FROM_MARKDOWN_PREVIEW.md](MIGRATION_FROM_MARKDOWN_PREVIEW.md) | Hard-break migration from legacy extension ID and namespaces | Maintainers, Users       |
 
 ## Quick Links
 
@@ -34,15 +34,15 @@ muninn-vscode/
 │   ├── extension.ts        # Extension host activation + command wiring
 │   ├── custom-editor/      # CustomTextEditorProvider host + protocol + sync
 │   ├── integrations/       # Integration adapters (Mermaid trust/config gate)
-│   ├── providers/          # Optional provider helpers (paste/drop)
 │   ├── services/           # Shared services (config, logger)
 │   ├── types/              # TypeScript type definitions
 │   ├── utils/              # Utility functions (localization)
 │   └── webview/editor/     # Webview editor application (ProseMirror + Mermaid/table UI)
+├── l10n/                   # Localization bundles
 ├── tests/                  # Test suites
 │   ├── unit/               # Unit tests (mocked VS Code APIs)
 │   ├── integration-cli/    # Integration tests via @vscode/test-cli
-│   └── e2e/                # WDIO end-to-end tests
+│   ├── e2e/                # WDIO end-to-end tests
 │   └── fixtures/           # Test data files
 ├── docs/                   # This documentation folder
 ├── assets/                 # Images and icons
@@ -79,4 +79,4 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root for contribution g
 
 - **Bugs:** [Open an issue](https://github.com/bluecloud-dev/muninn-vscode/issues)
 - **Questions:** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) first
-- **Feature Requests:** [Open a feature request](https://github.com/bluecloud-dev/muninn-vscode/issues/new?template=feature_request.md)
+- **Feature Requests:** [Open a feature request](https://github.com/bluecloud-dev/muninn-vscode/issues/new)

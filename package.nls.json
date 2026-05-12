@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Muninn for VS Code",
-  "extension.description": "Remember everything. Use Muninn's custom markdown editor as the default single-pane reading and editing experience.",
+  "extension.description": "Single-pane markdown editor for reading-first workflows, with built-in Mermaid and table tooling.",
   "command.category": "Muninn for VS Code",
   "command.muninn.openRawMarkdown.title": "Open Raw Markdown",
   "command.muninn.openRawMarkdown.shortTitle": "Source",

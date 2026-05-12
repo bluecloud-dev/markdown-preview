@@ -627,7 +627,9 @@ class TableCodeBlockNodeView implements NodeView {
   }
 
   private updateApplySourceButtonState(): void {
-    this.applySourceButton.disabled = false;
+    const normalizedDraft = normalizeTableSource(this.sourceDraft);
+    const currentSource = normalizeTableSource(this.node.textContent);
+    this.applySourceButton.disabled = !this.sourceVisible || normalizedDraft === currentSource;
   }
 
   private clearSourceFeedback(): void {

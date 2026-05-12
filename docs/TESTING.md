@@ -27,7 +27,7 @@ This guide documents the complete automated and manual QA strategy for Muninn fo
 
 ## Integration Tests (`@vscode/test-cli`)
 
-- Configuration file: `/Users/aymenhammouda/workspace/markdown-reader/.vscode-test.mjs`
+- Configuration file: `.vscode-test.mjs`
 - Test files loaded:
   - `out/tests/integration-cli/**/*.test.js`
 - Runner behavior:
@@ -38,7 +38,7 @@ This guide documents the complete automated and manual QA strategy for Muninn fo
 
 ## Debugging Integration Tests in VS Code
 
-Use the launch configuration in `/Users/aymenhammouda/workspace/markdown-reader/.vscode/launch.json`:
+Use the launch configuration in `.vscode/launch.json`:
 
 - **Extension Tests**
 - It references `testConfiguration: ${workspaceFolder}/.vscode-test.mjs`
@@ -51,15 +51,15 @@ Typical flow:
 
 ## UI E2E Tests (WebdriverIO)
 
-- WDIO config: `/Users/aymenhammouda/workspace/markdown-reader/wdio.conf.cjs`
-- Launcher script: `/Users/aymenhammouda/workspace/markdown-reader/scripts/run-e2e.js`
+- WDIO config: `wdio.conf.cjs`
+- Launcher script: `scripts/run-e2e.js`
 - Specs:
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/reading-first.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/edit-mode.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/formatting-mermaid.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/mermaid.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/table.e2e.mjs`
-  - `/Users/aymenhammouda/workspace/markdown-reader/tests/e2e/accessibility-toolbar.e2e.mjs`
+  - `tests/e2e/reading-first.e2e.mjs`
+  - `tests/e2e/edit-mode.e2e.mjs`
+  - `tests/e2e/formatting-mermaid.e2e.mjs`
+  - `tests/e2e/mermaid.e2e.mjs`
+  - `tests/e2e/table.e2e.mjs`
+  - `tests/e2e/accessibility-toolbar.e2e.mjs`
 
 `table.e2e.mjs` includes source-panel apply verification (button + `Ctrl/Cmd+Enter`) and markdown persistence checks.
 `mermaid.e2e.mjs` includes a regression assertion that Mermaid preview renders visible SVG label text.
@@ -118,7 +118,7 @@ If E2E startup fails before test execution with a session bootstrap error (e.g.,
 
 Manual verification checklist:
 
-- `/Users/aymenhammouda/workspace/markdown-reader/MANUAL_QA.md`
+- `MANUAL_QA.md`
 
 ## Manual Visual QA
 

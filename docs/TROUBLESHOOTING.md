@@ -1,400 +1,136 @@
 # Troubleshooting Guide
 
-This guide helps you diagnose and resolve common issues with the Muninn for VS Code extension.
+This guide covers common issues for the current Muninn v2 custom editor workflow.
 
-## Table of Contents
+## 1) Markdown does not open with Muninn
 
-- [Preview Issues](#preview-issues)
-- [Edit Mode Issues](#edit-mode-issues)
-- [Formatting Issues](#formatting-issues)
-- [Configuration Issues](#configuration-issues)
-- [Performance Issues](#performance-issues)
-- [Extension Conflicts](#extension-conflicts)
-- [Getting Help](#getting-help)
+### Symptoms
 
-## Preview Issues
+- Opening `.md` files still shows VS Code's default editor.
 
-### Preview does not open automatically
+### Checks
 
-**Symptom:** Clicking a markdown file opens the text editor instead of preview.
+1. Ensure the extension is installed and enabled.
+2. Verify `muninn.editorAssociations` is enabled.
+3. Verify workspace editor associations:
 
-**Possible Causes & Solutions:**
-
-1. **Extension is disabled**
-   - Open Settings (`Ctrl+,`)
-   - Search for `muninn.enabled`
-   - Ensure it's set to `true`
-
-2. **File is in excluded path**
-   - Check `muninn.excludePatterns` setting
-   - Common exclusions: `**/node_modules/**`, `**/.git/**`
-   - Remove the pattern if you want preview for that path
-
-3. **File exceeds size limit**
-   - Default limit is 1MB (`muninn.maxFileSize`)
-   - For large files, you'll see an info message with option to preview anyway
-   - Increase the limit if needed (value is in bytes)
-
-4. **File opened via specific method**
-   - Diff views are not intercepted (by design)
-   - "Open With" menu bypasses the extension
-   - Terminal-opened files should still preview
-
-**Verification:**
-```bash
-# Check if extension is active
-# Open Command Palette (Ctrl+Shift+P)
-# Type: "Developer: Show Running Extensions"
-# Look for "Muninn for VS Code" in the list
+```json
+{
+  "workbench.editorAssociations": {
+    "*.md": "muninn.markdownEditor",
+    "*.markdown": "muninn.markdownEditor"
+  }
+}
 ```
 
-### Preview shows but is blank or broken
+4. Run `Muninn for VS Code: Inspect Configuration` and confirm values in output.
 
-**Symptom:** Preview pane opens but content doesn't render.
+## 2) Mermaid is not rendering
 
-**Solutions:**
+### Symptoms
 
-1. **Check the Output panel for errors**
-   - View > Output (`Ctrl+Shift+U`)
-   - Select "Muninn for VS Code" from dropdown
-   - Look for error messages
+- Mermaid blocks are visible as source but no rendered preview appears.
 
-2. **Try VS Code's native preview**
-   - Right-click the file > "Open Preview"
-   - If this also fails, it's a VS Code issue, not the extension
+### Checks
 
-3. **Reload the window**
-   - Command Palette > "Developer: Reload Window"
+1. Confirm `muninn.integrations.mermaid.enabled` is `true`.
+2. If the workspace is untrusted, Mermaid stays disabled by default.
+3. In restricted workspaces, explicitly enable:
 
-4. **Check file encoding**
-   - Bottom-right status bar shows encoding
-   - Try changing to UTF-8 if different
+```json
+{
+  "muninn.integrations.mermaid.allowInUntrustedWorkspaces": true
+}
+```
 
-### Preview fails to render (shows error notification)
+4. Reload the window after changing trust-sensitive settings.
 
-**Symptom:** Error notification appears: "Unable to open markdown preview"
+## 3) Toolbar actions are missing
 
-**Solutions:**
+### Symptoms
 
-1. **Click "Open in Editor" button** in the notification to work with the file
+- Expected buttons are hidden in the custom editor toolbar.
 
-2. **Check if file is binary**
-   - Some files have `.md` extension but contain binary data
-   - Extension will show "Cannot preview binary file" error
+### Checks
 
-3. **Check for syntax issues**
-   - Extremely malformed markdown might cause issues
-   - Try with a simple test file first
+1. Confirm the active editor is `muninn.markdownEditor`.
+2. Check toolbar mode:
+   - `muninn.toolbar.mode = "basic"` hides advanced actions.
+   - `muninn.toolbar.mode = "advanced"` shows all authoring buttons.
+3. Run `Inspect Configuration` to verify effective setting scope.
 
-## Edit Mode Issues
+## 4) Table source mode does not apply edits
 
-### Cannot enter edit mode
+### Symptoms
 
-**Symptom:** Pressing `Ctrl+Shift+V` or running the command doesn't work.
+- Edited table source does not persist.
 
-**Solutions:**
+### Checks
 
-1. **Ensure you're focused on a markdown preview**
-   - The command only works when a markdown file/preview is active
+1. Open table source via `View Source` on a table node.
+2. Apply with button or `Ctrl/Cmd+Enter`.
+3. Wait for source panel to close and grid to reappear.
+4. Reopen source to confirm persisted markdown.
 
-2. **Check keyboard shortcut conflicts**
-   - Command Palette > "Preferences: Open Keyboard Shortcuts"
-   - Search for `Ctrl+Shift+V`
-   - Look for conflicting commands
+## 5) Raw markdown fallback does not open
 
-3. **Use Command Palette instead**
-   - `Ctrl+Shift+P` > "Muninn for VS Code: Enter Edit Mode"
+### Symptoms
 
-### Edit mode shows wrong layout
+- `Muninn for VS Code: Open Raw Markdown` appears to do nothing.
 
-**Symptom:** Text editor and preview are in unexpected positions.
+### Checks
 
-**Explanation:**
+1. Ensure a Muninn markdown editor tab is active.
+2. Re-run command from command palette while the markdown tab is focused.
+3. If needed, use tab menu -> `Reopen Editor With...` -> `Text Editor`.
 
-- Default layout: Editor on left, Preview on right
-- The extension respects VS Code's `workbench.editor.splitInGroupLayout` setting
-- User can manually rearrange panes; the extension tracks both
+## 6) Automated tests fail locally
 
-**To reset:**
-1. Exit edit mode completely
-2. Close all markdown tabs
-3. Re-enter edit mode
+### Known Environment Notes
 
-### Cursor position not restored
+- Integration tests can fail on some macOS setups with `SIGABRT` from VS Code host runtime.
+- E2E browser tests can fail intermittently from VS Code/chromedriver session disconnects.
 
-**Symptom:** When re-entering edit mode, cursor is at line 1 instead of previous position.
+### What to do
 
-**Explanation:**
+1. Run core local gates first:
 
-- Cursor position is stored in memory only (not persisted)
-- Position is lost when:
-  - VS Code window is closed/reloaded
-  - Extension is reloaded
-  - File is closed completely
+```bash
+npm run lint
+npm run typecheck
+npm run coverage
+```
 
-### Unsaved changes warning keeps appearing
+2. Re-run flaky suites:
 
-**Symptom:** Dialog asking to save appears when exiting edit mode.
+```bash
+npm test
+npm run test:e2e
+```
 
-**Solutions:**
+3. Prefer Linux CI/xvfb results as the stability source of truth when local GUI env is noisy.
 
-1. **Enable Auto Save**
-   - File > Auto Save (or Settings > `files.autoSave`)
-   - When enabled, the warning won't appear
+## 7) Useful Debug Commands
 
-2. **Choose your preference**
-   - "Save & Exit" - Saves and returns to preview
-   - "Exit Without Saving" - Discards changes
-   - "Cancel" - Stay in edit mode
+```bash
+npm run compile
+npm run bundle
+npm test
+npm run test:e2e
+```
 
-## Formatting Issues
+VS Code:
 
-### Formatting buttons not visible
-
-**Symptom:** Title bar doesn't show Bold, Italic, and other buttons.
-
-**Requirements for toolbar visibility:**
-
-1. File must be markdown (`resourceLangId == markdown`)
-2. Edit mode must be active (`muninn.editMode == true`)
-3. Text editor must be focused (not preview pane)
-
-**Verification:**
-- Status bar should indicate edit mode is active
-- Click in the text editor pane, not the preview
-
-### Formatting doesn't apply
-
-**Symptom:** Clicking format button or using shortcut does nothing.
-
-**Solutions:**
-
-1. **Check focus is in text editor**
-   - Click inside the markdown source editor
-   - Not the preview pane
-
-2. **Check for selection**
-   - Some operations work differently with/without selection
-   - Try selecting text first
-
-3. **Check for read-only**
-   - Ensure file isn't read-only
-   - Check file permissions
-
-### Formatting produces wrong output
-
-**Symptom:** Bold adds wrong markers, lists don't toggle correctly.
-
-**Expected behavior:**
-
-| Action | With Selection | Without Selection |
-|--------|---------------|-------------------|
-| Bold | Wraps with `**` | Wraps word under cursor, or inserts placeholder |
-| Bullet List | N/A | Toggles `- ` at line start |
-| Heading | N/A | Prepends `# ` to line |
-
-**If behavior differs:**
-- Report as bug with exact steps to reproduce
-- Include VS Code version and extension version
-
-### Keyboard shortcuts conflict with other extensions
-
-**Symptom:** `Ctrl+B` or `Ctrl+I` does something else (like toggle sidebar).
-
-**Solutions:**
-
-1. **Formatting shortcuts are scoped**
-   - They only activate in markdown edit mode
-   - Outside markdown, VS Code defaults apply
-
-2. **Check for conflicts**
-   - Keyboard Shortcuts (`Ctrl+K Ctrl+S`)
-   - Search for conflicting command
-   - Adjust as needed
-
-## Configuration Issues
-
-### Settings don't take effect
-
-**Symptom:** Changed setting but behavior didn't change.
-
-**Solutions:**
-
-1. **Check setting scope**
-   - User settings vs Workspace settings
-   - Workspace settings override user settings
-
-2. **Reload window**
-   - Some settings require reload
-   - Command Palette > "Developer: Reload Window"
-
-3. **Check correct setting name**
-   - All settings use `muninn.` prefix
-   - Example: `muninn.enabled`, not just `enabled`
-
-### Exclude patterns not working
-
-**Symptom:** Files in excluded paths still open in preview.
-
-**Common issues:**
-
-1. **Pattern syntax**
-   - Use glob patterns: `**/node_modules/**`
-   - Not regex or simple paths
-
-2. **Case sensitivity**
-   - Patterns are case-insensitive on Windows
-   - Case-sensitive on macOS/Linux
-
-3. **Test your pattern**
-   ```
-   Pattern: **/docs/**
-   Matches: /project/docs/readme.md
-   Matches: /project/src/docs/api.md
-   Does NOT match: /project/documentation/readme.md
-   ```
-
-### Workspace settings not overriding user settings
-
-**Symptom:** Workspace-specific config isn't applied.
-
-**Verification:**
-
-1. Open Settings (`Ctrl+,`)
-2. Click "Workspace" tab
-3. Search for `muninn`
-4. Ensure settings are defined at workspace level
-
-## Performance Issues
-
-### Preview is slow to open
-
-**Symptom:** Takes more than 1 second to show preview.
-
-**Solutions:**
-
-1. **Check file size**
-   - Large files (>1MB) may be slow
-   - Consider splitting large documentation
-
-2. **Disable other markdown extensions**
-   - Other extensions might add processing
-   - Try with only this extension enabled
-
-3. **Check VS Code performance**
-   - Help > "Toggle Developer Tools"
-   - Check Console for errors
-   - Check Performance tab
-
-### Mode switching is slow
-
-**Symptom:** Takes more than 0.5 seconds to switch modes.
-
-**Expected:** Mode switch should complete in <500ms
-
-**Solutions:**
-
-1. **Check for extension conflicts**
-   - Disable other extensions temporarily
-   - Test with extension development host
-
-2. **Report performance issue**
-   - Include file size
-   - Include other active extensions
-   - Include VS Code version
-
-### High CPU/memory usage
-
-**Symptom:** VS Code becomes slow when extension is active.
-
-**Solutions:**
-
-1. **Check Output channel for errors**
-   - Repeated errors can cause resource issues
-
-2. **Reload VS Code**
-   - Sometimes state accumulates
-
-3. **Report with details**
-   - Use "Help > Report Issue"
-   - Include performance profile if possible
-
-## Extension Conflicts
-
-### Conflicts with other markdown extensions
-
-**Known compatible extensions:**
-- Markdown All in One
-- markdownlint
-- Markdown Preview Enhanced (may need configuration)
-
-**Troubleshooting conflicts:**
-
-1. **Disable other markdown extensions one by one**
-2. **Test which one causes the conflict**
-3. **Report the conflict** with both extension names
-
-### Commands not found
-
-**Symptom:** "Command not found" error when running extension commands.
-
-**Solutions:**
-
-1. **Check extension is activated**
-   - Extension activates on `onLanguage:markdown`
-   - Open any markdown file first
-
-2. **Check extension is installed**
-   - Extensions view (`Ctrl+Shift+X`)
-   - Search for "Muninn for VS Code"
-
-3. **Reinstall extension**
-   - Uninstall, reload, reinstall
-
-## Getting Help
-
-### Before reporting an issue
-
-Collect this information:
-
-1. **VS Code version**
-   - Help > About
-
-2. **Extension version**
-   - Extensions view > Muninn for VS Code > Version
-
-3. **Operating system**
-   - Windows/macOS/Linux + version
-
-4. **Steps to reproduce**
-   - Exact sequence of actions
-   - Expected vs actual behavior
-
-5. **Error messages**
-   - From Output panel ("Muninn for VS Code" channel)
-   - From Developer Tools Console
-
-### Where to report issues
-
-- **GitHub Issues:** [Open an issue](https://github.com/bluecloud-dev/muninn-vscode/issues)
-- **Feature Requests:** Use the "feature request" template
-
-### Quick diagnostics
-
-Run these commands to gather diagnostic info:
-
-1. **Check running extensions:**
-   - Command Palette > "Developer: Show Running Extensions"
-
-2. **Check extension host log:**
-   - Command Palette > "Developer: Open Extension Logs Folder"
-
-3. **Inspect configuration:**
-   - Command Palette > "Muninn for VS Code: Inspect Configuration"
-   - Check Output panel for effective settings
-
-## Related Documentation
-
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Development setup
-- [ARCHITECTURE.md](ARCHITECTURE.md) - How the extension works
-- [TESTING.md](TESTING.md) - Running and writing tests
+- `Developer: Show Running Extensions`
+- `Developer: Reload Window`
+- `Muninn for VS Code: Inspect Configuration`
+
+## Need More Help
+
+- File an issue: https://github.com/bluecloud-dev/muninn-vscode/issues
+- Include:
+  - VS Code version
+  - Extension version
+  - OS
+  - Repro steps
+  - Output from `Inspect Configuration`
