@@ -1,26 +1,10 @@
 import { browser, expect } from '@wdio/globals';
 import {
+  executeWorkbenchCommandUntilWorkspaceFileText,
   openWorkspaceFile,
-  readWorkspaceFileText,
   waitForCustomEditor,
   withCustomEditorWebview,
 } from './helpers.mjs';
-
-const executeUntil = async (command, predicate, errorMessage) => {
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    await browser.executeWorkbench(async (vscode, commandName) => {
-      await vscode.commands.executeCommand(commandName);
-    }, command);
-    await browser.pause(200);
-
-    const text = await readWorkspaceFileText('with-formatting.md');
-    if (predicate(text)) {
-      return;
-    }
-  }
-
-  throw new Error(errorMessage);
-};
 
 describe('Toolbar accessibility workflow', () => {
   it('shows the editor shell focus ring when the document is focused', async () => {
@@ -89,13 +73,15 @@ describe('Toolbar accessibility workflow', () => {
     await openWorkspaceFile('with-formatting.md');
     await waitForCustomEditor('with-formatting.md');
 
-    await executeUntil(
+    await executeWorkbenchCommandUntilWorkspaceFileText(
+      'with-formatting.md',
       'muninn.insertMermaidBlock',
       (text) => text.includes('```mermaid') || text.includes('A[Start] --> B[Finish]'),
       'Expected command-driven mermaid insertion to apply in custom editor.',
     );
 
-    await executeUntil(
+    await executeWorkbenchCommandUntilWorkspaceFileText(
+      'with-formatting.md',
       'muninn.insertTable',
       (text) => text.includes('| Column 1 | Column 2 |'),
       'Expected command-driven table insertion to apply in custom editor.',

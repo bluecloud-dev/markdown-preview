@@ -130,8 +130,9 @@ const setStatus = (message: string): void => {
 
 const updateAdvancedToolbarVisibility = (): void => {
   const showAdvancedActions = toolbarMode === 'advanced' || advancedActionsVisible;
-  for (const [command, button] of toolbarButtons.entries()) {
-    if (!ADVANCED_TOOLBAR_COMMANDS.has(command)) {
+  for (const command of ADVANCED_TOOLBAR_COMMANDS) {
+    const button = toolbarButtons.get(command);
+    if (!button) {
       continue;
     }
     button.hidden = !showAdvancedActions;
@@ -144,8 +145,9 @@ const updateAdvancedToolbarVisibility = (): void => {
 };
 
 const getFirstAdvancedToolbarButton = (): HTMLButtonElement | undefined => {
-  for (const [command, button] of toolbarButtons.entries()) {
-    if (ADVANCED_TOOLBAR_COMMANDS.has(command)) {
+  for (const command of ADVANCED_TOOLBAR_COMMANDS) {
+    const button = toolbarButtons.get(command);
+    if (button) {
       return button;
     }
   }
