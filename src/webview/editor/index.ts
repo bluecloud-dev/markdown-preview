@@ -20,6 +20,7 @@ import type {
   ViewToHostMessage,
 } from '../../custom-editor/protocol';
 import { bootstrapEditorApp } from './bootstrap';
+import { formatString, getString } from './localization';
 import { wrapTablesForEditor, unwrapTablesForHost } from './markdown-transforms';
 import { attachHostMessageListener } from './messages';
 import { isMermaidCodeBlockNode } from './nodes/mermaid-node';
@@ -69,33 +70,33 @@ const TRANSIENT_ACTIVE_COMMANDS = new Set<string>([
   'openRawMarkdown',
 ]);
 
-const COMMAND_LABELS = new Map<ViewEditorCommand | 'openRawMarkdown', string>([
-  ['toggleBold', 'Bold'],
-  ['toggleItalic', 'Italic'],
-  ['setHeading1', 'Heading 1'],
-  ['setHeading2', 'Heading 2'],
-  ['setHeading3', 'Heading 3'],
-  ['setParagraph', 'Paragraph'],
-  ['toggleBulletList', 'Bullet list'],
-  ['toggleNumberedList', 'Numbered list'],
-  ['insertLink', 'Link'],
-  ['insertMermaidBlock', 'Mermaid diagram'],
-  ['insertTable', 'Table'],
-  ['insertCodeBlock', 'Code block'],
-  ['addTableRow', 'Add table row'],
-  ['addTableColumn', 'Add table column'],
-  ['openRawMarkdown', 'Source editor'],
+const COMMAND_LABELS = new Map<string, string>([
+  ['toggleBold', getString('commandLabelBold')],
+  ['toggleItalic', getString('commandLabelItalic')],
+  ['setHeading1', getString('commandLabelHeading1')],
+  ['setHeading2', getString('commandLabelHeading2')],
+  ['setHeading3', getString('commandLabelHeading3')],
+  ['setParagraph', getString('commandLabelParagraph')],
+  ['toggleBulletList', getString('commandLabelBulletList')],
+  ['toggleNumberedList', getString('commandLabelNumberedList')],
+  ['insertLink', getString('commandLabelLink')],
+  ['insertMermaidBlock', getString('commandLabelMermaidDiagram')],
+  ['insertTable', getString('commandLabelTable')],
+  ['insertCodeBlock', getString('commandLabelCodeBlock')],
+  ['addTableRow', getString('commandLabelAddTableRow')],
+  ['addTableColumn', getString('commandLabelAddTableColumn')],
+  ['openRawMarkdown', getString('commandLabelSourceEditor')],
 ]);
 
 const formatCommandFailure = (command: string): string => {
   if (command === 'addTableRow') {
-    return 'Insert a table first before adding a row.';
+    return getString('commandFailureAddRowNoTable');
   }
   if (command === 'addTableColumn') {
-    return 'Insert a table first before adding a column.';
+    return getString('commandFailureAddColumnNoTable');
   }
-  const label = COMMAND_LABELS.get(command as ViewEditorCommand | 'openRawMarkdown') ?? command;
-  return `Could not run ${label}. Place the cursor in editable text and try again.`;
+  const label = COMMAND_LABELS.get(command) ?? command;
+  return formatString(getString('commandFailureGenericTemplate'), label);
 };
 
 const markdownItParser = MarkdownIt('commonmark', {
@@ -154,10 +155,31 @@ const getFirstAdvancedToolbarButton = (): HTMLButtonElement | undefined => {
   return undefined;
 };
 
+const isFocusedAdvancedToolbarAction = (): boolean => {
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLButtonElement)) {
+    return false;
+  }
+  const command = activeElement.dataset.command;
+  if (!command) {
+    return false;
+  }
+  return ADVANCED_TOOLBAR_COMMANDS.has(command);
+};
+
 const setToolbarMode = (mode: ToolbarMode): void => {
+  const needsFocusFallback = mode === 'basic' && isFocusedAdvancedToolbarAction();
   toolbarMode = mode;
   advancedActionsVisible = false;
   updateAdvancedToolbarVisibility();
+  if (!needsFocusFallback) {
+    return;
+  }
+  if (moreButton && !moreButton.hidden) {
+    moreButton.focus();
+    return;
+  }
+  view?.focus();
 };
 
 const serializeMarkdownForHost = (): string => {
@@ -467,7 +489,7 @@ const insertMermaidBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: 'mermaid' }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus('Inserted Mermaid block.');
+  setStatus(getString('statusInsertedMermaid'));
   return true;
 };
 
@@ -480,7 +502,7 @@ const insertTableBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: TABLE_FENCE_LANGUAGE }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus('Inserted table.');
+  setStatus(getString('statusInsertedTable'));
   return true;
 };
 
@@ -493,7 +515,7 @@ const insertCodeBlock = (): boolean => {
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
 
-  setStatus('Inserted code block. Set language from block header.');
+  setStatus(getString('statusInsertedCodeBlock'));
   return true;
 };
 
@@ -501,7 +523,7 @@ const addTableRow = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus('Insert a table first before adding a row.');
+    setStatus(getString('commandFailureAddRowNoTable'));
     return false;
   }
 
@@ -515,7 +537,7 @@ const addTableColumn = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus('Insert a table first before adding a column.');
+    setStatus(getString('commandFailureAddColumnNoTable'));
     return false;
   }
 
@@ -547,7 +569,7 @@ const requestLinkInput = (): boolean => {
       selectedText: selectedText?.trim().length ? selectedText.trim() : undefined,
     },
   });
-  setStatus('Awaiting link input…');
+  setStatus(getString('statusAwaitingLinkInput'));
   return true;
 };
 
@@ -573,7 +595,7 @@ const insertLinkFromHost = (href: string, text?: string): boolean => {
     .setSelection(TextSelection.create(transaction.doc, to, to))
     .scrollIntoView();
   view.dispatch(transaction);
-  setStatus('Inserted link.');
+  setStatus(getString('statusInsertedLink'));
   return true;
 };
 
@@ -616,7 +638,7 @@ const executeEditorCommand = (command: ViewEditorCommand): boolean => {
       if (isMarkActive(schema.marks.link)) {
         const removed = runInlineMarkCommand(toggleMark(schema.marks.link));
         if (removed) {
-          setStatus('Removed link.');
+          setStatus(getString('statusRemovedLink'));
         }
         return removed;
       }
@@ -797,7 +819,7 @@ const detachHostMessageListener = attachHostMessageListener({
     mermaidPreview.setEnabled(payload.mermaidEnabled);
     setToolbarMode(payload.toolbarMode);
     applyHostMarkdown(payload.markdown);
-    setStatus('Connected');
+    setStatus(getString('statusConnected'));
     view?.focus();
   },
   onDocumentChanged: (payload) => {
@@ -821,7 +843,7 @@ const detachHostMessageListener = attachHostMessageListener({
   onInsertLink: (payload) => {
     const inserted = insertLinkFromHost(payload.href, payload.text);
     if (!inserted) {
-      setStatus('Failed to insert link.');
+      setStatus(getString('statusInsertLinkFailed'));
     }
   },
   onError: (payload) => {

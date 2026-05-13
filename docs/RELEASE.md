@@ -30,6 +30,7 @@ npm run check:no-telemetry
 - `README.md` matches shipped commands/settings.
 - `CHANGELOG.md` has accurate version notes.
 - `docs/` reflects current custom-editor architecture.
+- v2 custom-editor behavior supersedes the legacy v1 preview-first spec (`specs/markdown-preview/spec.md`) until that spec is rewritten.
 
 #### Visual QA
 

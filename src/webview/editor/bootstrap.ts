@@ -1,3 +1,5 @@
+import { getString } from './localization';
+
 export type EditorBootstrap = {
   app: HTMLDivElement;
   toolbar: HTMLDivElement;
@@ -17,46 +19,46 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
   app.innerHTML = `
   <header class="muninn-editor-header" data-testid="muninn-editor-header">
     <div class="muninn-editor-identity">
-      <strong>Muninn</strong>
-      <span>Markdown editor</span>
+      <strong>${getString('headerBrandName')}</strong>
+      <span>${getString('headerBrandRole')}</span>
     </div>
-    <div class="muninn-editor-help">Use Source to open raw Markdown in VS Code.</div>
+    <div class="muninn-editor-help">${getString('headerHelp')}</div>
   </header>
-  <div class="muninn-toolbar" role="toolbar" aria-label="Muninn markdown toolbar">
+  <div class="muninn-toolbar" role="toolbar" aria-label="${getString('toolbarAriaLabel')}">
     <div class="muninn-toolbar-group" data-group="text" role="group" aria-labelledby="muninn-toolbar-group-text-label">
-      <span id="muninn-toolbar-group-text-label" class="muninn-toolbar-group-label" data-group-label="Text">Text</span>
-      <button type="button" data-command="toggleBold" data-pressable="true" aria-pressed="false" title="Bold (Ctrl/Cmd+B)">Bold</button>
-      <button type="button" data-command="toggleItalic" data-pressable="true" aria-pressed="false" title="Italic (Ctrl/Cmd+I)">Italic</button>
-      <button type="button" data-command="insertLink" data-pressable="true" aria-pressed="false" title="Insert or remove link">Link</button>
+      <span id="muninn-toolbar-group-text-label" class="muninn-toolbar-group-label" data-group-label="${getString('toolbarGroupTextLabel')}">${getString('toolbarGroupTextLabel')}</span>
+      <button type="button" data-command="toggleBold" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonBoldTitle')}">${getString('commandLabelBold')}</button>
+      <button type="button" data-command="toggleItalic" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonItalicTitle')}">${getString('commandLabelItalic')}</button>
+      <button type="button" data-command="insertLink" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonLinkTitle')}">${getString('commandLabelLink')}</button>
     </div>
     <div class="muninn-toolbar-group" data-group="structure" role="group" aria-labelledby="muninn-toolbar-group-structure-label">
-      <span id="muninn-toolbar-group-structure-label" class="muninn-toolbar-group-label" data-group-label="Structure">Structure</span>
-      <button type="button" data-command="setHeading1" data-pressable="true" aria-pressed="false" title="Heading 1">H1</button>
-      <button type="button" data-command="setHeading2" data-pressable="true" aria-pressed="false" title="Heading 2">H2</button>
-      <button type="button" data-command="setHeading3" data-pressable="true" aria-pressed="false" data-advanced="true" title="Heading 3">H3</button>
-      <button type="button" data-command="setParagraph" data-pressable="true" aria-pressed="false" title="Paragraph">Paragraph</button>
-      <button type="button" data-command="toggleBulletList" data-pressable="true" aria-pressed="false" data-advanced="true" title="Toggle bullet list">Bullet</button>
-      <button type="button" data-command="toggleNumberedList" data-pressable="true" aria-pressed="false" data-advanced="true" title="Toggle numbered list">Numbered</button>
+      <span id="muninn-toolbar-group-structure-label" class="muninn-toolbar-group-label" data-group-label="${getString('toolbarGroupStructureLabel')}">${getString('toolbarGroupStructureLabel')}</span>
+      <button type="button" data-command="setHeading1" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonHeading1Title')}">${getString('toolbarButtonHeading1Label')}</button>
+      <button type="button" data-command="setHeading2" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonHeading2Title')}">${getString('toolbarButtonHeading2Label')}</button>
+      <button type="button" data-command="setHeading3" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getString('toolbarButtonHeading3Title')}">${getString('toolbarButtonHeading3Label')}</button>
+      <button type="button" data-command="setParagraph" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonParagraphTitle')}">${getString('commandLabelParagraph')}</button>
+      <button type="button" data-command="toggleBulletList" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getString('toolbarButtonBulletTitle')}">${getString('toolbarButtonBulletLabel')}</button>
+      <button type="button" data-command="toggleNumberedList" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getString('toolbarButtonNumberedTitle')}">${getString('toolbarButtonNumberedLabel')}</button>
     </div>
     <div class="muninn-toolbar-group" data-group="insert" role="group" aria-labelledby="muninn-toolbar-group-insert-label">
-      <span id="muninn-toolbar-group-insert-label" class="muninn-toolbar-group-label" data-group-label="Insert">Insert</span>
-      <button type="button" data-command="insertTable" title="Insert table (Ctrl/Cmd+Alt+T)">Table</button>
-      <button type="button" data-command="insertCodeBlock" title="Insert code block">Code</button>
-      <button type="button" data-command="insertMermaidBlock" data-advanced="true" title="Insert Mermaid diagram (Ctrl/Cmd+Alt+M)">Mermaid</button>
-      <button type="button" data-command="openRawMarkdown" title="Open raw Markdown source in VS Code">Source</button>
+      <span id="muninn-toolbar-group-insert-label" class="muninn-toolbar-group-label" data-group-label="${getString('toolbarGroupInsertLabel')}">${getString('toolbarGroupInsertLabel')}</span>
+      <button type="button" data-command="insertTable" title="${getString('toolbarButtonTableTitle')}">${getString('commandLabelTable')}</button>
+      <button type="button" data-command="insertCodeBlock" title="${getString('toolbarButtonCodeTitle')}">${getString('commandLabelCodeBlock')}</button>
+      <button type="button" data-command="insertMermaidBlock" data-advanced="true" title="${getString('toolbarButtonMermaidTitle')}">${getString('toolbarButtonMermaidLabel')}</button>
+      <button type="button" data-command="openRawMarkdown" title="${getString('toolbarButtonSourceTitle')}">${getString('toolbarButtonSourceLabel')}</button>
     </div>
-    <button type="button" class="muninn-toolbar-more" data-testid="muninn-toolbar-more" aria-expanded="false" title="Show advanced toolbar actions">More</button>
+    <button type="button" class="muninn-toolbar-more" data-testid="muninn-toolbar-more" aria-expanded="false" title="${getString('toolbarMoreTitle')}">${getString('toolbarMoreLabel')}</button>
   </div>
   <div class="muninn-editor-shell" id="editor-shell">
     <section id="mermaid-preview-panel" class="muninn-mermaid-preview-panel" hidden>
       <div class="muninn-mermaid-preview-header">
-        <strong>Mermaid Preview</strong>
+        <strong>${getString('mermaidPreviewTitle')}</strong>
       </div>
       <div id="mermaid-preview-body" class="muninn-mermaid-preview-body"></div>
     </section>
     <div id="editor"></div>
   </div>
-  <div id="status" class="muninn-status" role="status" aria-live="polite">Ready</div>
+  <div id="status" class="muninn-status" role="status" aria-live="polite">${getString('statusReady')}</div>
 `;
 
   const toolbar = document.querySelector<HTMLDivElement>('.muninn-toolbar');

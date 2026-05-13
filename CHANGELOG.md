@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Marketplace metadata and description refresh in `package.json` / `package.nls.json`
 - Architecture doc cleanup to remove stale sample content
+- Marked the legacy v1 preview-first spec as superseded by the v2 custom-editor behavior in release docs
 
 ### Fixed
 

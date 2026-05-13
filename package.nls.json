@@ -2,7 +2,7 @@
   "extension.displayName": "Muninn for VS Code",
   "extension.description": "Single-pane markdown editor for reading-first workflows, with built-in Mermaid and table tooling.",
   "command.category": "Muninn for VS Code",
-  "command.muninn.openRawMarkdown.title": "Open Raw Markdown",
+  "command.muninn.openRawMarkdown.title": "Open Source Editor",
   "command.muninn.openRawMarkdown.shortTitle": "Source",
   "command.muninn.toggleBold.title": "Toggle Bold",
   "command.muninn.toggleBold.shortTitle": "Bold",

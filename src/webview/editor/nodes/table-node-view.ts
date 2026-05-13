@@ -2,6 +2,7 @@ import type { Node as ProseMirrorNode, Schema } from 'prosemirror-model';
 import type { EditorView, NodeView, NodeViewConstructor } from 'prosemirror-view';
 import { CODE_LANGUAGE_OPTIONS } from '../../../shared/code-languages';
 import type { CodeLanguageOption } from '../../../shared/code-languages';
+import { formatString, getString } from '../localization';
 import { escapeHtml, sanitizeMermaidSvg } from '../preview';
 import { renderMermaidDiagram } from '../renderers/mermaid-renderer';
 import {
@@ -49,7 +50,12 @@ type TableNodeViewOptions = {
   setStatus: (message: string) => void;
 };
 
-let tableNodeViewCounter = 0;
+const createSourceShortcutHintId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `muninn-table-source-hint-${crypto.randomUUID()}`;
+  }
+  return `muninn-table-source-hint-${Math.random().toString(36).slice(2)}`;
+};
 
 const getCodeBlockLanguage = (node: ProseMirrorNode): string =>
   ((node.attrs.params as string | undefined) ?? '').trim().toLowerCase();
@@ -59,7 +65,7 @@ const buildCodeLanguageOptions = (currentLanguage: string): ReadonlyArray<CodeLa
   if (currentLanguage.length > 0 && !options.some((option) => option.value === currentLanguage)) {
     options.push({
       value: currentLanguage,
-      label: `Unsupported (${currentLanguage})`,
+      label: formatString(getString('codeBlockLanguageUnsupportedTemplate'), currentLanguage),
     });
   }
   return options;
@@ -96,9 +102,9 @@ class GenericCodeBlockNodeView implements NodeView {
     this.dom.dataset.testid = 'muninn-code-node';
 
     this.header.className = 'muninn-code-node-header';
-    this.title.textContent = 'Code';
+    this.title.textContent = getString('codeBlockTitle');
     this.languageSelect.className = 'muninn-code-node-language';
-    this.languageSelect.setAttribute('aria-label', 'Code block language');
+    this.languageSelect.setAttribute('aria-label', getString('codeBlockLanguageAriaLabel'));
     this.languageSelect.dataset.testid = 'muninn-code-language';
     this.header.append(this.title, this.languageSelect);
 
@@ -171,7 +177,7 @@ class GenericCodeBlockNodeView implements NodeView {
 
     const position = this.resolveNodePosition();
     if (position === undefined) {
-      this.options.setStatus('Could not update code block language. Please retry.');
+      this.options.setStatus(getString('statusCodeLanguageUpdateFailed'));
       this.syncLanguageSelect();
       return;
     }
@@ -191,14 +197,16 @@ class GenericCodeBlockNodeView implements NodeView {
     this.view.dispatch(transaction);
 
     if (selectedLanguage.length === 0) {
-      this.options.setStatus('Code block language set to plain text.');
+      this.options.setStatus(getString('statusCodeLanguagePlainText'));
       return;
     }
 
     const option = buildCodeLanguageOptions(selectedLanguage).find(
       (candidate) => candidate.value === selectedLanguage,
     );
-    this.options.setStatus(`Code block language set to ${option?.label ?? selectedLanguage}.`);
+    this.options.setStatus(
+      formatString(getString('statusCodeLanguageSetTemplate'), option?.label ?? selectedLanguage),
+    );
   }
 
   private scheduleMermaidPreviewRender(): void {
@@ -282,7 +290,7 @@ class TableCodeBlockNodeView implements NodeView {
   private readonly addRowButton = document.createElement('button');
   private readonly addColumnButton = document.createElement('button');
   private readonly deleteTableButton = document.createElement('button');
-  private readonly sourceShortcutHintId = `muninn-table-source-hint-${++tableNodeViewCounter}`;
+  private readonly sourceShortcutHintId = createSourceShortcutHintId();
 
   private sourceVisible = false;
   private sourceDraft = '';
@@ -300,20 +308,20 @@ class TableCodeBlockNodeView implements NodeView {
 
     this.header.className = 'muninn-table-node-header';
     const title = document.createElement('strong');
-    title.textContent = 'Table';
+    title.textContent = getString('tableTitle');
 
     this.actions.className = 'muninn-table-node-actions';
     this.addRowButton.type = 'button';
-    this.addRowButton.textContent = 'Add Row';
+    this.addRowButton.textContent = getString('tableAddRowButton');
     this.addColumnButton.type = 'button';
-    this.addColumnButton.textContent = 'Add Column';
+    this.addColumnButton.textContent = getString('tableAddColumnButton');
     this.deleteTableButton.type = 'button';
-    this.deleteTableButton.textContent = 'Delete';
+    this.deleteTableButton.textContent = getString('tableDeleteButton');
     this.deleteTableButton.dataset.testid = 'muninn-table-delete';
-    this.deleteTableButton.setAttribute('aria-label', 'Delete table');
+    this.deleteTableButton.setAttribute('aria-label', getString('tableDeleteAriaLabel'));
     this.deleteTableButton.classList.add('muninn-button-danger');
     this.sourceToggleButton.type = 'button';
-    this.sourceToggleButton.textContent = 'View Source';
+    this.sourceToggleButton.textContent = getString('tableViewSourceButton');
     this.sourceToggleButton.dataset.testid = 'muninn-table-toggle-source';
 
     this.actions.append(
@@ -328,19 +336,18 @@ class TableCodeBlockNodeView implements NodeView {
 
     this.sourceContainer.className = 'muninn-table-node-source';
     this.sourceTextarea.className = 'muninn-table-node-source-text';
-    this.sourceTextarea.setAttribute('aria-label', 'Markdown table source');
+    this.sourceTextarea.setAttribute('aria-label', getString('tableSourceAriaLabel'));
     this.sourceTextarea.setAttribute('aria-describedby', this.sourceShortcutHintId);
     this.sourceTextarea.dataset.testid = 'muninn-table-source-text';
     this.applySourceButton.type = 'button';
-    this.applySourceButton.textContent = 'Apply Source';
-    this.applySourceButton.title = 'Apply source (Ctrl/Cmd+Enter)';
+    this.applySourceButton.textContent = getString('tableApplySourceButton');
+    this.applySourceButton.title = getString('tableApplySourceTitle');
     this.applySourceButton.setAttribute('aria-keyshortcuts', 'Control+Enter Meta+Enter');
     this.applySourceButton.dataset.testid = 'muninn-table-apply-source';
 
     this.sourceShortcutHint.className = 'muninn-table-node-source-hint';
     this.sourceShortcutHint.id = this.sourceShortcutHintId;
-    this.sourceShortcutHint.textContent =
-      'Edit Markdown table source. Press Ctrl/Cmd+Enter to apply changes.';
+    this.sourceShortcutHint.textContent = getString('tableSourceHint');
 
     this.sourceFeedback.className = 'muninn-table-node-source-feedback';
     this.sourceFeedback.dataset.testid = 'muninn-table-source-feedback';
@@ -470,8 +477,8 @@ class TableCodeBlockNodeView implements NodeView {
     input.setAttribute(
       'aria-label',
       rowIndex < 0
-        ? `Header column ${columnIndex + 1}`
-        : `Row ${rowIndex + 1} column ${columnIndex + 1}`,
+        ? formatString(getString('tableHeaderColumnLabelTemplate'), columnIndex + 1)
+        : formatString(getString('tableRowColumnLabelTemplate'), rowIndex + 1, columnIndex + 1),
     );
     input.value = value;
     input.addEventListener('change', () => {
@@ -497,14 +504,14 @@ class TableCodeBlockNodeView implements NodeView {
       }
       table.rows[rowIndex][columnIndex] = value;
     }
-    this.applyTable(table, 'Table updated.');
+    this.applyTable(table, getString('statusTableUpdated'));
   }
 
   private addRow(): void {
     const table = parseMarkdownTable(this.node.textContent);
     const columnCount = Math.max(2, table.headers.length);
     table.rows.push(Array.from({ length: columnCount }, () => ''));
-    this.applyTable(table, 'Added table row.');
+    this.applyTable(table, getString('statusTableRowAdded'));
   }
 
   private addColumn(): void {
@@ -514,19 +521,19 @@ class TableCodeBlockNodeView implements NodeView {
     for (const row of table.rows) {
       row.push('');
     }
-    this.applyTable(table, 'Added table column.');
+    this.applyTable(table, getString('statusTableColumnAdded'));
   }
 
   private deleteTable(): void {
     const position = this.resolveNodePosition();
     if (position === undefined) {
-      this.options.setStatus('Could not delete table. Please retry.');
+      this.options.setStatus(getString('statusTableDeleteFailed'));
       return;
     }
 
     const transaction = this.view.state.tr.deleteRange(position, position + this.node.nodeSize);
     this.view.dispatch(transaction.scrollIntoView());
-    this.options.setStatus('Deleted table.');
+    this.options.setStatus(getString('statusTableDeleted'));
   }
 
   private toggleSourceVisibility(): void {
@@ -538,7 +545,9 @@ class TableCodeBlockNodeView implements NodeView {
     this.dom.classList.toggle('is-source-visible', visible);
     this.sourceContainer.hidden = !visible;
     this.gridContainer.hidden = visible;
-    this.sourceToggleButton.textContent = visible ? 'Back to Preview' : 'View Source';
+    this.sourceToggleButton.textContent = visible
+      ? getString('tableBackToPreviewButton')
+      : getString('tableViewSourceButton');
     if (visible) {
       this.sourceDraft = normalizeTableSource(this.node.textContent);
       this.sourceTextarea.value = this.sourceDraft;
@@ -556,13 +565,13 @@ class TableCodeBlockNodeView implements NodeView {
     const normalized = normalizeTableSource(this.sourceDraft);
     const currentSource = normalizeTableSource(this.node.textContent);
     if (normalized !== currentSource) {
-      const applied = this.applySource(normalized, 'Applied table source.');
+      const applied = this.applySource(normalized, getString('statusTableSourceApplied'));
       if (!applied) {
-        this.setSourceFeedback('error', 'Could not apply table source. Please retry.');
+        this.setSourceFeedback('error', getString('statusTableSourceApplyFailed'));
         return;
       }
 
-      this.setSourceFeedback('success', 'Applied table source.');
+      this.setSourceFeedback('success', getString('statusTableSourceApplied'));
     }
 
     this.sourceDraft = normalized;
@@ -580,7 +589,7 @@ class TableCodeBlockNodeView implements NodeView {
     const nextSource = normalizeTableSource(source);
     const position = this.resolveNodePosition();
     if (position === undefined) {
-      this.options.setStatus('Could not apply table source. Please retry.');
+      this.options.setStatus(getString('statusTableSourceApplyFailed'));
       return false;
     }
 

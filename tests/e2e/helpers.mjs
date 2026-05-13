@@ -224,3 +224,15 @@ export const executeWorkbenchCommandAndWaitForWorkspaceFileText = async (
   await executeWorkbenchCommand(command);
   return waitForWorkspaceFileText(fileName, predicate, errorMessage);
 };
+
+export const executeWorkbenchCommandOnceAndWaitForWorkspaceFileText = async (
+  fileName,
+  command,
+  predicate,
+  errorMessage,
+  options,
+) => {
+  await waitForCustomEditorWebviewReady();
+  await executeWorkbenchCommand(command);
+  return waitForWorkspaceFileText(fileName, predicate, errorMessage, options);
+};

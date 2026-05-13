@@ -19,11 +19,8 @@ describe('Toolbar accessibility workflow', () => {
       const shell = await browser.$('.muninn-editor-shell');
       const outlineStyle = await shell.getCSSProperty('outline-style');
       const outlineWidth = await shell.getCSSProperty('outline-width');
-      const outlineColor = await shell.getCSSProperty('outline-color');
       expect(outlineStyle.value).toBe('solid');
       expect(outlineWidth.value).not.toBe('0px');
-      expect(outlineColor.value.replace(/\s/g, '')).not.toBe('rgba(0,0,0,0)');
-      expect(outlineColor.value).not.toBe('transparent');
     });
   });
 

@@ -1,4 +1,5 @@
 import { renderMermaidDiagram } from './renderers/mermaid-renderer';
+import { getString } from './localization';
 
 type MermaidPreviewOptions = {
   panel: HTMLElement;
@@ -48,8 +49,7 @@ export class MermaidPreviewController {
 
     this.options.panel.hidden = false;
     if (!this.enabled) {
-      this.options.body.textContent =
-        'Mermaid preview is disabled for this workspace. Enable muninn.integrations.mermaid.enabled and trust the workspace, or allow Mermaid in restricted workspaces.';
+      this.options.body.textContent = getString('mermaidDisabledMessage');
       return;
     }
 
@@ -136,9 +136,7 @@ export const sanitizeMermaidSvg = (
 ): string => {
   const svgElement = parse(rawSvg);
   if (!svgElement) {
-    return `<div class="muninn-mermaid-error">${escapeHtml(
-      'Mermaid rendered no SVG output.',
-    )}</div>`;
+    return `<div class="muninn-mermaid-error">${escapeHtml(getString('mermaidNoSvgOutput'))}</div>`;
   }
 
   for (const node of svgElement.querySelectorAll('script,foreignObject,iframe,object,embed')) {

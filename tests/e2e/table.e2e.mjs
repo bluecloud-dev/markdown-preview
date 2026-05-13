@@ -14,6 +14,17 @@ const waitForSampleMarkdown = (predicate, errorMessage) =>
 const executeCommandAndWaitForSampleMarkdown = (command, predicate, errorMessage) =>
   executeWorkbenchCommandAndWaitForWorkspaceFileText('sample.md', command, predicate, errorMessage);
 
+const isRetryableWebviewError = (error) => {
+  const message = String(error?.message ?? error).toLowerCase();
+  return (
+    message.includes('stale element') ||
+    message.includes('invalid session id') ||
+    message.includes('detached') ||
+    message.includes('frame') ||
+    message.includes('target closed')
+  );
+};
+
 const isTableInPreviewMode = async () => {
   let previewVisible = false;
   await withCustomEditorWebview(async () => {
@@ -75,7 +86,7 @@ const applyTableSourceFromWebview = async (source, mode) => {
       );
       return;
     } catch (error) {
-      if (attempt === 2) {
+      if (!isRetryableWebviewError(error) || attempt === 2) {
         throw error;
       }
       await browser.pause(300);

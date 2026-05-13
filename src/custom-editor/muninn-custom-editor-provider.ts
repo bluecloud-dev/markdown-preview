@@ -3,6 +3,7 @@ import { ConfigService } from '../services/config-service';
 import { Logger } from '../services/logger';
 import { isMermaidIntegrationActive } from '../integrations/mermaid-adapter';
 import { t } from '../utils/l10n';
+import { DEFAULT_WEBVIEW_STRINGS, type WebviewStrings } from '../shared/webview-strings';
 import { DocumentSync } from './document-sync';
 import {
   HostToViewMessage,
@@ -13,6 +14,14 @@ import {
 } from './protocol';
 
 export const MUNINN_MARKDOWN_EDITOR_VIEW_TYPE = 'muninn.markdownEditor';
+
+const createLocalizedWebviewStrings = (): WebviewStrings =>
+  Object.fromEntries(
+    Object.entries(DEFAULT_WEBVIEW_STRINGS).map(([key, value]) => [key, t(value)]),
+  ) as WebviewStrings;
+
+const serializeForInlineScript = (value: unknown): string =>
+  JSON.stringify(value).replaceAll('<', String.raw`\u003c`);
 
 type EditorSession = {
   document: vscode.TextDocument;
@@ -351,6 +360,7 @@ export class MuninnCustomEditorProvider
       vscode.Uri.joinPath(this.extensionUri, 'media', 'editor-webview.css'),
     );
     const nonce = createNonce();
+    const localizedWebviewStrings = serializeForInlineScript(createLocalizedWebviewStrings());
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -366,6 +376,9 @@ export class MuninnCustomEditorProvider
 </head>
 <body>
   <div id="app"></div>
+  <script nonce="${nonce}">
+    window.__MUNINN_WEBVIEW_STRINGS__ = ${localizedWebviewStrings};
+  </script>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
