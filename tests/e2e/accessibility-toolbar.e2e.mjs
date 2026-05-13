@@ -29,7 +29,7 @@ describe('Toolbar accessibility workflow', () => {
     await waitForCustomEditor('with-formatting.md');
 
     await withCustomEditorWebview(async () => {
-      const textLabel = await browser.$('[data-group-label="Text"]');
+      const textLabel = await browser.$('#muninn-toolbar-group-text-label');
       await expect(textLabel).toBeDisplayed();
 
       const textGroup = await browser.$('[data-group="text"]');

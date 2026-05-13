@@ -73,6 +73,7 @@ export type WebviewStrings = {
   tableApplySourceTitle: string;
   tableSourceHint: string;
   tableHeaderColumnLabelTemplate: string;
+  tableNewColumnHeaderTemplate: string;
   tableRowColumnLabelTemplate: string;
   statusTableUpdated: string;
   statusTableRowAdded: string;
@@ -162,6 +163,7 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   tableApplySourceTitle: 'Apply source (Ctrl/Cmd+Enter)',
   tableSourceHint: 'Edit Markdown table source. Press Ctrl/Cmd+Enter to apply changes.',
   tableHeaderColumnLabelTemplate: 'Header column {0}',
+  tableNewColumnHeaderTemplate: 'Column {0}',
   tableRowColumnLabelTemplate: 'Row {0} column {1}',
   statusTableUpdated: 'Table updated.',
   statusTableRowAdded: 'Added table row.',

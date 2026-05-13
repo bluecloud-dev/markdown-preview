@@ -1,6 +1,5 @@
 import { renderMermaidDiagram } from './renderers/mermaid-renderer';
 import { escapeHtml, getString } from './localization';
-export { escapeHtml } from './localization';
 
 type MermaidPreviewOptions = {
   panel: HTMLElement;

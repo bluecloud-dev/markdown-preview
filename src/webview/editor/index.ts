@@ -543,7 +543,7 @@ const addTableColumn = (): boolean => {
 
   const table = parseMarkdownTable(selectedTable.node.textContent);
   const nextColumnIndex = table.headers.length + 1;
-  table.headers.push(`Column ${nextColumnIndex}`);
+  table.headers.push(formatString(getString('tableNewColumnHeaderTemplate'), nextColumnIndex));
   for (const row of table.rows) {
     row.push('');
   }
@@ -621,11 +621,6 @@ const executeEditorCommand = (command: ViewEditorCommand): boolean => {
       return toggleHeadingLevel(3);
     }
     case 'setParagraph': {
-      if (isParagraphActive()) {
-        runViewCommand(setBlockType(schema.nodes.paragraph));
-        updateToolbarPressedState('setParagraph', false);
-        return true;
-      }
       return runViewCommand(setBlockType(schema.nodes.paragraph));
     }
     case 'toggleBulletList': {
@@ -674,6 +669,9 @@ for (const [command, button] of toolbarButtons.entries()) {
         type: 'view.executeCommand',
         payload: { command: 'openRawMarkdown' },
       });
+      globalThis.setTimeout(() => {
+        updateToolbarPressedState('openRawMarkdown', false);
+      }, 600);
       return;
     }
 

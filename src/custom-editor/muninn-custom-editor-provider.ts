@@ -15,10 +15,16 @@ import {
 
 export const MUNINN_MARKDOWN_EDITOR_VIEW_TYPE = 'muninn.markdownEditor';
 
-const createLocalizedWebviewStrings = (): WebviewStrings =>
-  Object.fromEntries(
-    Object.entries(DEFAULT_WEBVIEW_STRINGS).map(([key, value]) => [key, t(value)]),
-  ) as WebviewStrings;
+let cachedLocalizedWebviewStrings: WebviewStrings | undefined;
+
+const getLocalizedWebviewStrings = (): WebviewStrings => {
+  if (!cachedLocalizedWebviewStrings) {
+    cachedLocalizedWebviewStrings = Object.fromEntries(
+      Object.entries(DEFAULT_WEBVIEW_STRINGS).map(([key, value]) => [key, t(value)]),
+    ) as WebviewStrings;
+  }
+  return cachedLocalizedWebviewStrings;
+};
 
 const serializeForInlineScript = (value: unknown): string =>
   JSON.stringify(value).replaceAll('<', String.raw`\u003c`);
@@ -360,7 +366,7 @@ export class MuninnCustomEditorProvider
       vscode.Uri.joinPath(this.extensionUri, 'media', 'editor-webview.css'),
     );
     const nonce = createNonce();
-    const localizedWebviewStrings = serializeForInlineScript(createLocalizedWebviewStrings());
+    const localizedWebviewStrings = serializeForInlineScript(getLocalizedWebviewStrings());
 
     return `<!DOCTYPE html>
 <html lang="en">

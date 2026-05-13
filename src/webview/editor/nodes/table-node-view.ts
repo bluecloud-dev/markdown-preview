@@ -2,8 +2,8 @@ import type { Node as ProseMirrorNode, Schema } from 'prosemirror-model';
 import type { EditorView, NodeView, NodeViewConstructor } from 'prosemirror-view';
 import { CODE_LANGUAGE_OPTIONS } from '../../../shared/code-languages';
 import type { CodeLanguageOption } from '../../../shared/code-languages';
-import { formatString, getString } from '../localization';
-import { escapeHtml, sanitizeMermaidSvg } from '../preview';
+import { escapeHtml, formatString, getString } from '../localization';
+import { sanitizeMermaidSvg } from '../preview';
 import { renderMermaidDiagram } from '../renderers/mermaid-renderer';
 import {
   normalizeTableSource,
@@ -295,6 +295,7 @@ class TableCodeBlockNodeView implements NodeView {
   private sourceVisible = false;
   private sourceDraft = '';
   private sourceDirty = false;
+  private normalizedCurrentSource = '';
 
   constructor(
     private node: ProseMirrorNode,
@@ -362,7 +363,8 @@ class TableCodeBlockNodeView implements NodeView {
       this.sourceFeedback,
     );
     this.sourceContainer.hidden = true;
-    this.sourceDraft = normalizeTableSource(this.node.textContent);
+    this.normalizedCurrentSource = normalizeTableSource(this.node.textContent);
+    this.sourceDraft = this.normalizedCurrentSource;
     this.sourceTextarea.value = this.sourceDraft;
 
     this.dom.append(this.header, this.gridContainer, this.sourceContainer);
@@ -408,6 +410,7 @@ class TableCodeBlockNodeView implements NodeView {
       return false;
     }
     this.node = node;
+    this.normalizedCurrentSource = normalizeTableSource(this.node.textContent);
     this.render();
     return true;
   }
@@ -434,7 +437,7 @@ class TableCodeBlockNodeView implements NodeView {
     this.renderGrid(table);
 
     if (!this.sourceVisible || !this.sourceDirty) {
-      this.sourceDraft = normalizeTableSource(this.node.textContent);
+      this.sourceDraft = this.normalizedCurrentSource;
       this.sourceTextarea.value = this.sourceDraft;
       this.sourceDirty = false;
       this.updateApplySourceButtonState();
@@ -517,7 +520,7 @@ class TableCodeBlockNodeView implements NodeView {
   private addColumn(): void {
     const table = parseMarkdownTable(this.node.textContent);
     const nextColumn = table.headers.length + 1;
-    table.headers.push(`Column ${nextColumn}`);
+    table.headers.push(formatString(getString('tableNewColumnHeaderTemplate'), nextColumn));
     for (const row of table.rows) {
       row.push('');
     }
@@ -549,7 +552,7 @@ class TableCodeBlockNodeView implements NodeView {
       ? getString('tableBackToPreviewButton')
       : getString('tableViewSourceButton');
     if (visible) {
-      this.sourceDraft = normalizeTableSource(this.node.textContent);
+      this.sourceDraft = this.normalizedCurrentSource;
       this.sourceTextarea.value = this.sourceDraft;
       this.sourceDirty = false;
       this.clearSourceFeedback();
@@ -563,8 +566,7 @@ class TableCodeBlockNodeView implements NodeView {
 
   private applySourceFromTextarea(): void {
     const normalized = normalizeTableSource(this.sourceDraft);
-    const currentSource = normalizeTableSource(this.node.textContent);
-    if (normalized !== currentSource) {
+    if (normalized !== this.normalizedCurrentSource) {
       const applied = this.applySource(normalized, getString('statusTableSourceApplied'));
       if (!applied) {
         this.setSourceFeedback('error', getString('statusTableSourceApplyFailed'));
@@ -577,7 +579,6 @@ class TableCodeBlockNodeView implements NodeView {
     this.sourceDraft = normalized;
     this.sourceDirty = false;
     this.sourceTextarea.value = normalized;
-    this.updateApplySourceButtonState();
     this.setSourceVisibility(false);
   }
 
@@ -637,8 +638,8 @@ class TableCodeBlockNodeView implements NodeView {
 
   private updateApplySourceButtonState(): void {
     const normalizedDraft = normalizeTableSource(this.sourceDraft);
-    const currentSource = normalizeTableSource(this.node.textContent);
-    this.applySourceButton.disabled = !this.sourceVisible || normalizedDraft === currentSource;
+    this.applySourceButton.disabled =
+      !this.sourceVisible || normalizedDraft === this.normalizedCurrentSource;
   }
 
   private clearSourceFeedback(): void {
