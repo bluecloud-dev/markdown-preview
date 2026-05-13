@@ -1,5 +1,6 @@
 import { renderMermaidDiagram } from './renderers/mermaid-renderer';
-import { getString } from './localization';
+import { escapeHtml, getString } from './localization';
+export { escapeHtml } from './localization';
 
 type MermaidPreviewOptions = {
   panel: HTMLElement;
@@ -68,14 +69,6 @@ export class MermaidPreviewController {
     this.options.body.innerHTML = sanitizeMermaidSvg(result.svg);
   }
 }
-
-export const escapeHtml = (value: string): string =>
-  value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
 
 const parseSvgElement = (rawSvg: string): Element | undefined => {
   const documentParser = new DOMParser().parseFromString(rawSvg, 'image/svg+xml');

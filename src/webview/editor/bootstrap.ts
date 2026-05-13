@@ -1,4 +1,4 @@
-import { getString } from './localization';
+import { getHtmlString } from './localization';
 
 export type EditorBootstrap = {
   app: HTMLDivElement;
@@ -19,46 +19,46 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
   app.innerHTML = `
   <header class="muninn-editor-header" data-testid="muninn-editor-header">
     <div class="muninn-editor-identity">
-      <strong>${getString('headerBrandName')}</strong>
-      <span>${getString('headerBrandRole')}</span>
+      <strong>${getHtmlString('headerBrandName')}</strong>
+      <span>${getHtmlString('headerBrandRole')}</span>
     </div>
-    <div class="muninn-editor-help">${getString('headerHelp')}</div>
+    <div class="muninn-editor-help">${getHtmlString('headerHelp')}</div>
   </header>
-  <div class="muninn-toolbar" role="toolbar" aria-label="${getString('toolbarAriaLabel')}">
+  <div class="muninn-toolbar" role="toolbar" aria-label="${getHtmlString('toolbarAriaLabel')}">
     <div class="muninn-toolbar-group" data-group="text" role="group" aria-labelledby="muninn-toolbar-group-text-label">
-      <span id="muninn-toolbar-group-text-label" class="muninn-toolbar-group-label" data-group-label="${getString('toolbarGroupTextLabel')}">${getString('toolbarGroupTextLabel')}</span>
-      <button type="button" data-command="toggleBold" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonBoldTitle')}">${getString('commandLabelBold')}</button>
-      <button type="button" data-command="toggleItalic" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonItalicTitle')}">${getString('commandLabelItalic')}</button>
-      <button type="button" data-command="insertLink" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonLinkTitle')}">${getString('commandLabelLink')}</button>
+      <span id="muninn-toolbar-group-text-label" class="muninn-toolbar-group-label" data-group-label="${getHtmlString('toolbarGroupTextLabel')}">${getHtmlString('toolbarGroupTextLabel')}</span>
+      <button type="button" data-command="toggleBold" data-pressable="true" aria-pressed="false" title="${getHtmlString('toolbarButtonBoldTitle')}">${getHtmlString('commandLabelBold')}</button>
+      <button type="button" data-command="toggleItalic" data-pressable="true" aria-pressed="false" title="${getHtmlString('toolbarButtonItalicTitle')}">${getHtmlString('commandLabelItalic')}</button>
+      <button type="button" data-command="insertLink" data-pressable="true" aria-pressed="false" title="${getHtmlString('toolbarButtonLinkTitle')}">${getHtmlString('commandLabelLink')}</button>
     </div>
     <div class="muninn-toolbar-group" data-group="structure" role="group" aria-labelledby="muninn-toolbar-group-structure-label">
-      <span id="muninn-toolbar-group-structure-label" class="muninn-toolbar-group-label" data-group-label="${getString('toolbarGroupStructureLabel')}">${getString('toolbarGroupStructureLabel')}</span>
-      <button type="button" data-command="setHeading1" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonHeading1Title')}">${getString('toolbarButtonHeading1Label')}</button>
-      <button type="button" data-command="setHeading2" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonHeading2Title')}">${getString('toolbarButtonHeading2Label')}</button>
-      <button type="button" data-command="setHeading3" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getString('toolbarButtonHeading3Title')}">${getString('toolbarButtonHeading3Label')}</button>
-      <button type="button" data-command="setParagraph" data-pressable="true" aria-pressed="false" title="${getString('toolbarButtonParagraphTitle')}">${getString('commandLabelParagraph')}</button>
-      <button type="button" data-command="toggleBulletList" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getString('toolbarButtonBulletTitle')}">${getString('toolbarButtonBulletLabel')}</button>
-      <button type="button" data-command="toggleNumberedList" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getString('toolbarButtonNumberedTitle')}">${getString('toolbarButtonNumberedLabel')}</button>
+      <span id="muninn-toolbar-group-structure-label" class="muninn-toolbar-group-label" data-group-label="${getHtmlString('toolbarGroupStructureLabel')}">${getHtmlString('toolbarGroupStructureLabel')}</span>
+      <button type="button" data-command="setHeading1" data-pressable="true" aria-pressed="false" title="${getHtmlString('toolbarButtonHeading1Title')}">${getHtmlString('toolbarButtonHeading1Label')}</button>
+      <button type="button" data-command="setHeading2" data-pressable="true" aria-pressed="false" title="${getHtmlString('toolbarButtonHeading2Title')}">${getHtmlString('toolbarButtonHeading2Label')}</button>
+      <button type="button" data-command="setHeading3" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getHtmlString('toolbarButtonHeading3Title')}">${getHtmlString('toolbarButtonHeading3Label')}</button>
+      <button type="button" data-command="setParagraph" data-pressable="true" aria-pressed="false" title="${getHtmlString('toolbarButtonParagraphTitle')}">${getHtmlString('commandLabelParagraph')}</button>
+      <button type="button" data-command="toggleBulletList" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getHtmlString('toolbarButtonBulletTitle')}">${getHtmlString('toolbarButtonBulletLabel')}</button>
+      <button type="button" data-command="toggleNumberedList" data-pressable="true" aria-pressed="false" data-advanced="true" title="${getHtmlString('toolbarButtonNumberedTitle')}">${getHtmlString('toolbarButtonNumberedLabel')}</button>
     </div>
     <div class="muninn-toolbar-group" data-group="insert" role="group" aria-labelledby="muninn-toolbar-group-insert-label">
-      <span id="muninn-toolbar-group-insert-label" class="muninn-toolbar-group-label" data-group-label="${getString('toolbarGroupInsertLabel')}">${getString('toolbarGroupInsertLabel')}</span>
-      <button type="button" data-command="insertTable" title="${getString('toolbarButtonTableTitle')}">${getString('commandLabelTable')}</button>
-      <button type="button" data-command="insertCodeBlock" title="${getString('toolbarButtonCodeTitle')}">${getString('commandLabelCodeBlock')}</button>
-      <button type="button" data-command="insertMermaidBlock" data-advanced="true" title="${getString('toolbarButtonMermaidTitle')}">${getString('toolbarButtonMermaidLabel')}</button>
-      <button type="button" data-command="openRawMarkdown" title="${getString('toolbarButtonSourceTitle')}">${getString('toolbarButtonSourceLabel')}</button>
+      <span id="muninn-toolbar-group-insert-label" class="muninn-toolbar-group-label" data-group-label="${getHtmlString('toolbarGroupInsertLabel')}">${getHtmlString('toolbarGroupInsertLabel')}</span>
+      <button type="button" data-command="insertTable" title="${getHtmlString('toolbarButtonTableTitle')}">${getHtmlString('commandLabelTable')}</button>
+      <button type="button" data-command="insertCodeBlock" title="${getHtmlString('toolbarButtonCodeTitle')}">${getHtmlString('commandLabelCodeBlock')}</button>
+      <button type="button" data-command="insertMermaidBlock" data-advanced="true" title="${getHtmlString('toolbarButtonMermaidTitle')}">${getHtmlString('toolbarButtonMermaidLabel')}</button>
+      <button type="button" data-command="openRawMarkdown" title="${getHtmlString('toolbarButtonSourceTitle')}">${getHtmlString('toolbarButtonSourceLabel')}</button>
     </div>
-    <button type="button" class="muninn-toolbar-more" data-testid="muninn-toolbar-more" aria-expanded="false" title="${getString('toolbarMoreTitle')}">${getString('toolbarMoreLabel')}</button>
+    <button type="button" class="muninn-toolbar-more" data-testid="muninn-toolbar-more" aria-expanded="false" title="${getHtmlString('toolbarMoreTitle')}">${getHtmlString('toolbarMoreLabel')}</button>
   </div>
   <div class="muninn-editor-shell" id="editor-shell">
     <section id="mermaid-preview-panel" class="muninn-mermaid-preview-panel" hidden>
       <div class="muninn-mermaid-preview-header">
-        <strong>${getString('mermaidPreviewTitle')}</strong>
+        <strong>${getHtmlString('mermaidPreviewTitle')}</strong>
       </div>
       <div id="mermaid-preview-body" class="muninn-mermaid-preview-body"></div>
     </section>
     <div id="editor"></div>
   </div>
-  <div id="status" class="muninn-status" role="status" aria-live="polite">${getString('statusReady')}</div>
+  <div id="status" class="muninn-status" role="status" aria-live="polite">${getHtmlString('statusReady')}</div>
 `;
 
   const toolbar = document.querySelector<HTMLDivElement>('.muninn-toolbar');

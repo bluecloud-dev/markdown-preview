@@ -13,6 +13,17 @@ const strings: WebviewStrings = {
 
 export const getString = <Key extends keyof WebviewStrings>(key: Key): string => strings[key];
 
+export const escapeHtml = (value: string): string =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+
+export const getHtmlString = <Key extends keyof WebviewStrings>(key: Key): string =>
+  escapeHtml(getString(key));
+
 export const formatString = (
   template: string,
   ...values: Array<string | number | boolean>
