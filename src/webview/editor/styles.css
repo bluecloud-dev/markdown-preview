@@ -26,6 +26,40 @@ body {
   height: 100%;
 }
 
+.muninn-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--vscode-editorGroup-border);
+  background: var(--vscode-sideBar-background, var(--vscode-editorWidget-background));
+  color: var(--vscode-sideBar-foreground, var(--vscode-editor-foreground));
+}
+
+.muninn-editor-identity {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.muninn-editor-identity strong {
+  color: var(--vscode-sideBarTitle-foreground, var(--vscode-editor-foreground));
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.muninn-editor-identity span,
+.muninn-editor-help {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+
+.muninn-editor-help {
+  text-align: right;
+}
+
 .muninn-toolbar {
   display: flex;
   align-items: center;
@@ -47,6 +81,12 @@ body {
 .muninn-toolbar-group:last-child {
   border-right: none;
   padding-right: 0;
+}
+
+.muninn-toolbar-group-label {
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .muninn-toolbar button,
@@ -85,6 +125,10 @@ body {
   background: var(--vscode-button-hoverBackground);
 }
 
+.muninn-toolbar .muninn-toolbar-more {
+  border-style: dashed;
+}
+
 .muninn-toolbar .muninn-toolbar-select {
   background: var(--vscode-dropdown-background);
   color: var(--vscode-dropdown-foreground);
@@ -102,7 +146,13 @@ body {
 .muninn-editor-shell {
   flex: 1;
   overflow: auto;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
   padding-bottom: 16px;
+}
+
+.muninn-editor-shell:focus-within {
+  outline-color: var(--vscode-focusBorder);
 }
 
 .ProseMirror {
@@ -234,6 +284,15 @@ body {
 .muninn-table-node-actions button:hover,
 .muninn-table-node-source button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.muninn-table-node-actions button.muninn-button-danger {
+  color: var(--vscode-errorForeground);
+  border-color: color-mix(in srgb, var(--vscode-errorForeground) 45%, transparent);
+}
+
+.muninn-table-node-actions button.muninn-button-danger:hover {
+  background: color-mix(in srgb, var(--vscode-errorForeground) 12%, var(--vscode-button-secondaryBackground));
 }
 
 .muninn-table-node-actions button:focus-visible,

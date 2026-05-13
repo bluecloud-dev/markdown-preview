@@ -1,4 +1,5 @@
 import { renderMermaidDiagram } from './renderers/mermaid-renderer';
+import { escapeHtml, getString } from './localization';
 
 type MermaidPreviewOptions = {
   panel: HTMLElement;
@@ -48,7 +49,7 @@ export class MermaidPreviewController {
 
     this.options.panel.hidden = false;
     if (!this.enabled) {
-      this.options.body.textContent = 'Mermaid rendering is disabled for this workspace.';
+      this.options.body.textContent = getString('mermaidDisabledMessage');
       return;
     }
 
@@ -67,14 +68,6 @@ export class MermaidPreviewController {
     this.options.body.innerHTML = sanitizeMermaidSvg(result.svg);
   }
 }
-
-export const escapeHtml = (value: string): string =>
-  value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
 
 const parseSvgElement = (rawSvg: string): Element | undefined => {
   const documentParser = new DOMParser().parseFromString(rawSvg, 'image/svg+xml');
@@ -135,9 +128,7 @@ export const sanitizeMermaidSvg = (
 ): string => {
   const svgElement = parse(rawSvg);
   if (!svgElement) {
-    return `<div class="muninn-mermaid-error">${escapeHtml(
-      'Mermaid rendered no SVG output.',
-    )}</div>`;
+    return `<div class="muninn-mermaid-error">${escapeHtml(getString('mermaidNoSvgOutput'))}</div>`;
   }
 
   for (const node of svgElement.querySelectorAll('script,foreignObject,iframe,object,embed')) {

@@ -1,4 +1,5 @@
-import { escapeHtml, sanitizeMermaidSvg } from '../../src/webview/editor/preview';
+import { escapeHtml } from '../../src/webview/editor/localization';
+import { sanitizeMermaidSvg } from '../../src/webview/editor/preview';
 
 let expect: Chai.ExpectStatic;
 

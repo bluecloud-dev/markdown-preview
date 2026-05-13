@@ -2,6 +2,12 @@
 
 Muninn provides a reading-first Markdown experience in VS Code with a custom editor as the default for `.md` and `.markdown` files.
 
+![Muninn hero banner](assets/hero.png)
+
+## Preview
+
+![Muninn table editing workflow captured from the E2E suite](assets/muninn-demo.gif)
+
 ## Highlights
 
 - Custom markdown editor (`muninn.markdownEditor`) opens by default.

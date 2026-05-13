@@ -11,6 +11,11 @@ specs/**
 .vscode-test/**
 .specify/**
 .codex/**
+.claude/**
+.claudeignore
+.remember/**
+graphify-out/**
+docs/superpowers/**
 scripts/**
 node_modules/**
 **/*.ts
@@ -33,3 +38,4 @@ AGENTS.md
 CLAUDE.md
 image.png
 Evolmd
+assets/hero.png

@@ -20,6 +20,7 @@ import type {
   ViewToHostMessage,
 } from '../../custom-editor/protocol';
 import { bootstrapEditorApp } from './bootstrap';
+import { formatString, getString } from './localization';
 import { wrapTablesForEditor, unwrapTablesForHost } from './markdown-transforms';
 import { attachHostMessageListener } from './messages';
 import { isMermaidCodeBlockNode } from './nodes/mermaid-node';
@@ -69,6 +70,35 @@ const TRANSIENT_ACTIVE_COMMANDS = new Set<string>([
   'openRawMarkdown',
 ]);
 
+const COMMAND_LABELS = new Map<string, string>([
+  ['toggleBold', getString('commandLabelBold')],
+  ['toggleItalic', getString('commandLabelItalic')],
+  ['setHeading1', getString('commandLabelHeading1')],
+  ['setHeading2', getString('commandLabelHeading2')],
+  ['setHeading3', getString('commandLabelHeading3')],
+  ['setParagraph', getString('commandLabelParagraph')],
+  ['toggleBulletList', getString('commandLabelBulletList')],
+  ['toggleNumberedList', getString('commandLabelNumberedList')],
+  ['insertLink', getString('commandLabelLink')],
+  ['insertMermaidBlock', getString('commandLabelMermaidDiagram')],
+  ['insertTable', getString('commandLabelTable')],
+  ['insertCodeBlock', getString('commandLabelCodeBlock')],
+  ['addTableRow', getString('commandLabelAddTableRow')],
+  ['addTableColumn', getString('commandLabelAddTableColumn')],
+  ['openRawMarkdown', getString('commandLabelSourceEditor')],
+]);
+
+const formatCommandFailure = (command: string): string => {
+  if (command === 'addTableRow') {
+    return getString('commandFailureAddRowNoTable');
+  }
+  if (command === 'addTableColumn') {
+    return getString('commandFailureAddColumnNoTable');
+  }
+  const label = COMMAND_LABELS.get(command) ?? command;
+  return formatString(getString('commandFailureGenericTemplate'), label);
+};
+
 const markdownItParser = MarkdownIt('commonmark', {
   html: false,
   linkify: true,
@@ -88,23 +118,68 @@ const markdownSerializer = new MarkdownSerializer(
 
 const { editorContainer, statusLine, mermaidPreviewPanel, mermaidPreviewBody, toolbarButtons } =
   bootstrapEditorApp();
+const moreButton = document.querySelector<HTMLButtonElement>('[data-testid="muninn-toolbar-more"]');
 
 let view: EditorView | undefined;
 let toolbarMode: ToolbarMode = 'basic';
+let advancedActionsVisible = false;
 let lastMermaidInsertAt = 0;
 
 const setStatus = (message: string): void => {
   statusLine.textContent = message;
 };
 
-const setToolbarMode = (mode: ToolbarMode): void => {
-  toolbarMode = mode;
-  for (const [command, button] of toolbarButtons.entries()) {
-    if (!ADVANCED_TOOLBAR_COMMANDS.has(command)) {
+const updateAdvancedToolbarVisibility = (): void => {
+  const showAdvancedActions = toolbarMode === 'advanced' || advancedActionsVisible;
+  for (const command of ADVANCED_TOOLBAR_COMMANDS) {
+    const button = toolbarButtons.get(command);
+    if (!button) {
       continue;
     }
-    button.hidden = toolbarMode === 'basic';
+    button.hidden = !showAdvancedActions;
   }
+
+  if (moreButton) {
+    moreButton.hidden = toolbarMode === 'advanced';
+    moreButton.setAttribute('aria-expanded', advancedActionsVisible ? 'true' : 'false');
+  }
+};
+
+const getFirstAdvancedToolbarButton = (): HTMLButtonElement | undefined => {
+  for (const command of ADVANCED_TOOLBAR_COMMANDS) {
+    const button = toolbarButtons.get(command);
+    if (button) {
+      return button;
+    }
+  }
+  return undefined;
+};
+
+const isFocusedAdvancedToolbarAction = (): boolean => {
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLButtonElement)) {
+    return false;
+  }
+  const command = activeElement.dataset.command;
+  if (!command) {
+    return false;
+  }
+  return ADVANCED_TOOLBAR_COMMANDS.has(command);
+};
+
+const setToolbarMode = (mode: ToolbarMode): void => {
+  const needsFocusFallback = mode === 'basic' && isFocusedAdvancedToolbarAction();
+  toolbarMode = mode;
+  advancedActionsVisible = false;
+  updateAdvancedToolbarVisibility();
+  if (!needsFocusFallback) {
+    return;
+  }
+  if (moreButton && !moreButton.hidden) {
+    moreButton.focus();
+    return;
+  }
+  view?.focus();
 };
 
 const serializeMarkdownForHost = (): string => {
@@ -414,7 +489,7 @@ const insertMermaidBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: 'mermaid' }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus('Inserted Mermaid block.');
+  setStatus(getString('statusInsertedMermaid'));
   return true;
 };
 
@@ -427,7 +502,7 @@ const insertTableBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: TABLE_FENCE_LANGUAGE }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus('Inserted table.');
+  setStatus(getString('statusInsertedTable'));
   return true;
 };
 
@@ -440,7 +515,7 @@ const insertCodeBlock = (): boolean => {
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
 
-  setStatus('Inserted code block. Set language from block header.');
+  setStatus(getString('statusInsertedCodeBlock'));
   return true;
 };
 
@@ -448,7 +523,7 @@ const addTableRow = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus('Insert a table first before adding a row.');
+    setStatus(getString('commandFailureAddRowNoTable'));
     return false;
   }
 
@@ -462,13 +537,13 @@ const addTableColumn = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus('Insert a table first before adding a column.');
+    setStatus(getString('commandFailureAddColumnNoTable'));
     return false;
   }
 
   const table = parseMarkdownTable(selectedTable.node.textContent);
   const nextColumnIndex = table.headers.length + 1;
-  table.headers.push(`Column ${nextColumnIndex}`);
+  table.headers.push(formatString(getString('tableNewColumnHeaderTemplate'), nextColumnIndex));
   for (const row of table.rows) {
     row.push('');
   }
@@ -494,7 +569,7 @@ const requestLinkInput = (): boolean => {
       selectedText: selectedText?.trim().length ? selectedText.trim() : undefined,
     },
   });
-  setStatus('Awaiting link input…');
+  setStatus(getString('statusAwaitingLinkInput'));
   return true;
 };
 
@@ -520,7 +595,7 @@ const insertLinkFromHost = (href: string, text?: string): boolean => {
     .setSelection(TextSelection.create(transaction.doc, to, to))
     .scrollIntoView();
   view.dispatch(transaction);
-  setStatus('Inserted link.');
+  setStatus(getString('statusInsertedLink'));
   return true;
 };
 
@@ -546,11 +621,6 @@ const executeEditorCommand = (command: ViewEditorCommand): boolean => {
       return toggleHeadingLevel(3);
     }
     case 'setParagraph': {
-      if (isParagraphActive()) {
-        runViewCommand(setBlockType(schema.nodes.paragraph));
-        updateToolbarPressedState('setParagraph', false);
-        return true;
-      }
       return runViewCommand(setBlockType(schema.nodes.paragraph));
     }
     case 'toggleBulletList': {
@@ -563,7 +633,7 @@ const executeEditorCommand = (command: ViewEditorCommand): boolean => {
       if (isMarkActive(schema.marks.link)) {
         const removed = runInlineMarkCommand(toggleMark(schema.marks.link));
         if (removed) {
-          setStatus('Removed link.');
+          setStatus(getString('statusRemovedLink'));
         }
         return removed;
       }
@@ -599,12 +669,15 @@ for (const [command, button] of toolbarButtons.entries()) {
         type: 'view.executeCommand',
         payload: { command: 'openRawMarkdown' },
       });
+      globalThis.setTimeout(() => {
+        updateToolbarPressedState('openRawMarkdown', false);
+      }, 600);
       return;
     }
 
     const executed = executeEditorCommand(command as ViewEditorCommand);
     if (!executed) {
-      setStatus(`Command failed: ${command}`);
+      setStatus(formatCommandFailure(command));
     }
     if (executed && TRANSIENT_ACTIVE_COMMANDS.has(command)) {
       button.classList.add('is-active');
@@ -615,6 +688,16 @@ for (const [command, button] of toolbarButtons.entries()) {
     view?.focus();
   });
 }
+
+moreButton?.addEventListener('click', () => {
+  advancedActionsVisible = !advancedActionsVisible;
+  updateAdvancedToolbarVisibility();
+  if (toolbarMode === 'basic' && advancedActionsVisible) {
+    getFirstAdvancedToolbarButton()?.focus();
+    return;
+  }
+  moreButton.focus();
+});
 
 const updateToolbarPressedState = (command: string, pressed: boolean): void => {
   const button = toolbarButtons.get(command);
@@ -734,7 +817,7 @@ const detachHostMessageListener = attachHostMessageListener({
     mermaidPreview.setEnabled(payload.mermaidEnabled);
     setToolbarMode(payload.toolbarMode);
     applyHostMarkdown(payload.markdown);
-    setStatus('Connected');
+    setStatus(getString('statusConnected'));
     view?.focus();
   },
   onDocumentChanged: (payload) => {
@@ -747,7 +830,7 @@ const detachHostMessageListener = attachHostMessageListener({
   onExecuteCommand: (command) => {
     const executed = executeEditorCommand(command);
     if (!executed) {
-      setStatus(`Command failed: ${command}`);
+      setStatus(formatCommandFailure(command));
     }
   },
   onSettingsChanged: (payload) => {
@@ -758,7 +841,7 @@ const detachHostMessageListener = attachHostMessageListener({
   onInsertLink: (payload) => {
     const inserted = insertLinkFromHost(payload.href, payload.text);
     if (!inserted) {
-      setStatus('Failed to insert link.');
+      setStatus(getString('statusInsertLinkFailed'));
     }
   },
   onError: (payload) => {

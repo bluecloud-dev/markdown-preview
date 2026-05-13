@@ -2,6 +2,12 @@ import { browser } from '@wdio/globals';
 
 export const getWorkbench = async () => browser.getWorkbench();
 
+export const executeWorkbenchCommand = async (command) => {
+  await browser.executeWorkbench(async (vscode, commandName) => {
+    await vscode.commands.executeCommand(commandName);
+  }, command);
+};
+
 export const resetEditors = async () => {
   await browser.executeWorkbench(async (vscode) => {
     const dirtyDocuments = vscode.workspace.textDocuments.filter(
@@ -108,6 +114,43 @@ export const readWorkspaceFileText = async (fileName) =>
     return document.getText();
   }, fileName);
 
+export const waitForWorkspaceFileText = async (
+  fileName,
+  predicate,
+  errorMessage,
+  { attempts = 10, interval = 200 } = {},
+) => {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const text = await readWorkspaceFileText(fileName);
+    if (predicate(text)) {
+      return text;
+    }
+    await browser.pause(interval);
+  }
+
+  throw new Error(errorMessage);
+};
+
+export const executeWorkbenchCommandUntilWorkspaceFileText = async (
+  fileName,
+  command,
+  predicate,
+  errorMessage,
+  { attempts = 8, interval = 200 } = {},
+) => {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    await executeWorkbenchCommand(command);
+    await browser.pause(interval);
+
+    const text = await readWorkspaceFileText(fileName);
+    if (predicate(text)) {
+      return text;
+    }
+  }
+
+  throw new Error(errorMessage);
+};
+
 const hasWebviewAppRoot = async () => {
   try {
     return await browser.execute(() => Boolean(document.querySelector('#app')));
@@ -159,4 +202,37 @@ export const withCustomEditorWebview = async (runInWebview) => {
   if (!ranInWebview) {
     throw new Error('Active custom editor webview context not found.');
   }
+};
+
+export const waitForCustomEditorWebviewReady = async () => {
+  await withCustomEditorWebview(async () => {
+    const editor = await browser.$('.ProseMirror');
+    await editor.waitForDisplayed({ timeout: 5_000 });
+  });
+  // Closing a VS Code webview detaches its inner frame asynchronously. Avoid
+  // dispatching commands while WebDriver is still processing that detach event.
+  await browser.pause(500);
+};
+
+export const executeWorkbenchCommandAndWaitForWorkspaceFileText = async (
+  fileName,
+  command,
+  predicate,
+  errorMessage,
+) => {
+  await waitForCustomEditorWebviewReady();
+  await executeWorkbenchCommand(command);
+  return waitForWorkspaceFileText(fileName, predicate, errorMessage);
+};
+
+export const executeWorkbenchCommandOnceAndWaitForWorkspaceFileText = async (
+  fileName,
+  command,
+  predicate,
+  errorMessage,
+  options,
+) => {
+  await waitForCustomEditorWebviewReady();
+  await executeWorkbenchCommand(command);
+  return waitForWorkspaceFileText(fileName, predicate, errorMessage, options);
 };

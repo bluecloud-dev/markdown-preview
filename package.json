@@ -3,19 +3,28 @@
   "displayName": "%extension.displayName%",
   "publisher": "blueclouddev",
   "version": "2.0.0-alpha.1",
+  "preview": true,
   "description": "%extension.description%",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
+    "Formatters",
     "Visualization"
   ],
   "keywords": [
     "muninn",
     "markdown",
-    "preview",
+    "markdown editor",
+    "custom editor",
+    "single pane",
     "reading-first",
+    "wysiwyg",
+    "rich markdown",
+    "mermaid",
+    "tables",
+    "preview",
     "editor",
     "documentation",
     "readme",
@@ -46,6 +55,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/bluecloud-dev/muninn-vscode.git"
+  },
+  "homepage": "https://github.com/bluecloud-dev/muninn-vscode#readme",
+  "bugs": {
+    "url": "https://github.com/bluecloud-dev/muninn-vscode/issues"
   },
   "activationEvents": [
     "onStartupFinished",
