@@ -88,7 +88,7 @@ jobs:
 
       - name: Upload E2E artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-artifacts-macos-${{ github.sha }}
           path: artifacts/e2e/**
