@@ -94,7 +94,7 @@ jobs:
           NODE
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Muninn for VS Code ${{ github.ref_name }}
           body_path: release-notes.md
