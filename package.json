@@ -442,7 +442,7 @@
     "@babel/core": "^7.29.0",
     "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.9.0",
     "@types/sinon": "^21.0.0",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^8.59.3",
