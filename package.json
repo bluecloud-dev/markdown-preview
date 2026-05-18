@@ -463,7 +463,7 @@
     "mocha": "^11.7.5",
     "nyc": "^17.1.0",
     "prettier": "^3.8.3",
-    "sinon": "^21.0.1",
+    "sinon": "^22.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "wdio-video-reporter": "^6.2.0",
