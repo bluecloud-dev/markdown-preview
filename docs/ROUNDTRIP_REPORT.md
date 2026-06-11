@@ -23,10 +23,10 @@ suite (that larger corpus is spec requirement R-01 and tracked separately).
 
 **Reading the numbers honestly**: the markdown construct survives byte-identically in
 29 of 53 cases; the missing trailing newline (#282) is a single
-serializer defect that currently blocks every stored fixture from a strict pass. The
+pure-serializer defect that still blocks every stored fixture from a strict codec pass,
+but the host save path now preserves the existing final-newline state for real files. The
 24 construct deviations cluster into 8 root causes, each with a tracking issue
-(#282–#289). Until #282 is fixed, every file that ends with a newline loses it on first
-edit; until #283/#284 are fixed, hard-wrapped paragraphs unfold and dash bullets,
+(#283–#289). Until #283/#284 are fixed, hard-wrapped paragraphs unfold and dash bullets,
 underscore emphasis, and setext headings are rewritten to canonical forms.
 
 ## Per-category breakdown

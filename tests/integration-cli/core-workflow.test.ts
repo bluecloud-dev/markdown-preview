@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import sinon from 'sinon';
+import { DocumentSync } from '../../src/custom-editor/document-sync';
 let expect: Chai.ExpectStatic;
 
 before(async () => {
@@ -33,6 +34,16 @@ const getActiveCustomViewType = (): string | undefined => {
   }
   return undefined;
 };
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
+const writeWorkspaceFile = async (uri: vscode.Uri, text: string): Promise<void> => {
+  await vscode.workspace.fs.writeFile(uri, textEncoder.encode(text));
+};
+
+const readWorkspaceFile = async (uri: vscode.Uri): Promise<string> =>
+  textDecoder.decode(await vscode.workspace.fs.readFile(uri));
 
 describe('Integration CLI: core workflow', () => {
   afterEach(() => {
@@ -173,5 +184,39 @@ describe('Integration CLI: core workflow', () => {
 
     expect(quickPickStub.called).to.equal(true);
     expect(commandApplied).to.equal(true);
+  });
+
+  it('preserves final-newline state through the real DocumentSync apply path', async () => {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    expect(workspaceFolder, 'expected integration workspace folder').to.not.equal(undefined);
+
+    const cases = [
+      {
+        name: 'with-final-newline.md',
+        before: '# Before\n',
+        serialized: '# After',
+        expected: '# After\n',
+      },
+      {
+        name: 'without-final-newline.md',
+        before: '# Before',
+        serialized: '# After',
+        expected: '# After',
+      },
+    ];
+
+    for (const testCase of cases) {
+      const uri = vscode.Uri.joinPath(workspaceFolder!.uri, testCase.name);
+      await writeWorkspaceFile(uri, testCase.before);
+
+      const document = await vscode.workspace.openTextDocument(uri);
+      const sync = new DocumentSync(document);
+      const result = await sync.applyDocument(testCase.serialized, 0);
+      expect(result, testCase.name).to.deep.equal({ ok: true });
+
+      const saved = await document.save();
+      expect(saved, testCase.name).to.equal(true);
+      expect(await readWorkspaceFile(uri), testCase.name).to.equal(testCase.expected);
+    }
   });
 });
