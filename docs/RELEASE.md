@@ -7,9 +7,9 @@ This guide covers packaging and publishing for `muninn-vscode`.
 We follow SemVer:
 
 - `X.Y.Z` for stable releases (even minor)
-- Pre-release: plain `X.Y.Z` with an ODD minor (current stream `1.99.x`), published with `vsce publish --pre-release` — the Marketplace rejects semver pre-release suffixes (`-alpha.N`) in the manifest version
+- Pre-release: plain `X.Y.Z` with an ODD minor (e.g. `1.1.x`), published with `vsce publish --pre-release` — the Marketplace rejects semver pre-release suffixes (`-alpha.N`) in the manifest version
 
-Current track is pre-release (`1.99.x`); GA ships as exactly `2.0.0`. Decision record: issue #243 (2026-06-11).
+The version line restarted at `1.0.0` on 2026-06-11: all legacy tags and releases (`v0.x`–`v1.0.1` "Markdown Reader" line, `v2.0.0-alpha.1`) were deleted, and the first release of the v2 custom editor ships as exactly `1.0.0` (stable). This supersedes the `1.99.x`/`2.0.0` scheme from issue #243.
 
 ## Pre-Release Checklist
 
@@ -91,13 +91,18 @@ The repo includes `.github/workflows/release.yml` for tag-driven releases.
 
 It runs:
 
-1. install
-2. lint + format + typecheck
-3. compile + bundle
-4. coverage + integration + no-telemetry guard
-5. package VSIX
-6. publish to Marketplace (with `VSCE_PAT`)
-7. create GitHub release notes from `CHANGELOG.md`
+1. classify the tag (`vX.Y.Z` required; odd minor → pre-release) and verify it matches `package.json`
+2. validate `VSCE_PAT` and `OVSX_PAT` secrets
+3. install + lint + format + typecheck
+4. compile + bundle
+5. coverage + integration + no-telemetry guard
+6. package VSIX and extract release notes from `CHANGELOG.md`
+7. publish the same VSIX to the VS Code Marketplace and Open VSX
+8. create the GitHub release with the VSIX attached
+
+A `workflow_dispatch` run with a `tag` input rehearses everything except the
+registry publishes and the GitHub release — use it to validate the pipeline
+before pushing a real tag.
 
 ## Rollback Strategy
 

@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "publisher": "blueclouddev",
   "version": "1.0.0",
-  "preview": true,
+  "preview": false,
   "description": "%extension.description%",
   "license": "AGPL-3.0-only",
   "engines": {
