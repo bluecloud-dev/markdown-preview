@@ -62,6 +62,8 @@ export type WebviewStrings = {
   statusCodeLanguageUpdateFailed: string;
   statusCodeLanguagePlainText: string;
   statusCodeLanguageSetTemplate: string;
+  frontMatterLabel: string;
+  frontMatterAriaLabel: string;
   tableTitle: string;
   tableAddRowButton: string;
   tableAddColumnButton: string;
@@ -152,6 +154,8 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   statusCodeLanguageUpdateFailed: 'Could not update code block language. Please retry.',
   statusCodeLanguagePlainText: 'Code block language set to plain text.',
   statusCodeLanguageSetTemplate: 'Code block language set to {0}.',
+  frontMatterLabel: 'Front matter',
+  frontMatterAriaLabel: 'Front matter metadata block',
   tableTitle: 'Table',
   tableAddRowButton: 'Add Row',
   tableAddColumnButton: 'Add Column',

@@ -6,7 +6,7 @@
 and final-newline state. This is the exact pipeline the editor runs between the host
 document and the ProseMirror view (`src/webview/editor/markdown-codec.ts`).
 
-**Corpus**: 53 cases — 49 stored fixtures plus 4
+**Corpus**: 55 cases — 51 stored fixtures plus 4
 synthesized byte-fragile variants (CRLF, trailing space, two-space hard break, missing
 final newline) that editors would silently normalize if stored on disk. This is the
 hand-curated construct corpus from issue #245, not the full CommonMark 0.31.2 example
@@ -17,16 +17,16 @@ suite (that larger corpus is spec requirement R-01 and tracked separately).
 | Verdict | Cases |
 | --- | ---: |
 | Byte-identical | 1 |
-| Final-newline-only deviation (single root cause, #282) | 28 |
-| Construct deviations | 24 |
-| **Total** | **53** |
+| Final-newline-only deviation (single root cause, #282) | 31 |
+| Construct deviations | 23 |
+| **Total** | **55** |
 
 **Reading the numbers honestly**: the markdown construct survives byte-identically in
-29 of 53 cases; the missing trailing newline (#282) is a single
+32 of 55 cases; the missing trailing newline (#282) is a single
 pure-serializer defect that still blocks every stored fixture from a strict codec pass,
-but the host save path now preserves the existing final-newline state for real files. The
-24 construct deviations cluster into 8 root causes, each with a tracking issue
-(#283–#289). Until #283/#284 are fixed, hard-wrapped paragraphs unfold and dash bullets,
+but the host save path now preserves the existing final-newline state for real files.
+Construct deviations remain; each has a tracking issue in the deviation index below.
+Until #283/#284 are fixed, hard-wrapped paragraphs unfold and dash bullets,
 underscore emphasis, and setext headings are rewritten to canonical forms.
 
 ## Per-category breakdown
@@ -40,7 +40,7 @@ underscore emphasis, and setext headings are rewritten to canonical forms.
 | emphasis | 4 | 0 | 3 | 1 |
 | entities | 1 | 0 | 0 | 1 |
 | escapes | 1 | 0 | 0 | 1 |
-| front-matter | 1 | 0 | 0 | 1 |
+| front-matter | 3 | 0 | 3 | 0 |
 | headings | 3 | 0 | 1 | 2 |
 | html | 2 | 0 | 1 | 1 |
 | images | 1 | 0 | 1 | 0 |
@@ -77,7 +77,9 @@ underscore emphasis, and setext headings are rewritten to canonical forms.
 | `emphasis--underscore.md` | construct | emphasis marker style is not recorded; the serializer emits * forms | #284 |
 | `entities--named.md` | construct | HTML entities are decoded at parse and serialized as raw characters | #285 |
 | `escapes--punctuation.md` | construct | backslash escapes are decoded at parse and re-escaped per serializer policy (escaped # comes back unescaped) | #285 |
-| `front-matter--yaml.md` | construct | no front-matter support; the opening --- parses as a thematic break and the closing --- turns the YAML body into a setext heading | #289 |
+| `front-matter--empty.md` | final-newline-only | front matter now round-trips byte-identically through the codec except for #282 final newline only | #289 |
+| `front-matter--rich.md` | final-newline-only | front matter now round-trips byte-identically through the codec except for #282 final newline only | #289 |
+| `front-matter--yaml.md` | final-newline-only | front matter now round-trips byte-identically through the codec except for #282 final newline only | #289 |
 | `headings--atx-closing-hashes.md` | construct | ATX closing hash sequences are not recorded; the serializer emits the open form | #284 |
 | `headings--atx.md` | final-newline-only | prosemirror-markdown serialize() emits no trailing newline; the construct content itself round-trips byte-identically | #282 |
 | `headings--setext.md` | construct | heading source form is not recorded; the serializer emits ATX headings | #284 |

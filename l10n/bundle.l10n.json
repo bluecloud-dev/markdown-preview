@@ -23,6 +23,8 @@
   "Recent": "Recent",
   "Insert Code Block": "Insert Code Block",
   "Select the code language": "Select the code language",
+  "Front matter": "Front matter",
+  "Front matter metadata block": "Front matter metadata block",
   "Muninn configuration cache cleared after settings change.": "Muninn configuration cache cleared after settings change.",
   "Muninn custom markdown editor activated.": "Muninn custom markdown editor activated."
 }

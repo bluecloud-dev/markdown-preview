@@ -292,7 +292,11 @@ body {
 }
 
 .muninn-table-node-actions button.muninn-button-danger:hover {
-  background: color-mix(in srgb, var(--vscode-errorForeground) 12%, var(--vscode-button-secondaryBackground));
+  background: color-mix(
+    in srgb,
+    var(--vscode-errorForeground) 12%,
+    var(--vscode-button-secondaryBackground)
+  );
 }
 
 .muninn-table-node-actions button:focus-visible,
@@ -440,6 +444,33 @@ body {
 
 .muninn-code-node-body code {
   font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.muninn-front-matter-node {
+  margin: 0.9em 0;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--vscode-editorWidget-background) 90%, transparent);
+}
+
+.muninn-front-matter-node-header {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--vscode-editorWidget-border);
+}
+
+.muninn-front-matter-node-header strong {
+  font-size: 12px;
+}
+
+.muninn-front-matter-node-body {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 0;
+  background: var(--vscode-textCodeBlock-background);
+  color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-editor-font-family, monospace);
+  white-space: pre-wrap;
 }
 
 .muninn-code-node-mermaid-preview {
