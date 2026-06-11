@@ -14,7 +14,7 @@ serializer still drops the final newline (#282). The host save path reconciles t
 state in `DocumentSync.applyDocument()` so real files that already end in `\n` keep
 their final newline, while files without one do not gain one.
 
-## Final-newline-only deviations (#282) — 28 fixtures
+## Final-newline-only deviations (#282) — 31 fixtures
 
 These fixtures round-trip their construct byte-identically and differ only by the
 missing trailing newline in the pure codec — a serializer defect reconciled by the host
@@ -28,6 +28,9 @@ save path:
 - `emphasis--adjacent-nested.md`
 - `emphasis--asterisk.md`
 - `emphasis--intraword-underscores.md`
+- `front-matter--empty.md`
+- `front-matter--rich.md`
+- `front-matter--yaml.md`
 - `headings--atx.md`
 - `html--inline.md`
 - `images--inline.md`
@@ -49,7 +52,7 @@ save path:
 - `thematic-breaks--dashes.md`
 - `unicode--emoji-cjk.md`
 
-## Construct deviations — 24 fixtures
+## Construct deviations — 23 fixtures
 
 ### `blockquotes--lazy.md` (#283)
 
@@ -187,31 +190,6 @@ Escaped \*not emphasis\*, an escaped \# not a heading, and \[not a link\].
 
 ````markdown
 Escaped \*not emphasis\*, an escaped # not a heading, and \[not a link\].
-````
-
-### `front-matter--yaml.md` (#289)
-
-**Root cause**: no front-matter support; the opening --- parses as a thematic break and the closing --- turns the YAML body into a setext heading.
-
-**Input**:
-
-````markdown
----
-title: Muninn
-tags: [notes, markdown]
----
-
-# Document body
-````
-
-**Output**:
-
-````markdown
----
-
-## title: Muninn tags: \[notes, markdown\]
-
-# Document body
 ````
 
 ### `headings--atx-closing-hashes.md` (#284)

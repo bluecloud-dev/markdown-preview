@@ -16,6 +16,7 @@ import { formatString, getString } from './localization';
 import { markdownParser, schema, serializeToHostMarkdown } from './markdown-codec';
 import { wrapTablesForEditor } from './markdown-transforms';
 import { attachHostMessageListener } from './messages';
+import { createFrontMatterNodeViewConstructor } from './nodes/front-matter-node-view';
 import { isMermaidCodeBlockNode } from './nodes/mermaid-node';
 import { createCodeBlockNodeViewConstructor, isTableCodeBlockNode } from './nodes/table-node-view';
 import { MermaidPreviewController } from './preview';
@@ -756,6 +757,7 @@ const applyHostMarkdown = (hostMarkdown: string): void => {
       state: parseMarkdown(editorMarkdown),
       nodeViews: {
         code_block: createCodeBlockNodeViewConstructor({ setStatus }),
+        front_matter: createFrontMatterNodeViewConstructor(),
       },
       dispatchTransaction(transaction) {
         if (!view) {

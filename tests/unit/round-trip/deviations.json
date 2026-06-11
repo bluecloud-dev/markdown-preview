@@ -119,10 +119,24 @@
     "issue": "#285"
   },
   {
+    "fixture": "front-matter--empty.md",
+    "category": "front-matter",
+    "kind": "final-newline-only",
+    "rootCause": "front matter now round-trips byte-identically through the codec except for #282 final newline only",
+    "issue": "#289"
+  },
+  {
+    "fixture": "front-matter--rich.md",
+    "category": "front-matter",
+    "kind": "final-newline-only",
+    "rootCause": "front matter now round-trips byte-identically through the codec except for #282 final newline only",
+    "issue": "#289"
+  },
+  {
     "fixture": "front-matter--yaml.md",
     "category": "front-matter",
-    "kind": "construct",
-    "rootCause": "no front-matter support; the opening --- parses as a thematic break and the closing --- turns the YAML body into a setext heading",
+    "kind": "final-newline-only",
+    "rootCause": "front matter now round-trips byte-identically through the codec except for #282 final newline only",
     "issue": "#289"
   },
   {
