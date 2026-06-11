@@ -5,10 +5,10 @@ import { getString } from '../localization';
 export const getFrontMatterDisplayText = (raw: string): string =>
   raw
     .replace(/^---\r?\n/, '')
-    .replace(/\r?\n---\r?\n?$/, '')
+    .replace(/(^|\r?\n)---\r?\n?$/, '')
     .trimEnd();
 
-class FrontMatterNodeView implements NodeView {
+export class FrontMatterNodeView implements NodeView {
   readonly dom: HTMLElement;
 
   constructor(node: ProseMirrorNode) {
