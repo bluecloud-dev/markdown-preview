@@ -60,6 +60,12 @@ describe('custom editor protocol guards', () => {
     ).to.equal(true);
     expect(
       isHostToViewMessage({
+        type: 'host.documentChanged',
+        payload: { markdown: '# doc', revision: 2 },
+      }),
+    ).to.equal(true);
+    expect(
+      isHostToViewMessage({
         type: 'host.executeCommand',
         payload: { command: 'insertMermaidBlock' },
       }),
@@ -90,6 +96,18 @@ describe('custom editor protocol guards', () => {
       isHostToViewMessage({
         type: 'host.init',
         payload: { markdown: '', revision: 0, mermaidEnabled: true },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.documentChanged',
+        payload: { markdown: '# doc' },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.documentChanged',
+        payload: { markdown: 42, revision: 1 },
       }),
     ).to.equal(false);
     expect(
