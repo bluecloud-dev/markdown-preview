@@ -212,7 +212,7 @@ describe('Integration CLI: core workflow', () => {
       const document = await vscode.workspace.openTextDocument(uri);
       const sync = new DocumentSync(document);
       const result = await sync.applyDocument(testCase.serialized, 0);
-      expect(result, testCase.name).to.deep.equal({ ok: true });
+      expect(result, testCase.name).to.deep.equal({ ok: true, applied: true });
 
       const saved = await document.save();
       expect(saved, testCase.name).to.equal(true);
