@@ -98,7 +98,11 @@ describe('Integration CLI: save chain', () => {
       expect(diskText).to.include('Echo foxtrot golf hotel.');
     } finally {
       await filesConfiguration.update('autoSave', 'off', vscode.ConfigurationTarget.Global);
-      await filesConfiguration.update('autoSaveDelay', undefined, vscode.ConfigurationTarget.Global);
+      await filesConfiguration.update(
+        'autoSaveDelay',
+        undefined,
+        vscode.ConfigurationTarget.Global,
+      );
     }
   });
 });
