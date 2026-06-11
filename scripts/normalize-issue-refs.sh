@@ -16,7 +16,8 @@ for n in $(seq 243 278); do
   changed=$((changed+1))
   if [ "$DRY" = "--dry-run" ]; then
     echo "--- #$n would change these lines:"
-    diff <(printf '%s\n' "$body") <(printf '%s\n' "$new") | grep '^[<>]' | head -8
+    # diff exits 1 when files differ — the expected case here; don't let -e/pipefail kill the dry-run
+    diff <(printf '%s\n' "$body") <(printf '%s\n' "$new") | grep '^[<>]' | head -8 || true
   else
     printf '%s' "$new" | gh issue edit "$n" --repo "$REPO" --body-file -
     echo "updated #$n"

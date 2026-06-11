@@ -61,6 +61,12 @@ for p in "${PAIRS[@]}"; do
 {{slice .body 0 400}}
 ' 2>/dev/null || echo "(could not fetch #$old)"
   if $CLOSE; then
+    # 2026-06-11: maintainer already closed #204-#214 with supersession comments;
+    # commenting/closing again would duplicate breadcrumbs and gh-close would fail.
+    if [ "$(gh issue view "$old" --repo "$REPO" --json state --jq .state)" = "CLOSED" ]; then
+      echo "#$old already closed — skipping comment+close"
+      continue
+    fi
     run gh issue comment "$old" --repo "$REPO" --body "Superseded by #$new in the June 2026 roadmap batch (sources: .github/issue-backlog/). If this issue contains context missing from #$new, please copy it across there."
     run gh issue close "$old" --repo "$REPO" --reason "not planned"
   else
@@ -68,5 +74,11 @@ for p in "${PAIRS[@]}"; do
   fi
 done
 echo "== #206 overlap (not a clean supersession): link only =="
-run gh issue comment 206 --repo "$REPO" --body "Partial overlap with the June 2026 batch: marketplace metadata/discoverability is now split across #266 (README/AGPL FAQ listing copy) and #270 (hero asset + README listing pass). Keeping this open until both land; close then if nothing unique remains."
+# 2026-06-11: maintainer closed #206 with a supersession comment pointing at #266/#270,
+# so the "keeping this open" comment below only applies if it is ever reopened.
+if [ "$(gh issue view 206 --repo "$REPO" --json state --jq .state)" = "CLOSED" ]; then
+  echo "#206 already closed upstream — skipping overlap comment"
+else
+  run gh issue comment 206 --repo "$REPO" --body "Partial overlap with the June 2026 batch: marketplace metadata/discoverability is now split across #266 (README/AGPL FAQ listing copy) and #270 (hero asset + README listing pass). Keeping this open until both land; close then if nothing unique remains."
+fi
 echo "== done =="
