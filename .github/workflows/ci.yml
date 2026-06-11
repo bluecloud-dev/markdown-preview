@@ -45,6 +45,11 @@ jobs:
       - name: Unit tests with coverage
         run: npm run coverage
 
+      - name: Round-trip report freshness
+        run: |
+          node ./scripts/generate-roundtrip-report.js
+          git diff --exit-code -- docs/ROUNDTRIP_REPORT.md tests/unit/round-trip/KNOWN_DEVIATIONS.md
+
       - name: Install xvfb
         run: |
           sudo apt-get update

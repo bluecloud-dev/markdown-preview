@@ -1,16 +1,8 @@
 import './styles.css';
-import MarkdownIt from 'markdown-it';
 import { baseKeymap, setBlockType, toggleMark } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
 import type { Node as ProseMirrorNode, MarkType, NodeType } from 'prosemirror-model';
-import {
-  MarkdownParser,
-  MarkdownSerializer,
-  ParseSpec,
-  defaultMarkdownParser,
-  defaultMarkdownSerializer,
-} from 'prosemirror-markdown';
 import { liftListItem, wrapInList } from 'prosemirror-schema-list';
 import { type Command, EditorState, Plugin, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
@@ -21,7 +13,8 @@ import type {
 } from '../../custom-editor/protocol';
 import { bootstrapEditorApp } from './bootstrap';
 import { formatString, getString } from './localization';
-import { wrapTablesForEditor, unwrapTablesForHost } from './markdown-transforms';
+import { markdownParser, schema, serializeToHostMarkdown } from './markdown-codec';
+import { wrapTablesForEditor } from './markdown-transforms';
 import { attachHostMessageListener } from './messages';
 import { isMermaidCodeBlockNode } from './nodes/mermaid-node';
 import { createCodeBlockNodeViewConstructor, isTableCodeBlockNode } from './nodes/table-node-view';
@@ -39,7 +32,6 @@ declare function acquireVsCodeApi(): {
 };
 
 const vscode = acquireVsCodeApi();
-const schema = defaultMarkdownParser.schema;
 
 const ADVANCED_TOOLBAR_COMMANDS = new Set<string>([
   'setHeading3',
@@ -98,23 +90,6 @@ const formatCommandFailure = (command: string): string => {
   const label = COMMAND_LABELS.get(command) ?? command;
   return formatString(getString('commandFailureGenericTemplate'), label);
 };
-
-const markdownItParser = MarkdownIt('commonmark', {
-  html: false,
-  linkify: true,
-});
-
-const parserTokens = (
-  defaultMarkdownParser as unknown as {
-    tokens: Record<string, ParseSpec>;
-  }
-).tokens;
-
-const markdownParser = new MarkdownParser(schema, markdownItParser, parserTokens);
-const markdownSerializer = new MarkdownSerializer(
-  defaultMarkdownSerializer.nodes,
-  defaultMarkdownSerializer.marks,
-);
 
 const { editorContainer, statusLine, mermaidPreviewPanel, mermaidPreviewBody, toolbarButtons } =
   bootstrapEditorApp();
@@ -187,8 +162,7 @@ const serializeMarkdownForHost = (): string => {
     return '';
   }
 
-  const rawMarkdown = markdownSerializer.serialize(view.state.doc);
-  return unwrapTablesForHost(rawMarkdown);
+  return serializeToHostMarkdown(view.state.doc);
 };
 
 const syncController = new HostSyncController({
