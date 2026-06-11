@@ -66,4 +66,6 @@ npm run package
 
 ## License
 
-MIT
+GNU Affero General Public License v3.0 (AGPL-3.0-only). See [LICENSE](LICENSE).
+
+Muninn is free software: you can use, study, share, and improve it. If you distribute a modified version — including serving it to users through a network-hosted VS Code environment (code-server, Codespaces, Gitpod, and similar) — you must make your modified source available under the same license.

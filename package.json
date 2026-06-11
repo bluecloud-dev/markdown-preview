@@ -5,7 +5,7 @@
   "version": "2.0.0-alpha.1",
   "preview": true,
   "description": "%extension.description%",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "engines": {
     "vscode": "^1.85.0"
   },
