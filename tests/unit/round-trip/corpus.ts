@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import * as path from 'node:path';
+import path from 'node:path';
 
 import {
   parseHostMarkdown,
@@ -89,7 +89,7 @@ export const loadFixtureCases = (): FixtureCase[] => {
   const stored = fs
     .readdirSync(fixturesRoot)
     .filter((fileName) => fileName.endsWith('.md'))
-    .sort()
+    .toSorted()
     .map((fileName) => ({
       name: fileName,
       category: categoryOf(fileName),
