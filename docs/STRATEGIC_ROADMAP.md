@@ -10,17 +10,17 @@
 
 The roadmap optimizes for **adoption velocity** (a leading indicator of brand reach), gated by **quality** and **trust** (a leading indicator of retention and word‑of‑mouth).
 
-| Metric | Target Q3 2026 (alpha exit) | Target Q1 2027 | Target Q2 2027 |
-|---|---|---|---|
-| **North star: weekly active installs** | 2,000 | 25,000 | 75,000 |
-| Marketplace installs (cumulative) | 5,000 | 50,000 | 150,000 |
-| Marketplace rating | ≥4.5★ (post‑GA) | ≥4.6★ | ≥4.6★ |
-| GitHub stars | 300 | 1,500 | 3,500 |
-| External contributors with merged PR | 1 | 10 | 25 |
-| Independent blog/video/listicle mentions | 3 | 10 | 25 |
-| OpenSSF Scorecard | ≥7 | ≥8 | ≥8 |
-| CVEs | 0 | 0 | 0 |
-| Round‑trip golden‑file pass rate | 100% CommonMark | 100% CommonMark + GFM | 100% + GFM extensions |
+| Metric                                   | Target Q3 2026 (alpha exit) | Target Q1 2027        | Target Q2 2027        |
+| ---------------------------------------- | --------------------------- | --------------------- | --------------------- |
+| **North star: weekly active installs**   | 2,000                       | 25,000                | 75,000                |
+| Marketplace installs (cumulative)        | 5,000                       | 50,000                | 150,000               |
+| Marketplace rating                       | ≥4.5★ (post‑GA)             | ≥4.6★                 | ≥4.6★                 |
+| GitHub stars                             | 300                         | 1,500                 | 3,500                 |
+| External contributors with merged PR     | 1                           | 10                    | 25                    |
+| Independent blog/video/listicle mentions | 3                           | 10                    | 25                    |
+| OpenSSF Scorecard                        | ≥7                          | ≥8                    | ≥8                    |
+| CVEs                                     | 0                           | 0                     | 0                     |
+| Round‑trip golden‑file pass rate         | 100% CommonMark             | 100% CommonMark + GFM | 100% + GFM extensions |
 
 Track in `docs/METRICS.md` updated at the end of each month via the `product-management:metrics-review` skill (see §6).
 
@@ -30,12 +30,12 @@ Track in `docs/METRICS.md` updated at the end of each month via the `product-man
 
 Solo maintainer, ~10–15 hours/week realistic sustained, with ~25h/week spikes around release cycles. Per‑quarter capacity ≈ 130–180 hours. The 70/20/10 industry split needs to bend for a solo indie:
 
-| Bucket | Allocation | Why |
-|---|---|---|
-| Planned features | **55%** | Lower than industry because solo means less ability to absorb tech debt later |
-| Quality / security / tests / accessibility | **25%** | Higher than industry — security is your wedge |
-| Content / marketing / community | **15%** | This is what compounds the personal brand |
-| Unplanned buffer | **5%** | Bug reports, breaking changes in VS Code, dependency CVEs |
+| Bucket                                     | Allocation | Why                                                                           |
+| ------------------------------------------ | ---------- | ----------------------------------------------------------------------------- |
+| Planned features                           | **55%**    | Lower than industry because solo means less ability to absorb tech debt later |
+| Quality / security / tests / accessibility | **25%**    | Higher than industry — security is your wedge                                 |
+| Content / marketing / community            | **15%**    | This is what compounds the personal brand                                     |
+| Unplanned buffer                           | **5%**     | Bug reports, breaking changes in VS Code, dependency CVEs                     |
 
 **Implication:** the roadmap below is intentionally conservative. If you commit to it and ship, you will have demonstrated something rare. If you triple-book like 80% of indie roadmaps do, you'll ship none of it.
 
@@ -47,17 +47,17 @@ Solo maintainer, ~10–15 hours/week realistic sustained, with ~25h/week spikes 
 
 Goal: ship `2.0.0` GA with the five claims the marketplace listing needs.
 
-| # | Initiative | Reach | Impact | Conf. | Effort (wks) | RICE | Dependencies |
-|---|---|---:|---:|---:|---:|---:|---|
-| 1 | Golden‑file round‑trip tests for CommonMark + GFM | 100% of users | 3 (massive) | 80% | 2 | **120** | none |
-| 2 | Image insertion (paste / drag / command) | ~80% | 2 (high) | 90% | 3 | **48** | none |
-| 3 | Outline panel via `DocumentSymbolProvider` | ~60% | 1 (med) | 100% | 1 | **60** | none |
-| 4 | Task list / blockquote / horizontal rule commands | ~50% | 1 | 100% | 1 | **50** | none |
-| 5 | WCAG 2.1 AA accessibility pass on webview | ~15% | 3 | 70% | 2 | **31** | none |
-| 6 | Open VSX release pipeline | ~10% (Cursor/VSCodium) | 2 | 90% | 0.5 | **36** | none |
-| 7 | Hero asset (30‑sec GIF) + README rewrite | 100% | 2 | 90% | 1 | **180** | 1, 2, 5 |
-| 8 | `docs/SECURITY_POSTURE.md` + Scorecard badge | ~20% security‑conscious | 2 | 100% | 0.5 | **80** | none |
-| 9 | Exit `preview: true`, ship `2.0.0` GA | 100% | 3 | 100% | 0.5 | **600** | 1, 2, 3, 5, 7, 8 |
+| #   | Initiative                                        |                   Reach |      Impact | Conf. | Effort (wks) |    RICE | Dependencies     |
+| --- | ------------------------------------------------- | ----------------------: | ----------: | ----: | -----------: | ------: | ---------------- |
+| 1   | Golden‑file round‑trip tests for CommonMark + GFM |           100% of users | 3 (massive) |   80% |            2 | **120** | none             |
+| 2   | Image insertion (paste / drag / command)          |                    ~80% |    2 (high) |   90% |            3 |  **48** | none             |
+| 3   | Outline panel via `DocumentSymbolProvider`        |                    ~60% |     1 (med) |  100% |            1 |  **60** | none             |
+| 4   | Task list / blockquote / horizontal rule commands |                    ~50% |           1 |  100% |            1 |  **50** | none             |
+| 5   | WCAG 2.1 AA accessibility pass on webview         |                    ~15% |           3 |   70% |            2 |  **31** | none             |
+| 6   | Open VSX release pipeline                         |  ~10% (Cursor/VSCodium) |           2 |   90% |          0.5 |  **36** | none             |
+| 7   | Hero asset (30‑sec GIF) + README rewrite          |                    100% |           2 |   90% |            1 | **180** | 1, 2, 5          |
+| 8   | `docs/SECURITY_POSTURE.md` + Scorecard badge      | ~20% security‑conscious |           2 |  100% |          0.5 |  **80** | none             |
+| 9   | Exit `preview: true`, ship `2.0.0` GA             |                    100% |           3 |  100% |          0.5 | **600** | 1, 2, 3, 5, 7, 8 |
 
 Estimated effort: ~11 weeks at 60% feature allocation × ~12 weeks of calendar time → tight but feasible if scope holds.
 
@@ -67,16 +67,16 @@ Estimated effort: ~11 weeks at 60% feature allocation × ~12 weeks of calendar t
 
 Goal: ship the differentiation features and start the content trail.
 
-| # | Initiative | Reach | Impact | Conf. | Effort (wks) | RICE | Dependencies |
-|---|---|---:|---:|---:|---:|---:|---|
-| 10 | KaTeX math support | ~40% | 2 | 90% | 2 | **36** | 9 |
-| 11 | GFM alerts / callouts (`> [!NOTE]`) | ~60% | 2 | 100% | 1 | **120** | 9 |
-| 12 | HTML export | ~30% | 2 | 90% | 2 | **27** | 9 |
-| 13 | vscode.dev / web extension build (best‑effort subset) | ~10% | 2 | 60% | 3 | **4** | 6 |
-| 14 | Blog post series: 4 essays (build story, ProseMirror correctness, webview trust, license) | 100% via SEO | 3 | 70% | 3 | **70** | 9 |
-| 15 | Lightning talk submission to dev community event | indirect | 2 | 50% | 1 | tbd | 14 |
-| 16 | Cursor / Windsurf compatibility tier documented | ~10% | 2 | 80% | 0.5 | **32** | 6 |
-| 17 | Listicle outreach (5–10 "best markdown VS Code" curators) | indirect | 2 | 60% | 1 | tbd | 7, 9 |
+| #   | Initiative                                                                                |        Reach | Impact | Conf. | Effort (wks) |    RICE | Dependencies |
+| --- | ----------------------------------------------------------------------------------------- | -----------: | -----: | ----: | -----------: | ------: | ------------ |
+| 10  | KaTeX math support                                                                        |         ~40% |      2 |   90% |            2 |  **36** | 9            |
+| 11  | GFM alerts / callouts (`> [!NOTE]`)                                                       |         ~60% |      2 |  100% |            1 | **120** | 9            |
+| 12  | HTML export                                                                               |         ~30% |      2 |   90% |            2 |  **27** | 9            |
+| 13  | vscode.dev / web extension build (best‑effort subset)                                     |         ~10% |      2 |   60% |            3 |   **4** | 6            |
+| 14  | Blog post series: 4 essays (build story, ProseMirror correctness, webview trust, license) | 100% via SEO |      3 |   70% |            3 |  **70** | 9            |
+| 15  | Lightning talk submission to dev community event                                          |     indirect |      2 |   50% |            1 |     tbd | 14           |
+| 16  | Cursor / Windsurf compatibility tier documented                                           |         ~10% |      2 |   80% |          0.5 |  **32** | 6            |
+| 17  | Listicle outreach (5–10 "best markdown VS Code" curators)                                 |     indirect |      2 |   60% |            1 |     tbd | 7, 9         |
 
 Estimated effort: ~13 weeks. Buffer item 13 (web extension) — likely slips to Q4.
 
@@ -84,16 +84,16 @@ Estimated effort: ~13 weeks. Buffer item 13 (web extension) — likely slips to 
 
 Goal: turn the extension into a recurring story; defend the wedge against Cursor/VS Code's likely moves.
 
-| # | Initiative | Reach | Impact | Conf. | Effort (wks) | RICE | Dependencies |
-|---|---|---:|---:|---:|---:|---:|---|
-| 18 | Optional AI assist sidebar — BYO API key, three commands (explain selection, summarize, mermaid‑from‑prose) | ~30% adoption | 3 | 60% | 4 | **14** | 9, 14 |
-| 19 | Conference talk delivered | indirect | 2 | 50% | 2 | tbd | 15 |
-| 20 | Second blog series (3 posts) on AI integration design | 100% via SEO | 2 | 70% | 2 | tbd | 18 |
-| 21 | Community governance: invite 2 trusted maintainers, formalize MAINTAINERS.md | bus‑factor | 3 | 80% | 1 | **24** | external relationships |
-| 22 | License migration MIT → Apache 2.0 + DCO sign‑off CLA | downstream legal | 2 | 100% | 0.5 | **8** | none |
-| 23 | OpenAPI‑style stable extension public API for plugins (researched, not built) | future ecosystem | 2 | 30% | 2 | tbd | 18 |
-| 24 | First user research synthesis from real reviews + GH issues | 100% | 3 | 80% | 1 | **240** | 50k installs reached |
-| 25 | Monitor Cursor/VS Code RFCs weekly; submit patches upstream where relevant | risk mitigation | 3 | 50% | 0.5/mo | tbd | ongoing |
+| #   | Initiative                                                                                                                                                         |            Reach | Impact | Conf. | Effort (wks) |    RICE | Dependencies           |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------: | -----: | ----: | -----------: | ------: | ---------------------- |
+| 18  | Optional AI assist sidebar — BYO API key, three commands (explain selection, summarize, mermaid‑from‑prose)                                                        |    ~30% adoption |      3 |   60% |            4 |  **14** | 9, 14                  |
+| 19  | Conference talk delivered                                                                                                                                          |         indirect |      2 |   50% |            2 |     tbd | 15                     |
+| 20  | Second blog series (3 posts) on AI integration design                                                                                                              |     100% via SEO |      2 |   70% |            2 |     tbd | 18                     |
+| 21  | Community governance: invite 2 trusted maintainers, formalize MAINTAINERS.md                                                                                       |       bus‑factor |      3 |   80% |            1 |  **24** | external relationships |
+| 22  | DCO sign‑off CLA (the MIT → Apache 2.0 half is obsolete — relicensed AGPL-3.0-only 2026-06-09, see `decisions/D-006-agpl-relicense.md`; DCO survives as issue 265) | downstream legal |      2 |  100% |          0.5 |   **8** | none                   |
+| 23  | OpenAPI‑style stable extension public API for plugins (researched, not built)                                                                                      | future ecosystem |      2 |   30% |            2 |     tbd | 18                     |
+| 24  | First user research synthesis from real reviews + GH issues                                                                                                        |             100% |      3 |   80% |            1 | **240** | 50k installs reached   |
+| 25  | Monitor Cursor/VS Code RFCs weekly; submit patches upstream where relevant                                                                                         |  risk mitigation |      3 |   50% |       0.5/mo |     tbd | ongoing                |
 
 **Items moved out of scope** (explicitly **Won't have** this cycle, per MoSCoW): full Notion‑style block parity, telemetry/analytics, cloud sync, PDF export pipeline (HTML covers 80%), proprietary syntax extensions, mobile companion app. Document the rejection rationale in the spec for each.
 
@@ -122,7 +122,7 @@ flowchart TD
 
     I --> S[18. AI assist sidebar]
     S --> R
-    O --> T[22. Apache 2.0 + DCO]
+    O --> T[22. DCO sign-off]
     I --> U[24. User research synthesis]
     U --> V[21. Maintainer governance]
 ```
@@ -130,6 +130,7 @@ flowchart TD
 **Critical path:** items 1 → 9 → 14 → 15/18 are the spine. If item 1 slips, everything slips.
 
 **External dependencies that need watching:**
+
 - VS Code release cadence (monthly) — `@types/vscode` upgrades.
 - ProseMirror packages (active development) — quarterly upgrade cycle.
 - Mermaid 11.x → 12.x — likely lands H2 2026; budget 1 week for compat.
@@ -149,12 +150,13 @@ Each entry below: **scope · files touched · acceptance criteria · marketing m
 **Files touched:** `tests/integration-cli/round-trip/`, `tests/fixtures/markdown/`, `src/custom-editor/document-sync.ts`, `src/webview/editor/index.ts`. New script in `scripts/run-round-trip-tests.js`. Wire into `npm test`.
 
 **Acceptance criteria:**
+
 - 100% of CommonMark spec examples pass.
 - ≥95% of GFM extensions pass; remaining ≤5% documented as known limitations with issues.
 - Test report uploaded as artifact on every CI run.
 - README links to the test report.
 
-**Marketing motion:** *"The WYSIWYG that doesn't touch your bytes."* Lead the README with the test pass rate and a link to the corpus. This is the credibility anchor for every later claim.
+**Marketing motion:** _"The WYSIWYG that doesn't touch your bytes."_ Lead the README with the test pass rate and a link to the corpus. This is the credibility anchor for every later claim.
 
 **Skill to use:** `product-management:write-spec` to produce a one‑page spec before coding; `engineering:testing-strategy` to design the corpus.
 
@@ -167,6 +169,7 @@ Each entry below: **scope · files touched · acceptance criteria · marketing m
 **Files touched:** new `src/services/image-paste-service.ts`, new command in `src/commands/`, webview paste handler, new keybinding, settings schema update in `package.json`, `package.nls.json`.
 
 **Acceptance criteria:**
+
 - Paste, drag, and command flows all save the file and insert the reference.
 - Works in trusted workspaces; in untrusted, shows the standard VS Code warning and proceeds with explicit consent.
 - Round‑trip test (item 1) covers an image insertion fixture.
@@ -183,6 +186,7 @@ Each entry below: **scope · files touched · acceptance criteria · marketing m
 **Files touched:** new `src/providers/document-symbol-provider.ts`, register in `src/extension.ts`.
 
 **Acceptance criteria:**
+
 - Outline view populates on file open.
 - Clicking an outline entry moves cursor in the ProseMirror surface.
 - Sticky scroll works (VS Code 1.85+ feature).
@@ -218,6 +222,7 @@ Each entry below: **scope · files touched · acceptance criteria · marketing m
 **Files touched:** `src/webview/editor/*`, theming CSS variables, possibly `assets/` for new focus styles.
 
 **Acceptance criteria:**
+
 - Run axe‑core CI check in CI; 0 violations at AA.
 - Manual screen reader walkthrough captured as video (NVDA + VoiceOver).
 - Accessibility statement published in `docs/ACCESSIBILITY.md`.
@@ -245,7 +250,7 @@ Each entry below: **scope · files touched · acceptance criteria · marketing m
 
 README rewrite structure (in order of attention):
 
-1. One‑sentence positioning: *"The honest, reading‑first markdown editor for VS Code — true WYSIWYG with byte‑perfect round‑trip, inline Mermaid, and editable tables."*
+1. One‑sentence positioning: _"The honest, reading‑first markdown editor for VS Code — true WYSIWYG with byte‑perfect round‑trip, inline Mermaid, and editable tables."_
 2. Hero GIF.
 3. Three claim badges: round‑trip pass rate, accessibility AA, OpenSSF Scorecard.
 4. Three‑line install + open instructions.
@@ -322,7 +327,7 @@ Sequence the posts for compounding SEO and credibility:
 1. **"Why I built Muninn"** (origin + positioning). Personal, sets the brand voice. Publish on launch day of 2.0.0.
 2. **"Byte‑perfect WYSIWYG: building round‑trip safety in ProseMirror"**. Deep technical post — the engineering audience. 2 weeks after #1.
 3. **"Workspace trust for VS Code webview extensions: a checklist"**. Security‑focused, references CVE‑2025‑65716 as a teaching case. 4 weeks after #1.
-4. **"Why Muninn isn't AGPL"**. Opinionated, license‑nerd magnet. 6 weeks after #1.
+4. **"Why I licensed my VS Code extension AGPL — knowing the cost"**. Opinionated, license‑nerd magnet. 6 weeks after #1.
 
 Each post: 1,200–2,500 words; one canonical illustration or diagram; SEO‑optimized title; cross‑post to dev.to + Hacker News + Lobsters + relevant subreddits.
 
@@ -333,6 +338,7 @@ Each post: 1,200–2,500 words; one canonical illustration or diagram; SEO‑opt
 ### Item 15 — Lightning talk submission
 
 Target events (CFP timing matters):
+
 - **VS Code Day** (Microsoft) — virtual, annual.
 - **OSS Summit Europe / NA** — Linux Foundation.
 - **Render Conference**, **dotJS**, **JSNation** — frontend ecosystem.
@@ -395,34 +401,34 @@ Compressed for brevity (each gets its own PRD when its turn comes):
 
 The skills are tools — each is best for a specific moment in the cycle. Below is the recommended mapping; each invocation should take 15–45 minutes.
 
-| When | Trigger | Skill | Output artifact |
-|---|---|---|---|
-| Start of each quarter | Strategic planning kickoff | `product-management:roadmap-management` | Updated `docs/STRATEGIC_ROADMAP.md` |
-| Mid‑quarter | Need to add or kill a feature | `product-management:roadmap-update` | PR to roadmap doc + rationale |
-| Before any feature dev | New initiative >1 week effort | `product-management:write-spec` or `product-management:feature-spec` | One‑page PRD in `specs/<feature>/spec.md` |
-| Every 4 weeks | Sprint planning for next 4 weeks of work | `product-management:sprint-planning` | Sprint plan as GitHub Project milestone |
-| Every month | Metrics review on the last of the month | `product-management:metrics-review` | Update `docs/METRICS.md` |
-| Every release | Release notes ready for users | `product-management:stakeholder-update` | CHANGELOG entry + marketplace release notes |
-| Pre‑launch and pre‑post | Blog post / launch announcement | `product-management:stakeholder-comms` | Draft post, audience‑targeted |
-| After 6 months of issues + reviews | Quarterly user research | `product-management:user-research-synthesis` | `docs/research/<date>-synthesis.md` |
-| When a competitor moves | Cursor ships WYSIWYG, MPE patches a CVE, new entrant appears | `product-management:competitive-analysis` or `product-management:competitive-brief` | Update to `docs/COMPETITIVE_BRIEF.md` |
+| When                               | Trigger                                                      | Skill                                                                               | Output artifact                             |
+| ---------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------- |
+| Start of each quarter              | Strategic planning kickoff                                   | `product-management:roadmap-management`                                             | Updated `docs/STRATEGIC_ROADMAP.md`         |
+| Mid‑quarter                        | Need to add or kill a feature                                | `product-management:roadmap-update`                                                 | PR to roadmap doc + rationale               |
+| Before any feature dev             | New initiative >1 week effort                                | `product-management:write-spec` or `product-management:feature-spec`                | One‑page PRD in `specs/<feature>/spec.md`   |
+| Every 4 weeks                      | Sprint planning for next 4 weeks of work                     | `product-management:sprint-planning`                                                | Sprint plan as GitHub Project milestone     |
+| Every month                        | Metrics review on the last of the month                      | `product-management:metrics-review`                                                 | Update `docs/METRICS.md`                    |
+| Every release                      | Release notes ready for users                                | `product-management:stakeholder-update`                                             | CHANGELOG entry + marketplace release notes |
+| Pre‑launch and pre‑post            | Blog post / launch announcement                              | `product-management:stakeholder-comms`                                              | Draft post, audience‑targeted               |
+| After 6 months of issues + reviews | Quarterly user research                                      | `product-management:user-research-synthesis`                                        | `docs/research/<date>-synthesis.md`         |
+| When a competitor moves            | Cursor ships WYSIWYG, MPE patches a CVE, new entrant appears | `product-management:competitive-analysis` or `product-management:competitive-brief` | Update to `docs/COMPETITIVE_BRIEF.md`       |
 
 **Skills outside product‑management that you should reach for at the right moment:**
 
-| Trigger | Skill | Why |
-|---|---|---|
-| Webview UX review | `design:design-critique` | Catches usability issues before shipping |
-| Pre‑GA gate | `design:accessibility-review` | WCAG AA evidence for the marketplace claim |
-| Designing toolbar / sidebar | `design:ux-writing` | Microcopy on tooltips and empty states |
-| Convert designs to engineering tasks | `design:design-handoff` | Reduces back‑and‑forth |
-| Test corpus design | `engineering:testing-strategy` | Round‑trip and accessibility CI |
-| Each release | `engineering:deploy-checklist` | Pre‑flight before ovsx + vsce publish |
-| Security posture doc | `engineering:documentation` | Structure SECURITY_POSTURE.md |
-| Public API spike | `engineering:architecture` | ADR for the extension API design |
-| License migration | `operations:change-request` | Document the change formally |
-| Scorecard / future audits | `operations:compliance-tracking` | Track posture longitudinally |
-| Listicle / curator outreach | `sales:draft-outreach` | Templated, polite, specific |
-| Blog series / launch posts | `brand-voice:brand-voice-enforcement` | Consistent voice once defined |
+| Trigger                              | Skill                                 | Why                                        |
+| ------------------------------------ | ------------------------------------- | ------------------------------------------ |
+| Webview UX review                    | `design:design-critique`              | Catches usability issues before shipping   |
+| Pre‑GA gate                          | `design:accessibility-review`         | WCAG AA evidence for the marketplace claim |
+| Designing toolbar / sidebar          | `design:ux-writing`                   | Microcopy on tooltips and empty states     |
+| Convert designs to engineering tasks | `design:design-handoff`               | Reduces back‑and‑forth                     |
+| Test corpus design                   | `engineering:testing-strategy`        | Round‑trip and accessibility CI            |
+| Each release                         | `engineering:deploy-checklist`        | Pre‑flight before ovsx + vsce publish      |
+| Security posture doc                 | `engineering:documentation`           | Structure SECURITY_POSTURE.md              |
+| Public API spike                     | `engineering:architecture`            | ADR for the extension API design           |
+| License migration                    | `operations:change-request`           | Document the change formally               |
+| Scorecard / future audits            | `operations:compliance-tracking`      | Track posture longitudinally               |
+| Listicle / curator outreach          | `sales:draft-outreach`                | Templated, polite, specific                |
+| Blog series / launch posts           | `brand-voice:brand-voice-enforcement` | Consistent voice once defined              |
 
 **Skill orchestration template for a new feature**, in order:
 
@@ -441,13 +447,13 @@ The skills are tools — each is best for a specific moment in the cycle. Below 
 
 ## 7. Cadence and review loops
 
-| Cadence | What | Output |
-|---|---|---|
-| Weekly (Sunday eve) | Personal 30‑min check‑in: what shipped, what's blocked, what's the one thing for next week | Plain‑text note in `notes/weekly/` |
-| Monthly (last Sun) | Metrics review + roadmap adjustments | Updated METRICS.md + roadmap if needed |
-| Quarterly | Strategic review: did the theme play out? what changed in the competitive landscape? | Full roadmap refresh; new competitive scan |
-| Per release | Postmortem on the release itself — what went well, what dragged | Short note in `docs/postmortems/` |
-| Per CVE in category | Threat reassessment | Security posture update; possibly accelerated patch ship |
+| Cadence             | What                                                                                       | Output                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| Weekly (Sunday eve) | Personal 30‑min check‑in: what shipped, what's blocked, what's the one thing for next week | Plain‑text note in `notes/weekly/`                       |
+| Monthly (last Sun)  | Metrics review + roadmap adjustments                                                       | Updated METRICS.md + roadmap if needed                   |
+| Quarterly           | Strategic review: did the theme play out? what changed in the competitive landscape?       | Full roadmap refresh; new competitive scan               |
+| Per release         | Postmortem on the release itself — what went well, what dragged                            | Short note in `docs/postmortems/`                        |
+| Per CVE in category | Threat reassessment                                                                        | Security posture update; possibly accelerated patch ship |
 
 ---
 
@@ -461,10 +467,10 @@ By **May 2027**, success means:
 - 4+ blog posts ranking on first page of Google for their target queries.
 - 50k+ installs, ≥4.5★ rating, ≥10 external contributors.
 - A public security posture page with zero CVEs.
-- A documented, opinionated stance on what Muninn is *not* (no AGPL, no telemetry, no proprietary syntax, no cloud).
+- A documented, opinionated stance on what Muninn is _not_ (no telemetry, no proprietary syntax, no cloud; licensed AGPL-3.0-only).
 - The personal brand "Aymen who built Muninn" returns clean Google results.
 
-If Cursor or VS Code ships a built‑in single‑pane WYSIWYG before then, Muninn's defense is *the trust + correctness + Mermaid + table grid combination*, plus the demonstrated capacity to ship — which is itself the brand asset.
+If Cursor or VS Code ships a built‑in single‑pane WYSIWYG before then, Muninn's defense is _the trust + correctness + Mermaid + table grid combination_, plus the demonstrated capacity to ship — which is itself the brand asset.
 
 ---
 
@@ -472,7 +478,7 @@ If Cursor or VS Code ships a built‑in single‑pane WYSIWYG before then, Munin
 
 Maintain a short decision log under `docs/decisions/` using ADR‑style records. Pre‑seed with:
 
-1. **D‑001 · Stay MIT (rejected AGPL).** Rationale: see `COMPETITIVE_BRIEF.md` §7.
+1. **D‑001 · Stay MIT (rejected AGPL).** Rationale: see `COMPETITIVE_BRIEF.md` §7. **Superseded by D‑006 (2026-06-09): relicensed AGPL-3.0-only — see `decisions/D-006-agpl-relicense.md` and `MARKET_POSITION_2026-06.md` §7.**
 2. **D‑002 · ProseMirror as editor engine.** Rationale: byte‑perfect round‑trip + workspace‑trust composability.
 3. **D‑003 · No telemetry, ever.** Rationale: positioning wedge + trust.
 4. **D‑004 · CommonMark + GFM only — no proprietary syntax.** Rationale: avoid Obsidian/Notion lock‑in trap.
@@ -484,13 +490,13 @@ Each future significant decision adds an ADR. This is itself a personal‑brand 
 
 ## Appendix · Mapping to existing project docs
 
-| New / updated doc | Replaces / extends |
-|---|---|
+| New / updated doc                       | Replaces / extends                                              |
+| --------------------------------------- | --------------------------------------------------------------- |
 | `docs/STRATEGIC_ROADMAP.md` (this file) | Extends `docs/ROADMAP.md` (which stays as alpha‑exit reference) |
-| `docs/COMPETITIVE_BRIEF.md` | New |
-| `docs/METRICS.md` | New |
-| `docs/SECURITY_POSTURE.md` | New (planned in Q2) |
-| `docs/ACCESSIBILITY.md` | New (planned in Q2) |
-| `docs/decisions/D-*.md` | New |
-| `docs/postmortems/` | New |
-| `specs/<feature>/spec.md` | Continues current SpecKit pattern |
+| `docs/COMPETITIVE_BRIEF.md`             | New                                                             |
+| `docs/METRICS.md`                       | New                                                             |
+| `docs/SECURITY_POSTURE.md`              | New (planned in Q2)                                             |
+| `docs/ACCESSIBILITY.md`                 | New (planned in Q2)                                             |
+| `docs/decisions/D-*.md`                 | New                                                             |
+| `docs/postmortems/`                     | New                                                             |
+| `specs/<feature>/spec.md`               | Continues current SpecKit pattern                               |

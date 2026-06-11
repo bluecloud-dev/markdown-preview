@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-`2.0.0-alpha` (preview custom editor track)
+`1.99.x` pre-release (custom editor track; GA ships as exactly `2.0.0` — see issue #243 for the versioning decision)
 
 The current editor is a custom markdown editor (`muninn.markdownEditor`) with:
 
@@ -36,7 +36,7 @@ The current editor is a custom markdown editor (`muninn.markdownEditor`) with:
 ## Not Planned (Current Product Direction)
 
 - Full Notion-style block editor parity
-- PDF/HTML export pipeline
+- PDF export pipeline (HTML export is planned — see issue #275)
 - Non-markdown format support
 - Cloud features or telemetry collection
 
