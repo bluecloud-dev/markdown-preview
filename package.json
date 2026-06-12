@@ -459,7 +459,7 @@
     "@wdio/mocha-framework": "^8.46.0",
     "@wdio/spec-reporter": "^8.43.0",
     "chai": "^6.2.2",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
     "eslint": "^9.39.2",
     "eslint-plugin-unicorn": "^62.0.0",
     "mocha": "^11.7.5",
