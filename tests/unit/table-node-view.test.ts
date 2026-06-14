@@ -4,6 +4,7 @@ import {
   DEFAULT_TABLE_SOURCE,
   getTableGridAriaLabel,
   getTableNodeDocumentIndex,
+  formatTableSourceFeedback,
   shouldDeferTableCellKeyboardNavigation,
   shouldNavigateTableCellHorizontally,
   TABLE_FENCE_LANGUAGE,
@@ -70,6 +71,16 @@ describe('table node view accessibility helpers', () => {
     expect(tablePositions).to.have.length(2);
     expect(getTableNodeDocumentIndex(documentNode, tablePositions[0])).to.equal(1);
     expect(getTableNodeDocumentIndex(documentNode, tablePositions[1])).to.equal(2);
+  });
+
+  it('formats source feedback with text cues beyond color', () => {
+    expect(DEFAULT_WEBVIEW_STRINGS.tableSourceFeedbackAppliedTemplate).to.equal('Applied: {0}');
+    expect(formatTableSourceFeedback('success', 'Table source applied.')).to.equal(
+      'Applied: Table source applied.',
+    );
+    expect(
+      formatTableSourceFeedback('error', 'Could not apply table source. Please retry.'),
+    ).to.equal('Error: Could not apply table source. Please retry.');
   });
 });
 

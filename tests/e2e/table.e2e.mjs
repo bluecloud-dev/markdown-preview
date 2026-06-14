@@ -5,6 +5,7 @@ import {
   readWorkspaceFileText,
   waitForWorkspaceFileText,
   waitForCustomEditor,
+  waitForCustomEditorWebviewReady,
   withCustomEditorWebview,
 } from './helpers.mjs';
 
@@ -13,6 +14,22 @@ const waitForSampleMarkdown = (predicate, errorMessage) =>
 
 const executeCommandAndWaitForSampleMarkdown = (command, predicate, errorMessage) =>
   executeWorkbenchCommandAndWaitForWorkspaceFileText('sample.md', command, predicate, errorMessage);
+
+const readAnnouncementRegions = async () =>
+  browser.execute(() => {
+    const status = document.querySelector('#status');
+    const alert = document.querySelector('#status-alert');
+    return {
+      alertHidden: alert?.hasAttribute('hidden') ?? null,
+      alertLive: alert?.getAttribute('aria-live') ?? null,
+      alertRole: alert?.getAttribute('role') ?? null,
+      alertText: alert?.textContent ?? null,
+      statusHidden: status?.hasAttribute('hidden') ?? null,
+      statusLive: status?.getAttribute('aria-live') ?? null,
+      statusRole: status?.getAttribute('role') ?? null,
+      statusText: status?.textContent ?? null,
+    };
+  });
 
 const readActiveTableCellState = async () =>
   browser.execute(() => {
@@ -109,6 +126,59 @@ const applyTableSourceFromWebview = async (source, mode) => {
 };
 
 describe('Table node view workflow', () => {
+  it('routes failures and successes through separate live regions', async () => {
+    await openWorkspaceFile('sample.md');
+    await waitForCustomEditor('sample.md');
+    await waitForCustomEditorWebviewReady();
+
+    await withCustomEditorWebview(async () => {
+      await browser.execute(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type: 'host.executeCommand', payload: { command: 'addTableRow' } },
+          }),
+        );
+      });
+
+      await browser.waitUntil(
+        async () => {
+          const regions = await readAnnouncementRegions();
+          return regions.alertText?.startsWith('Error: Insert a table first');
+        },
+        {
+          timeout: 5_000,
+          timeoutMsg: 'Expected table command failure to use the alert live region.',
+        },
+      );
+
+      const regions = await readAnnouncementRegions();
+      expect(regions).toEqual({
+        alertHidden: false,
+        alertLive: 'assertive',
+        alertRole: 'alert',
+        alertText: 'Error: Insert a table first before adding a row.',
+        statusHidden: true,
+        statusLive: 'polite',
+        statusRole: 'status',
+        statusText: '',
+      });
+    });
+
+    await executeCommandAndWaitForSampleMarkdown(
+      'muninn.insertTable',
+      (text) => text.includes('| Column 1 | Column 2 |'),
+      'Expected table insertion command to persist in markdown.',
+    );
+
+    await withCustomEditorWebview(async () => {
+      const regions = await readAnnouncementRegions();
+      expect(regions.alertText).toBe('');
+      expect(regions.alertHidden).toBe(true);
+      expect(regions.statusText).toBe('Inserted table.');
+      expect(regions.statusHidden).toBe(false);
+    });
+  });
+
   it('keeps markdown table serialization stable while applying table actions', async () => {
     await openWorkspaceFile('sample.md');
     await waitForCustomEditor('sample.md');

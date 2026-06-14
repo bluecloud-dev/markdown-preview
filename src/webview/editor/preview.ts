@@ -1,11 +1,12 @@
 import { renderMermaidDiagram } from './renderers/mermaid-renderer';
 import { escapeHtml, formatString, getString } from './localization';
+import type { Announce } from './announcements';
 
 type MermaidPreviewOptions = {
   panel: HTMLElement;
   body: HTMLDivElement;
   getSelectedMermaidSource: () => string | undefined;
-  setStatus: (message: string) => void;
+  announce: Announce;
   renderDelayMs: number;
 };
 
@@ -75,8 +76,9 @@ export class MermaidPreviewController {
     }
 
     this.options.panel.hidden = hidden;
-    this.options.setStatus(
+    this.options.announce(
       hidden ? getString('statusMermaidPreviewHidden') : getString('statusMermaidPreviewShown'),
+      { kind: 'status' },
     );
   }
 }

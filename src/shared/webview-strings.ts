@@ -33,6 +33,7 @@ export type WebviewStrings = {
   mermaidPreviewTitle: string;
   mermaidPreviewAriaLabel: string;
   statusReady: string;
+  statusErrorTemplate: string;
   commandLabelBold: string;
   commandLabelItalic: string;
   commandLabelHeading1: string;
@@ -89,6 +90,7 @@ export type WebviewStrings = {
   statusTableDeleteFailed: string;
   statusTableDeleted: string;
   tableBackToPreviewButton: string;
+  tableSourceFeedbackAppliedTemplate: string;
   statusTableSourceApplied: string;
   statusTableSourceApplyFailed: string;
   mermaidDisabledMessage: string;
@@ -134,6 +136,7 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   mermaidPreviewTitle: 'Mermaid Preview',
   mermaidPreviewAriaLabel: 'Mermaid diagram preview',
   statusReady: 'Ready',
+  statusErrorTemplate: 'Error: {0}',
   commandLabelBold: 'Bold',
   commandLabelItalic: 'Italic',
   commandLabelHeading1: 'Heading 1',
@@ -191,7 +194,8 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   statusTableDeleteFailed: 'Could not delete table. Please retry.',
   statusTableDeleted: 'Deleted table.',
   tableBackToPreviewButton: 'Back to Preview',
-  statusTableSourceApplied: 'Applied table source.',
+  tableSourceFeedbackAppliedTemplate: 'Applied: {0}',
+  statusTableSourceApplied: 'Table source applied.',
   statusTableSourceApplyFailed: 'Could not apply table source. Please retry.',
   mermaidDisabledMessage:
     'Mermaid preview is disabled for this workspace. Enable muninn.integrations.mermaid.enabled and trust the workspace, or allow Mermaid in restricted workspaces.',
