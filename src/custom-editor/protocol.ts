@@ -1,3 +1,5 @@
+import type { ContentWidthSetting } from '../types/config';
+
 export type DocumentRevision = number;
 export type ToolbarMode = 'basic' | 'advanced';
 export type ImageInsertKind = 'paste' | 'drop';
@@ -26,6 +28,7 @@ export type HostToViewMessage =
         fileName: string;
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
+        contentWidth: ContentWidthSetting;
         imageSources: ImageUriMap;
       };
     }
@@ -46,6 +49,7 @@ export type HostToViewMessage =
       payload: {
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
+        contentWidth: ContentWidthSetting;
       };
     }
   | {
@@ -155,6 +159,11 @@ const isViewEditorCommand = (value: unknown): value is ViewEditorCommand =>
 const isToolbarMode = (value: unknown): value is ToolbarMode =>
   value === 'basic' || value === 'advanced';
 
+const isContentWidthSetting = (value: unknown): value is ContentWidthSetting =>
+  value === 'comfortable' ||
+  value === 'full' ||
+  (typeof value === 'number' && Number.isFinite(value) && value >= 40 && value <= 120);
+
 export const isViewToHostMessage = (value: unknown): value is ViewToHostMessage => {
   if (!isObject(value) || !isString(value.type)) {
     return false;
@@ -205,6 +214,7 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
       isString((payload as { fileName?: unknown }).fileName) &&
       typeof (payload as { mermaidEnabled?: unknown }).mermaidEnabled === 'boolean' &&
       isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode) &&
+      isContentWidthSetting((payload as { contentWidth?: unknown }).contentWidth) &&
       isImageUriMap((payload as { imageSources?: unknown }).imageSources)
     );
   }
@@ -226,7 +236,8 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
     return (
       isObject(value.payload) &&
       typeof value.payload.mermaidEnabled === 'boolean' &&
-      isToolbarMode(value.payload.toolbarMode)
+      isToolbarMode(value.payload.toolbarMode) &&
+      isContentWidthSetting(value.payload.contentWidth)
     );
   }
 

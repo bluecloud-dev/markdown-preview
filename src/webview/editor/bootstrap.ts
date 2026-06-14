@@ -3,6 +3,7 @@ import { getHtmlString } from './localization';
 export type EditorBootstrap = {
   app: HTMLDivElement;
   toolbar: HTMLDivElement;
+  editorShell: HTMLDivElement;
   editorContainer: HTMLDivElement;
   statusLine: HTMLDivElement;
   alertLine: HTMLDivElement;
@@ -64,6 +65,7 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
 `;
 
   const toolbar = document.querySelector<HTMLDivElement>('.muninn-toolbar');
+  const editorShell = document.querySelector<HTMLDivElement>('#editor-shell');
   const editorContainer = document.querySelector<HTMLDivElement>('#editor');
   const statusLine = document.querySelector<HTMLDivElement>('#status');
   const alertLine = document.querySelector<HTMLDivElement>('#status-alert');
@@ -71,6 +73,7 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
   const mermaidPreviewBody = document.querySelector<HTMLDivElement>('#mermaid-preview-body');
   if (
     !toolbar ||
+    !editorShell ||
     !editorContainer ||
     !statusLine ||
     !alertLine ||
@@ -92,6 +95,7 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
   return {
     app,
     toolbar,
+    editorShell,
     editorContainer,
     statusLine,
     alertLine,

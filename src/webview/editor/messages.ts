@@ -4,6 +4,7 @@ import type {
   ToolbarMode,
   ViewEditorCommand,
 } from '../../custom-editor/protocol';
+import type { ContentWidthSetting } from '../../types/config';
 import { isHostToViewMessage } from '../../custom-editor/protocol';
 
 type HostMessageHandlers = {
@@ -13,6 +14,7 @@ type HostMessageHandlers = {
     revision: number;
     mermaidEnabled: boolean;
     toolbarMode: ToolbarMode;
+    contentWidth: ContentWidthSetting;
     imageSources: ImageUriMap;
   }) => void;
   onDocumentChanged: (payload: {
@@ -21,7 +23,11 @@ type HostMessageHandlers = {
     imageSources: ImageUriMap;
   }) => void;
   onExecuteCommand: (command: ViewEditorCommand) => void;
-  onSettingsChanged: (payload: { mermaidEnabled: boolean; toolbarMode: ToolbarMode }) => void;
+  onSettingsChanged: (payload: {
+    mermaidEnabled: boolean;
+    toolbarMode: ToolbarMode;
+    contentWidth: ContentWidthSetting;
+  }) => void;
   onInsertLink: (payload: { href: string; text?: string }) => void;
   onImageInserted: (payload: { path: string; webviewUri: string; filename: string }) => void;
   onImageRejected: (payload: { reason: string }) => void;
