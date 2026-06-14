@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ExtensionConfiguration } from '../types/config';
+import { ContentWidthSetting, ExtensionConfiguration } from '../types/config';
 
 export type ConfigInspection<T> = {
   defaultValue?: T;
@@ -13,8 +13,17 @@ const DEFAULT_CONFIG: ExtensionConfiguration = {
   mermaidEnabled: true,
   mermaidAllowInUntrustedWorkspaces: false,
   toolbarMode: 'basic',
+  contentWidth: 'comfortable',
   imageDestination: 'images/',
 };
+
+const isContentWidthSetting = (value: unknown): value is ContentWidthSetting =>
+  value === 'comfortable' ||
+  value === 'full' ||
+  (typeof value === 'number' && Number.isFinite(value) && value >= 40 && value <= 120);
+
+const normalizeContentWidthSetting = (value: unknown): ContentWidthSetting =>
+  isContentWidthSetting(value) ? value : DEFAULT_CONFIG.contentWidth;
 
 export class ConfigService {
   private readonly cachedConfigs = new Map<string, ExtensionConfiguration>();
@@ -33,6 +42,10 @@ export class ConfigService {
 
   getToolbarMode(resource?: vscode.Uri): 'basic' | 'advanced' {
     return this.getConfig(resource).toolbarMode;
+  }
+
+  getContentWidth(resource?: vscode.Uri): ContentWidthSetting {
+    return this.getConfig(resource).contentWidth;
   }
 
   getImageDestination(resource?: vscode.Uri): string {
@@ -66,6 +79,7 @@ export class ConfigService {
     mermaidEnabled?: ConfigInspection<boolean>;
     mermaidAllowInUntrustedWorkspaces?: ConfigInspection<boolean>;
     toolbarMode?: ConfigInspection<'basic' | 'advanced'>;
+    contentWidth?: ConfigInspection<ContentWidthSetting>;
     imageDestination?: ConfigInspection<string>;
   } {
     const config = vscode.workspace.getConfiguration('muninn', resource);
@@ -76,6 +90,7 @@ export class ConfigService {
         'integrations.mermaid.allowInUntrustedWorkspaces',
       ),
       toolbarMode: config.inspect<'basic' | 'advanced'>('toolbar.mode'),
+      contentWidth: config.inspect<ContentWidthSetting>('appearance.contentWidth'),
       imageDestination: config.inspect<string>('images.destination'),
     };
   }
@@ -94,6 +109,9 @@ export class ConfigService {
         DEFAULT_CONFIG.mermaidAllowInUntrustedWorkspaces,
       ),
       toolbarMode: config.get('toolbar.mode', DEFAULT_CONFIG.toolbarMode),
+      contentWidth: normalizeContentWidthSetting(
+        config.get<unknown>('appearance.contentWidth', DEFAULT_CONFIG.contentWidth),
+      ),
       imageDestination: config.get('images.destination', DEFAULT_CONFIG.imageDestination),
     };
   }

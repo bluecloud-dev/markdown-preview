@@ -422,6 +422,25 @@
           "description": "%configuration.toolbar.mode.description%",
           "scope": "window"
         },
+        "muninn.appearance.contentWidth": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "comfortable",
+                "full"
+              ]
+            },
+            {
+              "type": "number",
+              "minimum": 40,
+              "maximum": 120
+            }
+          ],
+          "default": "comfortable",
+          "description": "%configuration.appearance.contentWidth.description%",
+          "scope": "window"
+        },
         "muninn.images.destination": {
           "type": "string",
           "default": "images/",

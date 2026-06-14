@@ -13,6 +13,7 @@ type ConfigurationOverrides = {
   mermaidAllowInUntrustedWorkspaces?: boolean;
   toolbarMode?: 'basic' | 'advanced';
   imageDestination?: string;
+  contentWidth?: 'comfortable' | 'full' | number;
 };
 
 const createConfiguration = (overrides?: ConfigurationOverrides): vscode.WorkspaceConfiguration => {
@@ -22,6 +23,7 @@ const createConfiguration = (overrides?: ConfigurationOverrides): vscode.Workspa
     'integrations.mermaid.allowInUntrustedWorkspaces': overrides?.mermaidAllowInUntrustedWorkspaces,
     'toolbar.mode': overrides?.toolbarMode,
     'images.destination': overrides?.imageDestination,
+    'appearance.contentWidth': overrides?.contentWidth,
   };
 
   return {
@@ -54,6 +56,7 @@ describe('ConfigService', () => {
     expect(config.mermaidAllowInUntrustedWorkspaces).to.equal(false);
     expect(config.toolbarMode).to.equal('basic');
     expect(config.imageDestination).to.equal('images/');
+    expect(config.contentWidth).to.equal('comfortable');
   });
 
   it('caches configuration per resource and reloads on demand', () => {
@@ -83,6 +86,7 @@ describe('ConfigService', () => {
         mermaidAllowInUntrustedWorkspaces: true,
         toolbarMode: 'advanced',
         imageDestination: 'assets/',
+        contentWidth: 84,
       }),
     );
 
@@ -94,6 +98,7 @@ describe('ConfigService', () => {
     expect(inspection.mermaidAllowInUntrustedWorkspaces?.globalValue).to.equal(true);
     expect(inspection.toolbarMode?.globalValue).to.equal('advanced');
     expect(inspection.imageDestination?.globalValue).to.equal('assets/');
+    expect(inspection.contentWidth?.globalValue).to.equal(84);
   });
 
   it('exposes convenience getters for active settings', () => {
@@ -104,6 +109,7 @@ describe('ConfigService', () => {
         mermaidAllowInUntrustedWorkspaces: true,
         toolbarMode: 'advanced',
         imageDestination: 'assets/',
+        contentWidth: 'full',
       }),
     );
 
@@ -115,6 +121,7 @@ describe('ConfigService', () => {
     expect(service.getMermaidAllowInUntrustedWorkspaces(uri)).to.equal(true);
     expect(service.getToolbarMode(uri)).to.equal('advanced');
     expect(service.getImageDestination(uri)).to.equal('assets/');
+    expect(service.getContentWidth(uri)).to.equal('full');
   });
 
   it('clears cache and reloads configuration values', () => {

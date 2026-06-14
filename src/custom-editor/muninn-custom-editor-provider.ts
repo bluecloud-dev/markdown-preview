@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import { ConfigService } from '../services/config-service';
 import { Logger } from '../services/logger';
+import type { ContentWidthSetting } from '../types/config';
 import { isMermaidIntegrationActive } from '../integrations/mermaid-adapter';
 import { t } from '../utils/l10n';
 import { DEFAULT_WEBVIEW_STRINGS, type WebviewStrings } from '../shared/webview-strings';
@@ -60,6 +61,7 @@ type EditorSession = {
 type SessionSettings = {
   mermaidEnabled: boolean;
   toolbarMode: ToolbarMode;
+  contentWidth: ContentWidthSetting;
 };
 
 type HostMarkdownPayload = SerializedMarkdownPayload & {
@@ -321,6 +323,7 @@ export class MuninnCustomEditorProvider
     return {
       mermaidEnabled: isMermaidIntegrationActive(this.configService, resource),
       toolbarMode: this.configService.getToolbarMode(resource),
+      contentWidth: this.configService.getContentWidth(resource),
     };
   }
 

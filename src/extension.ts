@@ -293,6 +293,9 @@ export function activate(context: vscode.ExtensionContext): void {
     );
     outputChannel.appendLine(t('toolbar.mode: {0}', formatInspectValue(inspection.toolbarMode)));
     outputChannel.appendLine(
+      t('appearance.contentWidth: {0}', formatInspectValue(inspection.contentWidth)),
+    );
+    outputChannel.appendLine(
       t('images.destination: {0}', formatInspectValue(inspection.imageDestination)),
     );
     outputChannel.show(true);

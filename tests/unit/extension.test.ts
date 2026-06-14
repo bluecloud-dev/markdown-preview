@@ -105,6 +105,7 @@ describe('extension activation', () => {
       mermaidEnabled: true,
       mermaidAllowInUntrustedWorkspaces: false,
       toolbarMode: 'basic',
+      contentWidth: 'comfortable',
       imageDestination: 'images/',
     });
 

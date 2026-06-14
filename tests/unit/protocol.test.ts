@@ -81,6 +81,7 @@ const createConfigService = (): ConfigService =>
     getMermaidEnabled: () => true,
     getMermaidAllowInUntrustedWorkspaces: () => true,
     getToolbarMode: () => 'basic',
+    getContentWidth: () => 'comfortable',
     getImageDestination: () => 'images/',
   }) as unknown as ConfigService;
 
@@ -107,6 +108,7 @@ describe('custom editor init protocol', () => {
     const initMessage = postedMessages.find((message) => message.type === 'host.init');
 
     expect(initMessage?.payload.fileName).to.equal('Welcome.md');
+    expect(initMessage?.payload.contentWidth).to.equal('comfortable');
   });
 });
 
@@ -172,6 +174,7 @@ describe('custom editor protocol guards', () => {
           revision: 1,
           mermaidEnabled: true,
           toolbarMode: 'basic',
+          contentWidth: 'comfortable',
           imageSources: {},
         },
       }),
@@ -185,7 +188,7 @@ describe('custom editor protocol guards', () => {
     expect(
       isHostToViewMessage({
         type: 'host.settingsChanged',
-        payload: { mermaidEnabled: true, toolbarMode: 'advanced' },
+        payload: { mermaidEnabled: true, toolbarMode: 'advanced', contentWidth: 92 },
       }),
     ).to.equal(true);
     expect(
@@ -234,8 +237,28 @@ describe('custom editor protocol guards', () => {
           revision: 0,
           mermaidEnabled: true,
           toolbarMode: 'basic',
+          contentWidth: 'comfortable',
           imageSources: {},
         },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.init',
+        payload: {
+          fileName: 'README.md',
+          markdown: '',
+          revision: 0,
+          mermaidEnabled: true,
+          toolbarMode: 'basic',
+          imageSources: {},
+        },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.settingsChanged',
+        payload: { mermaidEnabled: true, toolbarMode: 'basic', contentWidth: 200 },
       }),
     ).to.equal(false);
     expect(

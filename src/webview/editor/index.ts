@@ -13,6 +13,7 @@ import type {
 } from '../../custom-editor/protocol';
 import { createAnnouncer } from './announcements';
 import { bootstrapEditorApp } from './bootstrap';
+import { applyContentWidth } from './content-width';
 import { createImageInsertionTransaction } from './image-insertion';
 import { formatString, getString } from './localization';
 import { markdownParser, schema, serializeToHostMarkdown } from './markdown-codec';
@@ -98,6 +99,7 @@ const formatCommandFailure = (command: string): string => {
 
 const {
   editorContainer,
+  editorShell,
   toolbar,
   statusLine,
   alertLine,
@@ -953,6 +955,7 @@ const detachHostMessageListener = attachHostMessageListener({
   onInit: (payload) => {
     syncController.setRevision(payload.revision);
     mermaidPreview.setEnabled(payload.mermaidEnabled);
+    applyContentWidth(editorShell, payload.contentWidth);
     setImageSources(payload.imageSources);
     setToolbarMode(payload.toolbarMode);
     applyHostMarkdown(payload.markdown, payload.fileName);
@@ -975,6 +978,7 @@ const detachHostMessageListener = attachHostMessageListener({
   },
   onSettingsChanged: (payload) => {
     mermaidPreview.setEnabled(payload.mermaidEnabled);
+    applyContentWidth(editorShell, payload.contentWidth);
     setToolbarMode(payload.toolbarMode);
     schedulePreviewRender();
   },
