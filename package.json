@@ -2,8 +2,8 @@
   "name": "muninn-vscode",
   "displayName": "%extension.displayName%",
   "publisher": "blueclouddev",
-  "version": "2.0.0-alpha.1",
-  "preview": true,
+  "version": "1.0.0",
+  "preview": false,
   "description": "%extension.description%",
   "license": "AGPL-3.0-only",
   "engines": {
@@ -464,6 +464,7 @@
     "eslint-plugin-unicorn": "^62.0.0",
     "mocha": "^11.7.5",
     "nyc": "^17.1.0",
+    "ovsx": "1.0.1",
     "prettier": "^3.8.3",
     "sinon": "^21.0.1",
     "ts-node": "^10.9.2",
