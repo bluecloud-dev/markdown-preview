@@ -27,6 +27,7 @@ import {
   serializeMarkdownTable,
   TABLE_FENCE_LANGUAGE,
 } from './tables/markdown-table-utilities';
+import { attachToolbarRovingFocus } from './toolbar-roving-focus';
 
 declare function acquireVsCodeApi(): {
   postMessage: (message: ViewToHostMessage) => void;
@@ -92,9 +93,16 @@ const formatCommandFailure = (command: string): string => {
   return formatString(getString('commandFailureGenericTemplate'), label);
 };
 
-const { editorContainer, statusLine, mermaidPreviewPanel, mermaidPreviewBody, toolbarButtons } =
-  bootstrapEditorApp();
+const {
+  editorContainer,
+  toolbar,
+  statusLine,
+  mermaidPreviewPanel,
+  mermaidPreviewBody,
+  toolbarButtons,
+} = bootstrapEditorApp();
 const moreButton = document.querySelector<HTMLButtonElement>('[data-testid="muninn-toolbar-more"]');
+const toolbarRovingFocus = attachToolbarRovingFocus(toolbar);
 
 let view: EditorView | undefined;
 let toolbarMode: ToolbarMode = 'basic';
@@ -119,6 +127,8 @@ const updateAdvancedToolbarVisibility = (): void => {
     moreButton.hidden = toolbarMode === 'advanced';
     moreButton.setAttribute('aria-expanded', advancedActionsVisible ? 'true' : 'false');
   }
+
+  toolbarRovingFocus.revalidateCurrentStop(moreButton ?? undefined);
 };
 
 const getFirstAdvancedToolbarButton = (): HTMLButtonElement | undefined => {

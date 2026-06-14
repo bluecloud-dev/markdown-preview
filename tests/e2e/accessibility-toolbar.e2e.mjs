@@ -47,6 +47,23 @@ describe('Toolbar accessibility workflow', () => {
       await expect(moreButton).toHaveText('More');
       await expect(moreButton).toHaveAttribute('aria-expanded', 'false');
 
+      const controlledAdvancedButtons = await browser.execute(() => {
+        const more = document.querySelector('[data-testid="muninn-toolbar-more"]');
+        const ids = more?.getAttribute('aria-controls')?.trim().split(/\s+/).filter(Boolean) ?? [];
+        return ids.map((id) => {
+          const controlledElement = document.getElementById(id);
+          return {
+            advanced: controlledElement?.getAttribute('data-advanced') ?? null,
+            exists: Boolean(controlledElement),
+            id,
+          };
+        });
+      });
+      expect(controlledAdvancedButtons).toHaveLength(4);
+      expect(
+        controlledAdvancedButtons.every((entry) => entry.exists && entry.advanced === 'true'),
+      ).toBe(true);
+
       await moreButton.click();
 
       await expect(heading3Button).toBeDisplayed();
@@ -61,6 +78,81 @@ describe('Toolbar accessibility workflow', () => {
         {
           timeout: 2_000,
           timeoutMsg: 'Expected More to move focus to the first revealed advanced action.',
+        },
+      );
+    });
+  });
+
+  it('uses one toolbar tab stop and arrow navigation exits cleanly to the editor', async () => {
+    await openWorkspaceFile('with-formatting.md');
+    await waitForCustomEditor('with-formatting.md');
+
+    await withCustomEditorWebview(async () => {
+      await browser.execute(() => {
+        document.body.tabIndex = -1;
+        document.body.focus();
+      });
+
+      await browser.keys('Tab');
+      await browser.waitUntil(
+        async () => {
+          const activeCommand = await browser.execute(() =>
+            document.activeElement?.getAttribute('data-command'),
+          );
+          return activeCommand === 'toggleBold';
+        },
+        {
+          timeout: 2_000,
+          timeoutMsg: 'Expected one Tab to land on the first toolbar action.',
+        },
+      );
+
+      let tabStops = await browser.execute(() =>
+        [...document.querySelectorAll('.muninn-toolbar button')]
+          .filter((button) => !button.hidden && button.getAttribute('tabindex') === '0')
+          .map(
+            (button) =>
+              button.getAttribute('data-command') ?? button.getAttribute('data-testid') ?? '',
+          ),
+      );
+      expect(tabStops).toEqual(['toggleBold']);
+
+      for (let index = 0; index < 8; index += 1) {
+        await browser.keys('ArrowRight');
+      }
+      await browser.waitUntil(
+        async () => {
+          const activeCommand = await browser.execute(() =>
+            document.activeElement?.getAttribute('data-command'),
+          );
+          return activeCommand === 'openRawMarkdown';
+        },
+        {
+          timeout: 2_000,
+          timeoutMsg: 'Expected ArrowRight navigation to reach the Source button.',
+        },
+      );
+
+      tabStops = await browser.execute(() =>
+        [...document.querySelectorAll('.muninn-toolbar button')]
+          .filter((button) => !button.hidden && button.getAttribute('tabindex') === '0')
+          .map(
+            (button) =>
+              button.getAttribute('data-command') ?? button.getAttribute('data-testid') ?? '',
+          ),
+      );
+      expect(tabStops).toEqual(['openRawMarkdown']);
+
+      await browser.keys('Tab');
+      await browser.waitUntil(
+        async () =>
+          browser.execute(() => {
+            const editor = document.querySelector('.ProseMirror');
+            return Boolean(editor && document.activeElement === editor);
+          }),
+        {
+          timeout: 2_000,
+          timeoutMsg: 'Expected Tab from the toolbar roving stop to exit to the editor.',
         },
       );
     });
