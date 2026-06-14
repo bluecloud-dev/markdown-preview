@@ -7,6 +7,81 @@ import {
 } from './helpers.mjs';
 
 describe('Toolbar accessibility workflow', () => {
+  it('names the editable markdown surface with the document file name', async () => {
+    await openWorkspaceFile('sample.md');
+    await waitForCustomEditor('sample.md');
+
+    await withCustomEditorWebview(async () => {
+      const attributes = await browser.execute(() => {
+        const editor = document.querySelector('.ProseMirror');
+        return {
+          ariaLabel: editor?.getAttribute('aria-label') ?? null,
+          ariaMultiline: editor?.getAttribute('aria-multiline') ?? null,
+          role: editor?.getAttribute('role') ?? null,
+        };
+      });
+
+      expect(attributes).toEqual({
+        ariaLabel: 'Markdown editor — sample.md',
+        ariaMultiline: 'true',
+        role: 'textbox',
+      });
+    });
+  });
+
+  it('keeps the editable markdown surface named after host document replacement', async () => {
+    await openWorkspaceFile('sample.md');
+    await waitForCustomEditor('sample.md');
+
+    await browser.executeWorkbench(async (vscode) => {
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        throw new Error('No workspace folder available in VS Code test session.');
+      }
+
+      const uri = vscode.Uri.joinPath(workspaceFolder.uri, 'sample.md');
+      const document = await vscode.workspace.openTextDocument(uri);
+      const edit = new vscode.WorkspaceEdit();
+      edit.replace(
+        uri,
+        new vscode.Range(
+          new vscode.Position(0, 0),
+          document.lineAt(document.lineCount - 1).range.end,
+        ),
+        '# Replaced\n\nHost-driven update.\n',
+      );
+      await vscode.workspace.applyEdit(edit);
+    });
+
+    await withCustomEditorWebview(async () => {
+      await browser.waitUntil(
+        async () =>
+          browser.execute(() =>
+            document.querySelector('.ProseMirror')?.textContent?.includes('Replaced'),
+          ),
+        {
+          timeout: 5_000,
+          timeoutMsg: 'Expected host-driven document replacement to reach the webview editor.',
+        },
+      );
+
+      const attributes = await browser.execute(() => {
+        const editor = document.querySelector('.ProseMirror');
+        return {
+          ariaLabel: editor?.getAttribute('aria-label') ?? null,
+          ariaMultiline: editor?.getAttribute('aria-multiline') ?? null,
+          role: editor?.getAttribute('role') ?? null,
+        };
+      });
+
+      expect(attributes).toEqual({
+        ariaLabel: 'Markdown editor — sample.md',
+        ariaMultiline: 'true',
+        role: 'textbox',
+      });
+    });
+  });
+
   it('shows the editor shell focus ring when the document is focused', async () => {
     await openWorkspaceFile('with-formatting.md');
     await waitForCustomEditor('with-formatting.md');
