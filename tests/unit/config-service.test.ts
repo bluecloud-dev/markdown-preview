@@ -12,6 +12,7 @@ type ConfigurationOverrides = {
   mermaidEnabled?: boolean;
   mermaidAllowInUntrustedWorkspaces?: boolean;
   toolbarMode?: 'basic' | 'advanced';
+  imageDestination?: string;
 };
 
 const createConfiguration = (overrides?: ConfigurationOverrides): vscode.WorkspaceConfiguration => {
@@ -20,6 +21,7 @@ const createConfiguration = (overrides?: ConfigurationOverrides): vscode.Workspa
     'integrations.mermaid.enabled': overrides?.mermaidEnabled,
     'integrations.mermaid.allowInUntrustedWorkspaces': overrides?.mermaidAllowInUntrustedWorkspaces,
     'toolbar.mode': overrides?.toolbarMode,
+    'images.destination': overrides?.imageDestination,
   };
 
   return {
@@ -51,6 +53,7 @@ describe('ConfigService', () => {
     expect(config.mermaidEnabled).to.equal(true);
     expect(config.mermaidAllowInUntrustedWorkspaces).to.equal(false);
     expect(config.toolbarMode).to.equal('basic');
+    expect(config.imageDestination).to.equal('images/');
   });
 
   it('caches configuration per resource and reloads on demand', () => {
@@ -79,6 +82,7 @@ describe('ConfigService', () => {
         mermaidEnabled: true,
         mermaidAllowInUntrustedWorkspaces: true,
         toolbarMode: 'advanced',
+        imageDestination: 'assets/',
       }),
     );
 
@@ -89,6 +93,7 @@ describe('ConfigService', () => {
     expect(inspection.mermaidEnabled?.globalValue).to.equal(true);
     expect(inspection.mermaidAllowInUntrustedWorkspaces?.globalValue).to.equal(true);
     expect(inspection.toolbarMode?.globalValue).to.equal('advanced');
+    expect(inspection.imageDestination?.globalValue).to.equal('assets/');
   });
 
   it('exposes convenience getters for active settings', () => {
@@ -98,6 +103,7 @@ describe('ConfigService', () => {
         mermaidEnabled: false,
         mermaidAllowInUntrustedWorkspaces: true,
         toolbarMode: 'advanced',
+        imageDestination: 'assets/',
       }),
     );
 
@@ -108,6 +114,7 @@ describe('ConfigService', () => {
     expect(service.getMermaidEnabled(uri)).to.equal(false);
     expect(service.getMermaidAllowInUntrustedWorkspaces(uri)).to.equal(true);
     expect(service.getToolbarMode(uri)).to.equal('advanced');
+    expect(service.getImageDestination(uri)).to.equal('assets/');
   });
 
   it('clears cache and reloads configuration values', () => {

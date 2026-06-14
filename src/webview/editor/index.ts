@@ -12,6 +12,7 @@ import type {
   ViewToHostMessage,
 } from '../../custom-editor/protocol';
 import { bootstrapEditorApp } from './bootstrap';
+import { createImageInsertionTransaction } from './image-insertion';
 import { formatString, getString } from './localization';
 import { markdownParser, schema, serializeToHostMarkdown } from './markdown-codec';
 import { wrapTablesForEditor } from './markdown-transforms';
@@ -108,10 +109,17 @@ let view: EditorView | undefined;
 let toolbarMode: ToolbarMode = 'basic';
 let advancedActionsVisible = false;
 let lastMermaidInsertAt = 0;
+let imageSources = new Map<string, string>();
 
 const setStatus = (message: string): void => {
   statusLine.textContent = message;
 };
+
+const setImageSources = (sources: Record<string, string>): void => {
+  imageSources = new Map(Object.entries(sources));
+};
+
+const getRenderedImageSource = (source: string): string => imageSources.get(source) ?? source;
 
 const updateAdvancedToolbarVisibility = (): void => {
   const showAdvancedActions = toolbarMode === 'advanced' || advancedActionsVisible;
@@ -241,6 +249,48 @@ const parseMarkdown = (markdown: string): EditorState =>
       }),
       keymap(baseKeymap),
       new Plugin({
+        props: {
+          handlePaste: (_editorView, event) => {
+            const file = getFirstImageFile(event.clipboardData?.files);
+            if (!file) {
+              return false;
+            }
+            event.preventDefault();
+            void requestImageInsert('paste', file);
+            return true;
+          },
+          handleDOMEvents: {
+            dragover: (_editorView, event) => {
+              if (!hasImageTransfer(event.dataTransfer)) {
+                return false;
+              }
+              event.preventDefault();
+              return true;
+            },
+            drop: (editorView, event) => {
+              const file = getFirstImageFile(event.dataTransfer?.files);
+              if (!file) {
+                return false;
+              }
+              event.preventDefault();
+              const position = editorView.posAtCoords({
+                left: event.clientX,
+                top: event.clientY,
+              });
+              if (!position) {
+                return true;
+              }
+              editorView.dispatch(
+                editorView.state.tr.setSelection(
+                  TextSelection.create(editorView.state.doc, position.pos),
+                ),
+              );
+              editorView.focus();
+              void requestImageInsert('drop', file);
+              return true;
+            },
+          },
+        },
         view: () => ({
           update: () => {
             updateToolbarState();
@@ -250,6 +300,64 @@ const parseMarkdown = (markdown: string): EditorState =>
       }),
     ],
   });
+
+const getFirstImageFile = (fileList?: FileList | null): File | undefined => {
+  if (!fileList) {
+    return undefined;
+  }
+  return [...fileList].find(
+    (file) => file.type.startsWith('image/') || /\.(?:png|jpe?g|gif|svg|webp)$/i.test(file.name),
+  );
+};
+
+const hasImageFile = (fileList?: FileList | null): boolean =>
+  getFirstImageFile(fileList) !== undefined;
+
+const hasImageTransfer = (dataTransfer?: DataTransfer | null): boolean => {
+  if (!dataTransfer) {
+    return false;
+  }
+  if (hasImageFile(dataTransfer.files)) {
+    return true;
+  }
+  return [...dataTransfer.items].some(
+    (item) => item.kind === 'file' && item.type.startsWith('image/'),
+  );
+};
+
+const readFileAsBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      if (typeof reader.result !== 'string') {
+        reject(new Error('Expected FileReader data URL result.'));
+        return;
+      }
+      const [, base64 = ''] = reader.result.split(',', 2);
+      resolve(base64);
+    });
+    reader.addEventListener('error', () => {
+      reject(reader.error ?? new Error('Could not read image file.'));
+    });
+    reader.readAsDataURL(file);
+  });
+
+const requestImageInsert = async (kind: 'paste' | 'drop', file: File): Promise<void> => {
+  try {
+    const bytesBase64 = await readFileAsBase64(file);
+    vscode.postMessage({
+      type: 'view.requestImageInsert',
+      payload: {
+        kind,
+        name: file.name,
+        mime: file.type,
+        bytesBase64,
+      },
+    });
+  } catch {
+    setStatus(getString('statusInsertImageFailed'));
+  }
+};
 
 const getWordSelection = (state: EditorState): TextSelection | undefined => {
   if (!state.selection.empty) {
@@ -585,6 +693,42 @@ const insertLinkFromHost = (href: string, text?: string): boolean => {
   return true;
 };
 
+const insertImageFromHost = (source: string, webviewUri: string, filename: string): boolean => {
+  if (!view) {
+    return false;
+  }
+
+  imageSources.set(source, webviewUri);
+  const state = view.state;
+  view.dispatch(createImageInsertionTransaction(state, schema.nodes.image, source));
+  setStatus(formatString(getString('statusImageAddedTemplate'), filename));
+  return true;
+};
+
+const createImageNodeView = (
+  node: ProseMirrorNode,
+): { dom: HTMLImageElement; update: (nextNode: ProseMirrorNode) => boolean } => {
+  const dom = document.createElement('img');
+  const updateImage = (imageNode: ProseMirrorNode): void => {
+    const source = typeof imageNode.attrs.src === 'string' ? imageNode.attrs.src : '';
+    const alt = typeof imageNode.attrs.alt === 'string' ? imageNode.attrs.alt : '';
+    dom.src = getRenderedImageSource(source);
+    dom.alt = alt;
+  };
+  updateImage(node);
+
+  return {
+    dom,
+    update: (nextNode) => {
+      if (nextNode.type !== node.type) {
+        return false;
+      }
+      updateImage(nextNode);
+      return true;
+    },
+  };
+};
+
 const executeEditorCommand = (command: ViewEditorCommand): boolean => {
   if (!view) {
     return false;
@@ -769,6 +913,7 @@ const applyHostMarkdown = (hostMarkdown: string): void => {
       nodeViews: {
         code_block: createCodeBlockNodeViewConstructor({ setStatus }),
         front_matter: createFrontMatterNodeViewConstructor(),
+        image: createImageNodeView,
       },
       dispatchTransaction(transaction) {
         if (!view) {
@@ -802,6 +947,7 @@ const detachHostMessageListener = attachHostMessageListener({
   onInit: (payload) => {
     syncController.setRevision(payload.revision);
     mermaidPreview.setEnabled(payload.mermaidEnabled);
+    setImageSources(payload.imageSources);
     setToolbarMode(payload.toolbarMode);
     applyHostMarkdown(payload.markdown);
     setStatus(getString('statusConnected'));
@@ -809,6 +955,7 @@ const detachHostMessageListener = attachHostMessageListener({
   },
   onDocumentChanged: (payload) => {
     const shouldRetry = syncController.handleHostDocumentChanged(payload.revision);
+    setImageSources(payload.imageSources);
     applyHostMarkdown(payload.markdown);
     if (shouldRetry) {
       syncController.queueApply(serializeMarkdownForHost);
@@ -830,6 +977,15 @@ const detachHostMessageListener = attachHostMessageListener({
     if (!inserted) {
       setStatus(getString('statusInsertLinkFailed'));
     }
+  },
+  onImageInserted: (payload) => {
+    const inserted = insertImageFromHost(payload.path, payload.webviewUri, payload.filename);
+    if (!inserted) {
+      setStatus(payload.filename);
+    }
+  },
+  onImageRejected: (payload) => {
+    setStatus(payload.reason);
   },
   onError: (payload) => {
     const shouldRetry = syncController.handleHostError();

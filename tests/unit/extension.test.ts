@@ -105,6 +105,7 @@ describe('extension activation', () => {
       mermaidEnabled: true,
       mermaidAllowInUntrustedWorkspaces: false,
       toolbarMode: 'basic',
+      imageDestination: 'images/',
     });
 
     let configChangeListener: ((event: vscode.ConfigurationChangeEvent) => void) | undefined;

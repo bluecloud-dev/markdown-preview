@@ -6,7 +6,7 @@
 and final-newline state. This is the exact pipeline the editor runs between the host
 document and the ProseMirror view (`src/webview/editor/markdown-codec.ts`).
 
-**Corpus**: 55 cases — 51 stored fixtures plus 4
+**Corpus**: 56 cases — 52 stored fixtures plus 4
 synthesized byte-fragile variants (CRLF, trailing space, two-space hard break, missing
 final newline) that editors would silently normalize if stored on disk. This is the
 hand-curated construct corpus from issue #245, not the full CommonMark 0.31.2 example
@@ -17,12 +17,12 @@ suite (that larger corpus is spec requirement R-01 and tracked separately).
 | Verdict | Cases |
 | --- | ---: |
 | Byte-identical | 1 |
-| Final-newline-only deviation (single root cause, #282) | 31 |
+| Final-newline-only deviation (single root cause, #282) | 32 |
 | Construct deviations | 23 |
-| **Total** | **55** |
+| **Total** | **56** |
 
 **Reading the numbers honestly**: the markdown construct survives byte-identically in
-32 of 55 cases; the missing trailing newline (#282) is a single
+33 of 56 cases; the missing trailing newline (#282) is a single
 pure-serializer defect that still blocks every stored fixture from a strict codec pass,
 but the host save path now preserves the existing final-newline state for real files.
 Construct deviations remain; each has a tracking issue in the deviation index below.
@@ -43,7 +43,7 @@ underscore emphasis, and setext headings are rewritten to canonical forms.
 | front-matter | 3 | 0 | 3 | 0 |
 | headings | 3 | 0 | 1 | 2 |
 | html | 2 | 0 | 1 | 1 |
-| images | 1 | 0 | 1 | 0 |
+| images | 2 | 0 | 2 | 0 |
 | line-endings | 1 | 0 | 0 | 1 |
 | links | 4 | 0 | 3 | 1 |
 | lists | 8 | 0 | 5 | 3 |
@@ -86,6 +86,7 @@ underscore emphasis, and setext headings are rewritten to canonical forms.
 | `html--block.md` | construct | html:false parses raw HTML as paragraph text; tags survive but the block line structure collapses via soft-break joining | #283 |
 | `html--inline.md` | final-newline-only | prosemirror-markdown serialize() emits no trailing newline; the construct content itself round-trips byte-identically | #282 |
 | `images--inline.md` | final-newline-only | prosemirror-markdown serialize() emits no trailing newline; the construct content itself round-trips byte-identically | #282 |
+| `images--inserted.md` | final-newline-only | prosemirror-markdown serialize() emits no trailing newline; the construct content itself round-trips byte-identically | #282 |
 | `line-endings--crlf (synthesized)` | construct | the editor pipeline is LF-internal (wrapTablesForEditor splits and rejoins with LF; markdown-it normalizes EOLs); CRLF input serializes as LF | #288 |
 | `links--autolink.md` | final-newline-only | prosemirror-markdown serialize() emits no trailing newline; the construct content itself round-trips byte-identically | #282 |
 | `links--bare-url.md` | final-newline-only | prosemirror-markdown serialize() emits no trailing newline; the construct content itself round-trips byte-identically | #282 |

@@ -1,5 +1,6 @@
 import type {
   HostToViewMessage,
+  ImageUriMap,
   ToolbarMode,
   ViewEditorCommand,
 } from '../../custom-editor/protocol';
@@ -11,11 +12,18 @@ type HostMessageHandlers = {
     revision: number;
     mermaidEnabled: boolean;
     toolbarMode: ToolbarMode;
+    imageSources: ImageUriMap;
   }) => void;
-  onDocumentChanged: (payload: { markdown: string; revision: number }) => void;
+  onDocumentChanged: (payload: {
+    markdown: string;
+    revision: number;
+    imageSources: ImageUriMap;
+  }) => void;
   onExecuteCommand: (command: ViewEditorCommand) => void;
   onSettingsChanged: (payload: { mermaidEnabled: boolean; toolbarMode: ToolbarMode }) => void;
   onInsertLink: (payload: { href: string; text?: string }) => void;
+  onImageInserted: (payload: { path: string; webviewUri: string; filename: string }) => void;
+  onImageRejected: (payload: { reason: string }) => void;
   onError: (payload: { code: 'revision_mismatch' | 'apply_failed'; message: string }) => void;
 };
 
@@ -42,6 +50,14 @@ export const dispatchHostMessage = (
     }
     case 'host.insertLink': {
       handlers.onInsertLink(message.payload);
+      return;
+    }
+    case 'host.imageInserted': {
+      handlers.onImageInserted(message.payload);
+      return;
+    }
+    case 'host.imageRejected': {
+      handlers.onImageRejected(message.payload);
       return;
     }
     case 'host.error': {

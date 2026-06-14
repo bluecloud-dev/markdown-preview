@@ -14,7 +14,7 @@ serializer still drops the final newline (#282). The host save path reconciles t
 state in `DocumentSync.applyDocument()` so real files that already end in `\n` keep
 their final newline, while files without one do not gain one.
 
-## Final-newline-only deviations (#282) — 31 fixtures
+## Final-newline-only deviations (#282) — 32 fixtures
 
 These fixtures round-trip their construct byte-identically and differ only by the
 missing trailing newline in the pure codec — a serializer defect reconciled by the host
@@ -34,6 +34,7 @@ save path:
 - `headings--atx.md`
 - `html--inline.md`
 - `images--inline.md`
+- `images--inserted.md`
 - `links--autolink.md`
 - `links--bare-url.md`
 - `links--inline.md`

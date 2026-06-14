@@ -13,6 +13,7 @@ const DEFAULT_CONFIG: ExtensionConfiguration = {
   mermaidEnabled: true,
   mermaidAllowInUntrustedWorkspaces: false,
   toolbarMode: 'basic',
+  imageDestination: 'images/',
 };
 
 export class ConfigService {
@@ -32,6 +33,10 @@ export class ConfigService {
 
   getToolbarMode(resource?: vscode.Uri): 'basic' | 'advanced' {
     return this.getConfig(resource).toolbarMode;
+  }
+
+  getImageDestination(resource?: vscode.Uri): string {
+    return this.getConfig(resource).imageDestination;
   }
 
   getConfig(resource?: vscode.Uri): ExtensionConfiguration {
@@ -61,6 +66,7 @@ export class ConfigService {
     mermaidEnabled?: ConfigInspection<boolean>;
     mermaidAllowInUntrustedWorkspaces?: ConfigInspection<boolean>;
     toolbarMode?: ConfigInspection<'basic' | 'advanced'>;
+    imageDestination?: ConfigInspection<string>;
   } {
     const config = vscode.workspace.getConfiguration('muninn', resource);
     return {
@@ -70,6 +76,7 @@ export class ConfigService {
         'integrations.mermaid.allowInUntrustedWorkspaces',
       ),
       toolbarMode: config.inspect<'basic' | 'advanced'>('toolbar.mode'),
+      imageDestination: config.inspect<string>('images.destination'),
     };
   }
 
@@ -87,6 +94,7 @@ export class ConfigService {
         DEFAULT_CONFIG.mermaidAllowInUntrustedWorkspaces,
       ),
       toolbarMode: config.get('toolbar.mode', DEFAULT_CONFIG.toolbarMode),
+      imageDestination: config.get('images.destination', DEFAULT_CONFIG.imageDestination),
     };
   }
 }
