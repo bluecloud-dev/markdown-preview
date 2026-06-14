@@ -11,6 +11,7 @@ import type {
   ViewEditorCommand,
   ViewToHostMessage,
 } from '../../custom-editor/protocol';
+import { createAnnouncer } from './announcements';
 import { bootstrapEditorApp } from './bootstrap';
 import { createImageInsertionTransaction } from './image-insertion';
 import { formatString, getString } from './localization';
@@ -99,6 +100,7 @@ const {
   editorContainer,
   toolbar,
   statusLine,
+  alertLine,
   mermaidPreviewPanel,
   mermaidPreviewBody,
   toolbarButtons,
@@ -113,9 +115,7 @@ let lastMermaidInsertAt = 0;
 let imageSources = new Map<string, string>();
 let documentFileName = '';
 
-const setStatus = (message: string): void => {
-  statusLine.textContent = message;
-};
+const announce = createAnnouncer({ statusLine, alertLine });
 
 const setImageSources = (sources: Record<string, string>): void => {
   imageSources = new Map(Object.entries(sources));
@@ -229,7 +229,7 @@ const mermaidPreview = new MermaidPreviewController({
   panel: mermaidPreviewPanel,
   body: mermaidPreviewBody,
   getSelectedMermaidSource: () => selectCodeBlockSource(isMermaidCodeBlockNode),
-  setStatus,
+  announce,
   renderDelayMs: 120,
 });
 
@@ -357,7 +357,7 @@ const requestImageInsert = async (kind: 'paste' | 'drop', file: File): Promise<v
       },
     });
   } catch {
-    setStatus(getString('statusInsertImageFailed'));
+    announce(getString('statusInsertImageFailed'), { kind: 'error' });
   }
 };
 
@@ -585,7 +585,7 @@ const insertMermaidBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: 'mermaid' }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus(getString('statusInsertedMermaid'));
+  announce(getString('statusInsertedMermaid'), { kind: 'status' });
   return true;
 };
 
@@ -598,7 +598,7 @@ const insertTableBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: TABLE_FENCE_LANGUAGE }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus(getString('statusInsertedTable'));
+  announce(getString('statusInsertedTable'), { kind: 'status' });
   return true;
 };
 
@@ -611,7 +611,7 @@ const insertCodeBlock = (): boolean => {
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
 
-  setStatus(getString('statusInsertedCodeBlock'));
+  announce(getString('statusInsertedCodeBlock'), { kind: 'status' });
   return true;
 };
 
@@ -619,7 +619,7 @@ const addTableRow = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus(getString('commandFailureAddRowNoTable'));
+    announce(getString('commandFailureAddRowNoTable'), { kind: 'error' });
     return false;
   }
 
@@ -633,7 +633,7 @@ const addTableColumn = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus(getString('commandFailureAddColumnNoTable'));
+    announce(getString('commandFailureAddColumnNoTable'), { kind: 'error' });
     return false;
   }
 
@@ -665,7 +665,7 @@ const requestLinkInput = (): boolean => {
       selectedText: selectedText?.trim().length ? selectedText.trim() : undefined,
     },
   });
-  setStatus(getString('statusAwaitingLinkInput'));
+  announce(getString('statusAwaitingLinkInput'), { kind: 'status' });
   return true;
 };
 
@@ -691,7 +691,7 @@ const insertLinkFromHost = (href: string, text?: string): boolean => {
     .setSelection(TextSelection.create(transaction.doc, to, to))
     .scrollIntoView();
   view.dispatch(transaction);
-  setStatus(getString('statusInsertedLink'));
+  announce(getString('statusInsertedLink'), { kind: 'status' });
   return true;
 };
 
@@ -703,7 +703,7 @@ const insertImageFromHost = (source: string, webviewUri: string, filename: strin
   imageSources.set(source, webviewUri);
   const state = view.state;
   view.dispatch(createImageInsertionTransaction(state, schema.nodes.image, source));
-  setStatus(formatString(getString('statusImageAddedTemplate'), filename));
+  announce(formatString(getString('statusImageAddedTemplate'), filename), { kind: 'status' });
   return true;
 };
 
@@ -765,7 +765,7 @@ const executeEditorCommand = (command: ViewEditorCommand): boolean => {
       if (isMarkActive(schema.marks.link)) {
         const removed = runInlineMarkCommand(toggleMark(schema.marks.link));
         if (removed) {
-          setStatus(getString('statusRemovedLink'));
+          announce(getString('statusRemovedLink'), { kind: 'status' });
         }
         return removed;
       }
@@ -809,7 +809,7 @@ for (const [command, button] of toolbarButtons.entries()) {
 
     const executed = executeEditorCommand(command as ViewEditorCommand);
     if (!executed) {
-      setStatus(formatCommandFailure(command));
+      announce(formatCommandFailure(command), { kind: 'error' });
     }
     if (executed && TRANSIENT_ACTIVE_COMMANDS.has(command)) {
       button.classList.add('is-active');
@@ -916,7 +916,7 @@ const applyHostMarkdown = (hostMarkdown: string, fileName = documentFileName): v
       state: parseMarkdown(editorMarkdown),
       attributes: editorViewAttributes,
       nodeViews: {
-        code_block: createCodeBlockNodeViewConstructor({ setStatus }),
+        code_block: createCodeBlockNodeViewConstructor({ announce }),
         front_matter: createFrontMatterNodeViewConstructor(),
         image: createImageNodeView,
       },
@@ -956,7 +956,7 @@ const detachHostMessageListener = attachHostMessageListener({
     setImageSources(payload.imageSources);
     setToolbarMode(payload.toolbarMode);
     applyHostMarkdown(payload.markdown, payload.fileName);
-    setStatus(getString('statusConnected'));
+    announce(getString('statusConnected'), { kind: 'status' });
     view?.focus();
   },
   onDocumentChanged: (payload) => {
@@ -970,7 +970,7 @@ const detachHostMessageListener = attachHostMessageListener({
   onExecuteCommand: (command) => {
     const executed = executeEditorCommand(command);
     if (!executed) {
-      setStatus(formatCommandFailure(command));
+      announce(formatCommandFailure(command), { kind: 'error' });
     }
   },
   onSettingsChanged: (payload) => {
@@ -981,21 +981,21 @@ const detachHostMessageListener = attachHostMessageListener({
   onInsertLink: (payload) => {
     const inserted = insertLinkFromHost(payload.href, payload.text);
     if (!inserted) {
-      setStatus(getString('statusInsertLinkFailed'));
+      announce(getString('statusInsertLinkFailed'), { kind: 'error' });
     }
   },
   onImageInserted: (payload) => {
     const inserted = insertImageFromHost(payload.path, payload.webviewUri, payload.filename);
     if (!inserted) {
-      setStatus(payload.filename);
+      announce(getString('statusInsertImageFailed'), { kind: 'error' });
     }
   },
   onImageRejected: (payload) => {
-    setStatus(payload.reason);
+    announce(payload.reason, { kind: 'error' });
   },
   onError: (payload) => {
     const shouldRetry = syncController.handleHostError();
-    setStatus(payload.message);
+    announce(payload.message, { kind: 'error' });
     if (shouldRetry) {
       syncController.queueApply(serializeMarkdownForHost);
     }

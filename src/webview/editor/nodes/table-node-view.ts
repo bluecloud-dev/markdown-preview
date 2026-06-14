@@ -2,6 +2,7 @@ import type { Node as ProseMirrorNode, Schema } from 'prosemirror-model';
 import type { EditorView, NodeView, NodeViewConstructor } from 'prosemirror-view';
 import { CODE_LANGUAGE_OPTIONS } from '../../../shared/code-languages';
 import type { CodeLanguageOption } from '../../../shared/code-languages';
+import { formatErrorAnnouncement, type Announce } from '../announcements';
 import { escapeHtml, formatString, getString } from '../localization';
 import { sanitizeMermaidSvg } from '../preview';
 import { renderMermaidDiagram } from '../renderers/mermaid-renderer';
@@ -47,7 +48,7 @@ const createDefaultCodeBlockNodeView = (node: ProseMirrorNode): NodeView => {
 };
 
 type TableNodeViewOptions = {
-  setStatus: (message: string) => void;
+  announce: Announce;
 };
 
 type TableCellCoordinates = {
@@ -117,6 +118,11 @@ export const getTableGridAriaLabel = (tableIndex: number, table: MarkdownTable):
     table.headers.length,
     table.rows.length,
   );
+
+export const formatTableSourceFeedback = (kind: 'success' | 'error', message: string): string =>
+  kind === 'success'
+    ? formatString(getString('tableSourceFeedbackAppliedTemplate'), message)
+    : formatErrorAnnouncement(message);
 
 export const getTableNodeDocumentIndex = (
   documentNode: ProseMirrorNode,
@@ -241,7 +247,7 @@ class GenericCodeBlockNodeView implements NodeView {
 
     const position = this.resolveNodePosition();
     if (position === undefined) {
-      this.options.setStatus(getString('statusCodeLanguageUpdateFailed'));
+      this.options.announce(getString('statusCodeLanguageUpdateFailed'), { kind: 'error' });
       this.syncLanguageSelect();
       return;
     }
@@ -261,15 +267,16 @@ class GenericCodeBlockNodeView implements NodeView {
     this.view.dispatch(transaction);
 
     if (selectedLanguage.length === 0) {
-      this.options.setStatus(getString('statusCodeLanguagePlainText'));
+      this.options.announce(getString('statusCodeLanguagePlainText'), { kind: 'status' });
       return;
     }
 
     const option = buildCodeLanguageOptions(selectedLanguage).find(
       (candidate) => candidate.value === selectedLanguage,
     );
-    this.options.setStatus(
+    this.options.announce(
       formatString(getString('statusCodeLanguageSetTemplate'), option?.label ?? selectedLanguage),
+      { kind: 'status' },
     );
   }
 
@@ -667,13 +674,13 @@ class TableCodeBlockNodeView implements NodeView {
   private deleteTable(): void {
     const position = this.resolveNodePosition();
     if (position === undefined) {
-      this.options.setStatus(getString('statusTableDeleteFailed'));
+      this.options.announce(getString('statusTableDeleteFailed'), { kind: 'error' });
       return;
     }
 
     const transaction = this.view.state.tr.deleteRange(position, position + this.node.nodeSize);
     this.view.dispatch(transaction.scrollIntoView());
-    this.options.setStatus(getString('statusTableDeleted'));
+    this.options.announce(getString('statusTableDeleted'), { kind: 'status' });
   }
 
   private toggleSourceVisibility(): void {
@@ -859,7 +866,7 @@ class TableCodeBlockNodeView implements NodeView {
     const nextSource = normalizeTableSource(source);
     const position = this.resolveNodePosition();
     if (position === undefined) {
-      this.options.setStatus(getString('statusTableSourceApplyFailed'));
+      this.options.announce(getString('statusTableSourceApplyFailed'), { kind: 'error' });
       return false;
     }
 
@@ -872,7 +879,7 @@ class TableCodeBlockNodeView implements NodeView {
       .replaceWith(position, position + this.node.nodeSize, replacement)
       .scrollIntoView();
     this.view.dispatch(transaction);
-    this.options.setStatus(statusMessage);
+    this.options.announce(statusMessage, { kind: 'status' });
     return true;
   }
 
@@ -946,7 +953,7 @@ class TableCodeBlockNodeView implements NodeView {
 
   private setSourceFeedback(kind: 'success' | 'error', message: string): void {
     this.sourceFeedback.hidden = false;
-    this.sourceFeedback.textContent = message;
+    this.sourceFeedback.textContent = formatTableSourceFeedback(kind, message);
     this.sourceFeedback.classList.toggle('is-success', kind === 'success');
     this.sourceFeedback.classList.toggle('is-error', kind === 'error');
   }

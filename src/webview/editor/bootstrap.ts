@@ -5,6 +5,7 @@ export type EditorBootstrap = {
   toolbar: HTMLDivElement;
   editorContainer: HTMLDivElement;
   statusLine: HTMLDivElement;
+  alertLine: HTMLDivElement;
   mermaidPreviewPanel: HTMLElement;
   mermaidPreviewBody: HTMLDivElement;
   toolbarButtons: Map<string, HTMLButtonElement>;
@@ -59,14 +60,23 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
     <div id="editor"></div>
   </div>
   <div id="status" class="muninn-status" role="status" aria-live="polite">${getHtmlString('statusReady')}</div>
+  <div id="status-alert" class="muninn-status" role="alert" aria-live="assertive" aria-atomic="true" hidden></div>
 `;
 
   const toolbar = document.querySelector<HTMLDivElement>('.muninn-toolbar');
   const editorContainer = document.querySelector<HTMLDivElement>('#editor');
   const statusLine = document.querySelector<HTMLDivElement>('#status');
+  const alertLine = document.querySelector<HTMLDivElement>('#status-alert');
   const mermaidPreviewPanel = document.querySelector<HTMLElement>('#mermaid-preview-panel');
   const mermaidPreviewBody = document.querySelector<HTMLDivElement>('#mermaid-preview-body');
-  if (!toolbar || !editorContainer || !statusLine || !mermaidPreviewPanel || !mermaidPreviewBody) {
+  if (
+    !toolbar ||
+    !editorContainer ||
+    !statusLine ||
+    !alertLine ||
+    !mermaidPreviewPanel ||
+    !mermaidPreviewBody
+  ) {
     throw new Error('Muninn webview UI elements are missing.');
   }
 
@@ -84,6 +94,7 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
     toolbar,
     editorContainer,
     statusLine,
+    alertLine,
     mermaidPreviewPanel,
     mermaidPreviewBody,
     toolbarButtons,
