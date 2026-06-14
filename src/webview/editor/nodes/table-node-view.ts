@@ -57,6 +57,10 @@ type TableCellCoordinates = {
 
 type TableCellTextSelection = Pick<HTMLInputElement, 'selectionEnd' | 'selectionStart' | 'value'>;
 
+export const shouldDeferTableCellKeyboardNavigation = (
+  event: Pick<KeyboardEvent, 'isComposing'>,
+): boolean => event.isComposing;
+
 export const shouldNavigateTableCellHorizontally = (
   input: TableCellTextSelection,
   key: string,
@@ -565,6 +569,10 @@ class TableCodeBlockNodeView implements NodeView {
       this.updateCell(rowIndex, columnIndex, input.value);
     });
     input.addEventListener('keydown', (event) => {
+      if (shouldDeferTableCellKeyboardNavigation(event)) {
+        return;
+      }
+
       if (event.key === 'Enter') {
         event.preventDefault();
         const table = parseMarkdownTable(this.node.textContent);

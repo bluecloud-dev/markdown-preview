@@ -4,6 +4,7 @@ import {
   DEFAULT_TABLE_SOURCE,
   getTableGridAriaLabel,
   getTableNodeDocumentIndex,
+  shouldDeferTableCellKeyboardNavigation,
   shouldNavigateTableCellHorizontally,
   TABLE_FENCE_LANGUAGE,
   type MarkdownTable,
@@ -73,6 +74,11 @@ describe('table node view accessibility helpers', () => {
 });
 
 describe('table cell keyboard helpers', () => {
+  it('lets IME composition keystrokes stay native', () => {
+    expect(shouldDeferTableCellKeyboardNavigation({ isComposing: true })).to.equal(true);
+    expect(shouldDeferTableCellKeyboardNavigation({ isComposing: false })).to.equal(false);
+  });
+
   it('moves left or right only at collapsed text boundaries', () => {
     expect(
       shouldNavigateTableCellHorizontally(createInputState('Score', 0, 0), 'ArrowLeft'),
