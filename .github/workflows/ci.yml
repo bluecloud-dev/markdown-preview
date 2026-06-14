@@ -91,7 +91,7 @@ jobs:
       - name: Run UI E2E tests
         # Temporary #280 quarantine: keep collecting macOS E2E artifacts while
         # WebDriver/VS Code window loss is isolated. Remove after 3 consecutive
-        # green e2e-macos runs on docs-only PRs.
+        # green e2e-macos runs.
         continue-on-error: true
         run: env E2E_VIDEO=1 npm run test:e2e
 
