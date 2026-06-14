@@ -118,9 +118,26 @@ export const getImageDestinationDirectory = (
     path.resolve(path.dirname(documentUri.fsPath), normalizeImageDestination(destination)),
   );
 
+const encodeMarkdownImagePath = (sourcePath: string): string =>
+  sourcePath
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+
+const decodeMarkdownImagePath = (source: string): string | undefined => {
+  try {
+    return source
+      .split('/')
+      .map((segment) => decodeURIComponent(segment))
+      .join('/');
+  } catch {
+    return undefined;
+  }
+};
+
 export const getMarkdownImagePath = (documentUri: vscode.Uri, imageUri: vscode.Uri): string => {
   const relativePath = path.relative(path.dirname(documentUri.fsPath), imageUri.fsPath);
-  return relativePath.split(path.sep).join('/');
+  return encodeMarkdownImagePath(relativePath.split(path.sep).join('/'));
 };
 
 export const isRemoteOrDataImageSource = (source: string): boolean =>
@@ -134,5 +151,10 @@ export const resolveMarkdownImageUri = (
     return undefined;
   }
 
-  return vscode.Uri.file(path.resolve(path.dirname(documentUri.fsPath), source));
+  const decodedSource = decodeMarkdownImagePath(source);
+  if (!decodedSource) {
+    return undefined;
+  }
+
+  return vscode.Uri.file(path.resolve(path.dirname(documentUri.fsPath), decodedSource));
 };

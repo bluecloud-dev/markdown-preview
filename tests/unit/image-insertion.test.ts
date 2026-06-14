@@ -52,4 +52,21 @@ describe('webview image insertion helpers', () => {
     expect(getImageAltTextFromSelection(state)).to.equal('');
     expect(serializeToHostMarkdown(transaction.doc)).to.equal('Before ![](images/empty.png)after.');
   });
+
+  it('preserves encoded image paths as markdown image syntax', () => {
+    const documentNode = markdownParser.parse('Before after.');
+    const state = EditorState.create({
+      doc: documentNode,
+      selection: TextSelection.create(documentNode, 8),
+    });
+    const transaction = createImageInsertionTransaction(
+      state,
+      schema.nodes.image,
+      'images/Screen%20Shot%20%231.png',
+    );
+
+    expect(serializeToHostMarkdown(transaction.doc)).to.equal(
+      'Before ![](images/Screen%20Shot%20%231.png)after.',
+    );
+  });
 });

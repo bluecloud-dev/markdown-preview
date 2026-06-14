@@ -64,15 +64,16 @@ describe('image asset helpers', () => {
 
   it('creates markdown-relative paths and resolves local markdown images', () => {
     const documentUri = vscode.Uri.file('/workspace/docs/guide.md');
-    const imageUri = vscode.Uri.file('/workspace/docs/images/chart.png');
+    const imageUri = vscode.Uri.file('/workspace/docs/images/Screen Shot #1.png');
 
-    expect(getMarkdownImagePath(documentUri, imageUri)).to.equal('images/chart.png');
-    expect(resolveMarkdownImageUri(documentUri, 'images/chart.png')?.fsPath).to.equal(
-      '/workspace/docs/images/chart.png',
-    );
+    expect(getMarkdownImagePath(documentUri, imageUri)).to.equal('images/Screen%20Shot%20%231.png');
+    expect(
+      resolveMarkdownImageUri(documentUri, 'images/Screen%20Shot%20%231.png')?.fsPath,
+    ).to.equal('/workspace/docs/images/Screen Shot #1.png');
     expect(resolveMarkdownImageUri(documentUri, 'https://example.com/chart.png')).to.equal(
       undefined,
     );
+    expect(resolveMarkdownImageUri(documentUri, 'images/broken%zz.png')).to.equal(undefined);
   });
 
   it('maps mime types only when names do not carry extensions', () => {
