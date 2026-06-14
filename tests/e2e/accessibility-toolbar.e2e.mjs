@@ -116,6 +116,14 @@ describe('Toolbar accessibility workflow', () => {
 
       const heading3Button = await browser.$('[data-command="setHeading3"]');
       await expect(heading3Button).not.toBeDisplayed();
+      const paragraphButton = await browser.$('[data-command="setParagraph"]');
+      await expect(paragraphButton).not.toBeDisplayed();
+      const codeButton = await browser.$('[data-command="insertCodeBlock"]');
+      await expect(codeButton).not.toBeDisplayed();
+      const bulletListButton = await browser.$('[data-command="toggleBulletList"]');
+      await expect(bulletListButton).toBeDisplayed();
+      const numberedListButton = await browser.$('[data-command="toggleNumberedList"]');
+      await expect(numberedListButton).toBeDisplayed();
 
       const moreButton = await browser.$('[data-testid="muninn-toolbar-more"]');
       await expect(moreButton).toBeDisplayed();
@@ -142,6 +150,8 @@ describe('Toolbar accessibility workflow', () => {
       await moreButton.click();
 
       await expect(heading3Button).toBeDisplayed();
+      await expect(paragraphButton).toBeDisplayed();
+      await expect(codeButton).toBeDisplayed();
       await expect(moreButton).toHaveAttribute('aria-expanded', 'true');
       await browser.waitUntil(
         async () => {

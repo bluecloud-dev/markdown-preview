@@ -39,8 +39,8 @@ const vscode = acquireVsCodeApi();
 
 const ADVANCED_TOOLBAR_COMMANDS = new Set<string>([
   'setHeading3',
-  'toggleBulletList',
-  'toggleNumberedList',
+  'setParagraph',
+  'insertCodeBlock',
   'insertMermaidBlock',
 ]);
 
