@@ -14,7 +14,7 @@ import {
   resolveMarkdownImageUri,
   sanitizeImageFileName,
   validateImageAsset,
-  type ImageInsertKind,
+  type HostImageInsertKind,
   type ImageValidationFailure,
 } from './image-assets';
 import { DocumentSync } from './document-sync';
@@ -67,7 +67,7 @@ type HostMarkdownPayload = SerializedMarkdownPayload & {
 };
 
 type ImageSourceInput = {
-  kind: ImageInsertKind | 'command';
+  kind: HostImageInsertKind;
   name?: string;
   mime?: string;
   bytes: Uint8Array;

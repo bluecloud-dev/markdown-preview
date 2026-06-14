@@ -14,7 +14,7 @@ Muninn provides a reading-first Markdown experience in VS Code with a custom edi
 - Single-pane rich editing toolbar with grouped Text/Structure/Insert actions.
 - Mermaid block insertion with inline preview panel and guarded rendering.
 - In-editor tables with editable grid controls, source toggle, and keyboard-friendly cell navigation.
-- Paste, drag, or command-insert image files into markdown with workspace-local storage.
+- Paste, drag, or command-insert image files into Markdown with workspace-local storage.
 - Source button and command for opening raw Markdown in VS Code.
 - Workspace trust-aware Mermaid gating.
 - No telemetry.

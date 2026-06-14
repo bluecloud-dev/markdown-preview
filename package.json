@@ -77,6 +77,7 @@
     "onCommand:muninn.insertMermaidBlock",
     "onCommand:muninn.insertTable",
     "onCommand:muninn.insertCodeBlock",
+    "onCommand:muninn.insertImage",
     "onCommand:muninn.addTableRow",
     "onCommand:muninn.addTableColumn",
     "onCommand:muninn.tableActions"

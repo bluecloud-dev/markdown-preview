@@ -15,7 +15,7 @@ const MIME_EXTENSION_BY_TYPE = new Map<string, string>([
 
 const padTimestampPart = (value: number): string => String(value).padStart(2, '0');
 
-export type ImageInsertKind = 'paste' | 'drop' | 'command';
+export type HostImageInsertKind = 'paste' | 'drop' | 'command';
 
 export type ImageValidationFailure = 'unsupportedType' | 'tooLarge' | 'empty';
 

@@ -277,13 +277,14 @@ const parseMarkdown = (markdown: string): EditorState =>
                 left: event.clientX,
                 top: event.clientY,
               });
-              if (position) {
-                editorView.dispatch(
-                  editorView.state.tr.setSelection(
-                    TextSelection.create(editorView.state.doc, position.pos),
-                  ),
-                );
+              if (!position) {
+                return true;
               }
+              editorView.dispatch(
+                editorView.state.tr.setSelection(
+                  TextSelection.create(editorView.state.doc, position.pos),
+                ),
+              );
               editorView.focus();
               void requestImageInsert('drop', file);
               return true;
@@ -320,9 +321,7 @@ const hasImageTransfer = (dataTransfer?: DataTransfer | null): boolean => {
     return true;
   }
   return [...dataTransfer.items].some(
-    (item) =>
-      item.kind === 'file' &&
-      (item.type.startsWith('image/') || /\.(?:png|jpe?g|gif|svg|webp)$/i.test(item.type)),
+    (item) => item.kind === 'file' && item.type.startsWith('image/'),
   );
 };
 

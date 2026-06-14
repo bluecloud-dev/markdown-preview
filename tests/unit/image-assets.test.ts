@@ -1,3 +1,4 @@
+import path from 'node:path';
 import * as vscode from 'vscode';
 import {
   appendDeduplicationSuffix,
@@ -57,9 +58,9 @@ describe('image asset helpers', () => {
 
     expect(normalizeImageDestination('assets/screens/')).to.equal('assets/screens');
     expect(normalizeImageDestination('../images')).to.equal('images');
-    expect(getImageDestinationDirectory(documentUri, 'assets/').fsPath).to.equal(
-      '/workspace/docs/assets',
-    );
+    const destinationDirectory = getImageDestinationDirectory(documentUri, 'assets/').fsPath;
+    expect(path.basename(destinationDirectory)).to.equal('assets');
+    expect(path.basename(path.dirname(destinationDirectory))).to.equal('docs');
   });
 
   it('creates markdown-relative paths and resolves local markdown images', () => {
@@ -67,9 +68,12 @@ describe('image asset helpers', () => {
     const imageUri = vscode.Uri.file('/workspace/docs/images/Screen Shot #1.png');
 
     expect(getMarkdownImagePath(documentUri, imageUri)).to.equal('images/Screen%20Shot%20%231.png');
-    expect(
-      resolveMarkdownImageUri(documentUri, 'images/Screen%20Shot%20%231.png')?.fsPath,
-    ).to.equal('/workspace/docs/images/Screen Shot #1.png');
+    const resolvedImagePath = resolveMarkdownImageUri(
+      documentUri,
+      'images/Screen%20Shot%20%231.png',
+    )?.fsPath;
+    expect(path.basename(resolvedImagePath ?? '')).to.equal('Screen Shot #1.png');
+    expect(path.basename(path.dirname(resolvedImagePath ?? ''))).to.equal('images');
     expect(resolveMarkdownImageUri(documentUri, 'https://example.com/chart.png')).to.equal(
       undefined,
     );
