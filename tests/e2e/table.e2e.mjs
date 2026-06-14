@@ -14,6 +14,23 @@ const waitForSampleMarkdown = (predicate, errorMessage) =>
 const executeCommandAndWaitForSampleMarkdown = (command, predicate, errorMessage) =>
   executeWorkbenchCommandAndWaitForWorkspaceFileText('sample.md', command, predicate, errorMessage);
 
+const readActiveTableCellState = async () =>
+  browser.execute(() => {
+    const activeElement = document.activeElement;
+    return {
+      isBody: activeElement === document.body,
+      row:
+        activeElement instanceof HTMLInputElement
+          ? activeElement.dataset.tableRow ?? null
+          : null,
+      col:
+        activeElement instanceof HTMLInputElement
+          ? activeElement.dataset.tableColumn ?? null
+          : null,
+      value: activeElement instanceof HTMLInputElement ? activeElement.value : null,
+    };
+  });
+
 const expectTableGridSemantics = async ({ columnCount, rowCount, tableIndex = 1 }) => {
   await withCustomEditorWebview(async () => {
     const tableNode = await browser.$('[data-testid="muninn-table-node"]');
@@ -167,5 +184,76 @@ describe('Table node view workflow', () => {
     );
     expect(text).not.toContain('```muninn-table');
     await expectTableGridSemantics({ columnCount: 2, rowCount: 1 });
+  });
+
+  it('commits cells with Enter and keeps focus in the grid for Escape', async () => {
+    await openWorkspaceFile('sample.md');
+    await waitForCustomEditor('sample.md');
+
+    await executeCommandAndWaitForSampleMarkdown(
+      'muninn.insertTable',
+      (text) => text.includes('| Column 1 | Column 2 |'),
+      'Expected table insertion command to persist before keyboard checks.',
+    );
+    await executeCommandAndWaitForSampleMarkdown(
+      'muninn.addTableRow',
+      (text) => /\|\s*\|\s*\|\s*\|/.test(text),
+      'Expected second table row before keyboard checks.',
+    );
+
+    await withCustomEditorWebview(async () => {
+      const tableNode = await browser.$('[data-testid="muninn-table-node"]');
+      const firstBodyCell = await tableNode.$(
+        '.muninn-table-node-cell[data-table-row="1"][data-table-column="0"]',
+      );
+      await firstBodyCell.waitForDisplayed({ timeout: 5_000 });
+      await firstBodyCell.setValue('Alice');
+      await browser.keys('Enter');
+
+      await browser.waitUntil(
+        async () => {
+          const activeState = await readActiveTableCellState();
+          return (
+            !activeState.isBody &&
+            activeState.row === '2' &&
+            activeState.col === '0' &&
+            activeState.value === ''
+          );
+        },
+        {
+          timeout: 5_000,
+          timeoutMsg: 'Expected Enter to focus the same column in the next table row.',
+        },
+      );
+
+      const refreshedTableNode = await browser.$('[data-testid="muninn-table-node"]');
+      const secondBodyCell = await refreshedTableNode.$(
+        '.muninn-table-node-cell[data-table-row="2"][data-table-column="0"]',
+      );
+      await secondBodyCell.setValue('Draft');
+      await browser.keys('Escape');
+
+      await browser.waitUntil(
+        async () => {
+          const activeState = await readActiveTableCellState();
+          return (
+            !activeState.isBody &&
+            activeState.row === '2' &&
+            activeState.col === '0' &&
+            activeState.value === ''
+          );
+        },
+        {
+          timeout: 5_000,
+          timeoutMsg: 'Expected Escape to restore the committed value and keep cell focus.',
+        },
+      );
+    });
+
+    const text = await waitForSampleMarkdown(
+      (nextText) => nextText.includes('| Alice |'),
+      'Expected Enter to commit the edited table cell.',
+    );
+    expect(text).not.toContain('Draft');
   });
 });
