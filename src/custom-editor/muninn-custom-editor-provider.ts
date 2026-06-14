@@ -233,6 +233,7 @@ export class MuninnCustomEditorProvider
           type: 'host.init',
           payload: {
             ...this.getHostMarkdownPayload(session),
+            fileName: getDocumentFileName(session.document),
             ...settings,
           },
         });
@@ -603,6 +604,9 @@ export class MuninnCustomEditorProvider
 
 const createNonce = (): string =>
   Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
+const getDocumentFileName = (document: vscode.TextDocument): string =>
+  path.basename(document.uri.fsPath).trim();
 
 const collectMarkdownImageSources = (markdown: string): string[] => {
   const sources = new Set<string>();

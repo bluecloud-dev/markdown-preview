@@ -23,6 +23,7 @@ export type HostToViewMessage =
   | {
       type: 'host.init';
       payload: SerializedMarkdownPayload & {
+        fileName: string;
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
         imageSources: ImageUriMap;
@@ -201,6 +202,7 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
     return (
       isSerializedMarkdownPayload(payload) &&
       isObject(payload) &&
+      isString((payload as { fileName?: unknown }).fileName) &&
       typeof (payload as { mermaidEnabled?: unknown }).mermaidEnabled === 'boolean' &&
       isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode) &&
       isImageUriMap((payload as { imageSources?: unknown }).imageSources)

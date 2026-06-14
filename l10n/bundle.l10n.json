@@ -29,6 +29,8 @@
   "Images must be 10 MB or smaller.": "Images must be 10 MB or smaller.",
   "Image data is empty.": "Image data is empty.",
   "Unsupported image type. Use PNG, JPG, JPEG, GIF, SVG, or WEBP.": "Unsupported image type. Use PNG, JPG, JPEG, GIF, SVG, or WEBP.",
+  "Markdown editor": "Markdown editor",
+  "Markdown editor — {0}": "Markdown editor — {0}",
   "Table {0}: {1} columns, {2} rows": "Table {0}: {1} columns, {2} rows",
   "Mermaid diagram preview": "Mermaid diagram preview",
   "Mermaid diagram": "Mermaid diagram",

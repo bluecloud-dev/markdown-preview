@@ -17,6 +17,7 @@ import { formatString, getString } from './localization';
 import { markdownParser, schema, serializeToHostMarkdown } from './markdown-codec';
 import { wrapTablesForEditor } from './markdown-transforms';
 import { attachHostMessageListener } from './messages';
+import { getEditorViewAttributes } from './editor-accessibility';
 import { createFrontMatterNodeViewConstructor } from './nodes/front-matter-node-view';
 import { isMermaidCodeBlockNode } from './nodes/mermaid-node';
 import { createCodeBlockNodeViewConstructor, isTableCodeBlockNode } from './nodes/table-node-view';
@@ -110,6 +111,7 @@ let toolbarMode: ToolbarMode = 'basic';
 let advancedActionsVisible = false;
 let lastMermaidInsertAt = 0;
 let imageSources = new Map<string, string>();
+let documentFileName = '';
 
 const setStatus = (message: string): void => {
   statusLine.textContent = message;
@@ -904,12 +906,15 @@ const updateToolbarState = (): void => {
   );
 };
 
-const applyHostMarkdown = (hostMarkdown: string): void => {
+const applyHostMarkdown = (hostMarkdown: string, fileName = documentFileName): void => {
+  documentFileName = fileName;
+  const editorViewAttributes = getEditorViewAttributes(documentFileName);
   const editorMarkdown = wrapTablesForEditor(hostMarkdown);
 
   if (!view) {
     view = new EditorView(editorContainer, {
       state: parseMarkdown(editorMarkdown),
+      attributes: editorViewAttributes,
       nodeViews: {
         code_block: createCodeBlockNodeViewConstructor({ setStatus }),
         front_matter: createFrontMatterNodeViewConstructor(),
@@ -931,6 +936,7 @@ const applyHostMarkdown = (hostMarkdown: string): void => {
     return;
   }
 
+  view.setProps({ attributes: editorViewAttributes });
   const currentHostMarkdown = serializeMarkdownForHost();
   if (currentHostMarkdown === hostMarkdown) {
     return;
@@ -949,7 +955,7 @@ const detachHostMessageListener = attachHostMessageListener({
     mermaidPreview.setEnabled(payload.mermaidEnabled);
     setImageSources(payload.imageSources);
     setToolbarMode(payload.toolbarMode);
-    applyHostMarkdown(payload.markdown);
+    applyHostMarkdown(payload.markdown, payload.fileName);
     setStatus(getString('statusConnected'));
     view?.focus();
   },

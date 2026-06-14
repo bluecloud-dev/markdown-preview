@@ -28,6 +28,8 @@ export type WebviewStrings = {
   toolbarButtonSourceLabel: string;
   toolbarMoreLabel: string;
   toolbarMoreTitle: string;
+  editorAriaLabel: string;
+  editorAriaLabelTemplate: string;
   mermaidPreviewTitle: string;
   mermaidPreviewAriaLabel: string;
   statusReady: string;
@@ -127,6 +129,8 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   toolbarButtonSourceLabel: 'Source',
   toolbarMoreLabel: 'More',
   toolbarMoreTitle: 'Show advanced toolbar actions',
+  editorAriaLabel: 'Markdown editor',
+  editorAriaLabelTemplate: 'Markdown editor — {0}',
   mermaidPreviewTitle: 'Mermaid Preview',
   mermaidPreviewAriaLabel: 'Mermaid diagram preview',
   statusReady: 'Ready',

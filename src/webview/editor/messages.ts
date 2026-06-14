@@ -8,6 +8,7 @@ import { isHostToViewMessage } from '../../custom-editor/protocol';
 
 type HostMessageHandlers = {
   onInit: (payload: {
+    fileName: string;
     markdown: string;
     revision: number;
     mermaidEnabled: boolean;

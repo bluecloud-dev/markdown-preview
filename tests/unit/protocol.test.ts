@@ -1,9 +1,113 @@
-import { isHostToViewMessage, isViewToHostMessage } from '../../src/custom-editor/protocol';
+import sinon from 'sinon';
+import * as vscode from 'vscode';
+import { MuninnCustomEditorProvider } from '../../src/custom-editor/muninn-custom-editor-provider';
+import {
+  type HostToViewMessage,
+  isHostToViewMessage,
+  isViewToHostMessage,
+} from '../../src/custom-editor/protocol';
+import type { ConfigService } from '../../src/services/config-service';
+import type { Logger } from '../../src/services/logger';
 
 let expect: Chai.ExpectStatic;
 
 before(async () => {
   ({ expect } = await import('chai'));
+});
+
+const ensureUriJoinPath = (): void => {
+  if (typeof vscode.Uri.joinPath === 'function') {
+    return;
+  }
+
+  Object.defineProperty(vscode.Uri, 'joinPath', {
+    value: (base: vscode.Uri, ...segments: string[]) => {
+      const joinedFsPath = [base.fsPath, ...segments].join('/').replaceAll(/\/+/g, '/');
+      return vscode.Uri.file(joinedFsPath);
+    },
+  });
+};
+
+const createDocument = (filePath: string, text: string): vscode.TextDocument => {
+  const lines = text.split('\n');
+  return {
+    uri: vscode.Uri.file(filePath),
+    fileName: filePath,
+    getText: () => text,
+    lineCount: lines.length,
+    lineAt: (line: number) => ({
+      range: {
+        end: new vscode.Position(line, lines[line]?.length ?? 0),
+      },
+    }),
+  } as unknown as vscode.TextDocument;
+};
+
+const createPanel = (): {
+  dispatchMessage: (message: unknown) => Promise<void>;
+  panel: vscode.WebviewPanel;
+  postedMessages: HostToViewMessage[];
+} => {
+  let messageListener: ((message: unknown) => unknown) | undefined;
+  const postedMessages: HostToViewMessage[] = [];
+  const webview = {
+    options: {},
+    html: '',
+    asWebviewUri: (uri: vscode.Uri) => uri,
+    onDidReceiveMessage: (listener: (message: unknown) => unknown) => {
+      messageListener = listener;
+      return { dispose: () => {} };
+    },
+    postMessage: async (message: HostToViewMessage) => {
+      postedMessages.push(message);
+      return true;
+    },
+  } as unknown as vscode.Webview;
+
+  return {
+    panel: {
+      webview,
+      onDidDispose: () => ({ dispose: () => {} }),
+    } as unknown as vscode.WebviewPanel,
+    postedMessages,
+    dispatchMessage: async (message: unknown) => {
+      await Promise.resolve(messageListener?.(message));
+    },
+  };
+};
+
+const createConfigService = (): ConfigService =>
+  ({
+    getMermaidEnabled: () => true,
+    getMermaidAllowInUntrustedWorkspaces: () => true,
+    getToolbarMode: () => 'basic',
+    getImageDestination: () => 'images/',
+  }) as unknown as ConfigService;
+
+const createLogger = (): Logger =>
+  ({
+    warn: sinon.stub(),
+    error: sinon.stub(),
+  }) as unknown as Logger;
+
+describe('custom editor init protocol', () => {
+  it('includes the document file name in the host init payload', async () => {
+    ensureUriJoinPath();
+    const provider = new MuninnCustomEditorProvider(
+      vscode.Uri.file('/extension'),
+      createConfigService(),
+      createLogger(),
+    );
+    const document = createDocument('/workspace/notes/Welcome.md', '# Welcome\n');
+    const { dispatchMessage, panel, postedMessages } = createPanel();
+
+    await provider.resolveCustomTextEditor(document, panel);
+    await dispatchMessage({ type: 'view.ready' });
+
+    const initMessage = postedMessages.find((message) => message.type === 'host.init');
+
+    expect(initMessage?.payload.fileName).to.equal('Welcome.md');
+  });
 });
 
 describe('custom editor protocol guards', () => {
@@ -63,6 +167,7 @@ describe('custom editor protocol guards', () => {
       isHostToViewMessage({
         type: 'host.init',
         payload: {
+          fileName: 'README.md',
           markdown: '# title',
           revision: 1,
           mermaidEnabled: true,
@@ -119,6 +224,18 @@ describe('custom editor protocol guards', () => {
       isHostToViewMessage({
         type: 'host.init',
         payload: { markdown: '', revision: 0, mermaidEnabled: true },
+      }),
+    ).to.equal(false);
+    expect(
+      isHostToViewMessage({
+        type: 'host.init',
+        payload: {
+          markdown: '',
+          revision: 0,
+          mermaidEnabled: true,
+          toolbarMode: 'basic',
+          imageSources: {},
+        },
       }),
     ).to.equal(false);
     expect(
