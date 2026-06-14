@@ -13,8 +13,8 @@ Muninn provides a reading-first Markdown experience in VS Code with a custom edi
 - Custom markdown editor (`muninn.markdownEditor`) opens by default.
 - Single-pane rich editing toolbar with grouped Text/Structure/Insert actions.
 - Mermaid block insertion with inline preview panel and guarded rendering.
-- In-editor table node view with editable grid, add-row/add-column, and source toggle.
-- Raw markdown escape hatch command.
+- In-editor tables with editable grid controls, source toggle, and keyboard-friendly cell navigation.
+- Source button and command for opening raw Markdown in VS Code.
 - Workspace trust-aware Mermaid gating.
 - No telemetry.
 
@@ -73,4 +73,12 @@ npm run package
 
 GNU Affero General Public License v3.0 (AGPL-3.0-only). See [LICENSE](LICENSE).
 
-Muninn is free software: you can use, study, share, and improve it. If you distribute a modified version — including serving it to users through a network-hosted VS Code environment (code-server, Codespaces, Gitpod, and similar) — you must make your modified source available under the same license.
+### License — plain language
+
+Using Muninn to edit files imposes nothing on those files, your employer's code, or any repository you open.
+Your markdown, and anything you write with Muninn, is yours.
+The AGPL governs copying, distributing, or modifying Muninn itself.
+If you distribute a modified Muninn, share it under the same license and keep required notices.
+If you serve a modified Muninn through hosted VS Code environments such as code-server, Codespaces, or Gitpod, offer users the source for that modified Muninn.
+Redistributing unmodified Muninn keeps the [LICENSE](LICENSE) and notices with the extension.
+Common-understanding summary, not legal advice; the [LICENSE](LICENSE) text governs.
