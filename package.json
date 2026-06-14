@@ -211,6 +211,14 @@
         "icon": "$(code)"
       },
       {
+        "command": "muninn.insertImage",
+        "title": "%command.muninn.insertImage.title%",
+        "category": "%command.category%",
+        "enablement": "activeCustomEditorId == muninn.markdownEditor",
+        "shortTitle": "%command.muninn.insertImage.shortTitle%",
+        "icon": "$(file-media)"
+      },
+      {
         "command": "muninn.addTableRow",
         "title": "%command.muninn.addTableRow.title%",
         "category": "%command.category%",
@@ -256,19 +264,24 @@
           "group": "navigation@3"
         },
         {
-          "command": "muninn.tableActions",
+          "command": "muninn.insertImage",
           "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@4"
         },
         {
-          "command": "muninn.openRawMarkdown",
+          "command": "muninn.tableActions",
           "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@5"
         },
         {
-          "command": "muninn.inspectConfiguration",
+          "command": "muninn.openRawMarkdown",
           "when": "activeCustomEditorId == muninn.markdownEditor",
           "group": "navigation@6"
+        },
+        {
+          "command": "muninn.inspectConfiguration",
+          "when": "activeCustomEditorId == muninn.markdownEditor",
+          "group": "navigation@7"
         }
       ],
       "commandPalette": [
@@ -325,6 +338,10 @@
         },
         {
           "command": "muninn.insertCodeBlock",
+          "when": "activeCustomEditorId == muninn.markdownEditor"
+        },
+        {
+          "command": "muninn.insertImage",
           "when": "activeCustomEditorId == muninn.markdownEditor"
         },
         {
@@ -403,6 +420,12 @@
           "default": "basic",
           "description": "%configuration.toolbar.mode.description%",
           "scope": "window"
+        },
+        "muninn.images.destination": {
+          "type": "string",
+          "default": "images/",
+          "description": "%configuration.images.destination.description%",
+          "scope": "resource"
         }
       }
     }

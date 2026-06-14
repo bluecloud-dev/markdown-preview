@@ -29,6 +29,12 @@ describe('custom editor protocol guards', () => {
     ).to.equal(true);
     expect(
       isViewToHostMessage({
+        type: 'view.requestImageInsert',
+        payload: { kind: 'paste', name: 'clip.png', mime: 'image/png', bytesBase64: 'aGVsbG8=' },
+      }),
+    ).to.equal(true);
+    expect(
+      isViewToHostMessage({
         type: 'view.applyDocument',
         payload: { markdown: 123, revision: 0 },
       }),
@@ -44,6 +50,12 @@ describe('custom editor protocol guards', () => {
         payload: { command: 'not-supported' },
       }),
     ).to.equal(false);
+    expect(
+      isViewToHostMessage({
+        type: 'view.requestImageInsert',
+        payload: { kind: 'command', bytesBase64: 'aGVsbG8=' },
+      }),
+    ).to.equal(false);
   });
 
   it('accepts valid host-to-view payloads', () => {
@@ -55,6 +67,7 @@ describe('custom editor protocol guards', () => {
           revision: 1,
           mermaidEnabled: true,
           toolbarMode: 'basic',
+          imageSources: {},
         },
       }),
     ).to.equal(true);
@@ -74,6 +87,22 @@ describe('custom editor protocol guards', () => {
       isHostToViewMessage({
         type: 'host.insertLink',
         payload: { href: 'https://example.com', text: 'Example' },
+      }),
+    ).to.equal(true);
+    expect(
+      isHostToViewMessage({
+        type: 'host.imageInserted',
+        payload: {
+          path: 'images/screenshot.png',
+          webviewUri: 'vscode-webview://view/images/screenshot.png',
+          filename: 'screenshot.png',
+        },
+      }),
+    ).to.equal(true);
+    expect(
+      isHostToViewMessage({
+        type: 'host.imageRejected',
+        payload: { reason: 'Unsupported image type.' },
       }),
     ).to.equal(true);
     expect(

@@ -1,5 +1,7 @@
 export type DocumentRevision = number;
 export type ToolbarMode = 'basic' | 'advanced';
+export type ImageInsertKind = 'paste' | 'drop';
+export type ImageUriMap = Record<string, string>;
 
 export type ViewEditorCommand =
   | 'toggleBold'
@@ -23,11 +25,14 @@ export type HostToViewMessage =
       payload: SerializedMarkdownPayload & {
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
+        imageSources: ImageUriMap;
       };
     }
   | {
       type: 'host.documentChanged';
-      payload: SerializedMarkdownPayload;
+      payload: SerializedMarkdownPayload & {
+        imageSources: ImageUriMap;
+      };
     }
   | {
       type: 'host.executeCommand';
@@ -47,6 +52,20 @@ export type HostToViewMessage =
       payload: {
         href: string;
         text?: string;
+      };
+    }
+  | {
+      type: 'host.imageInserted';
+      payload: {
+        path: string;
+        webviewUri: string;
+        filename: string;
+      };
+    }
+  | {
+      type: 'host.imageRejected';
+      payload: {
+        reason: string;
       };
     }
   | {
@@ -76,6 +95,15 @@ export type ViewToHostMessage =
       payload: {
         selectedText?: string;
       };
+    }
+  | {
+      type: 'view.requestImageInsert';
+      payload: {
+        kind: ImageInsertKind;
+        name?: string;
+        mime?: string;
+        bytesBase64: string;
+      };
     };
 
 export type SerializedMarkdownPayload = {
@@ -87,6 +115,13 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
 const isString = (value: unknown): value is string => typeof value === 'string';
+const isImageUriMap = (value: unknown): value is ImageUriMap => {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  return Object.entries(value).every(([key, mapValue]) => isString(key) && isString(mapValue));
+};
 
 const isSerializedMarkdownPayload = (value: unknown): value is SerializedMarkdownPayload => {
   if (!isObject(value)) {
@@ -143,6 +178,16 @@ export const isViewToHostMessage = (value: unknown): value is ViewToHostMessage 
     );
   }
 
+  if (value.type === 'view.requestImageInsert') {
+    return (
+      isObject(value.payload) &&
+      (value.payload.kind === 'paste' || value.payload.kind === 'drop') &&
+      (value.payload.name === undefined || isString(value.payload.name)) &&
+      (value.payload.mime === undefined || isString(value.payload.mime)) &&
+      isString(value.payload.bytesBase64)
+    );
+  }
+
   return false;
 };
 
@@ -157,12 +202,18 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
       isSerializedMarkdownPayload(payload) &&
       isObject(payload) &&
       typeof (payload as { mermaidEnabled?: unknown }).mermaidEnabled === 'boolean' &&
-      isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode)
+      isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode) &&
+      isImageUriMap((payload as { imageSources?: unknown }).imageSources)
     );
   }
 
   if (value.type === 'host.documentChanged') {
-    return isSerializedMarkdownPayload(value.payload);
+    const payload = value.payload;
+    return (
+      isSerializedMarkdownPayload(payload) &&
+      isObject(payload) &&
+      isImageUriMap((payload as { imageSources?: unknown }).imageSources)
+    );
   }
 
   if (value.type === 'host.executeCommand') {
@@ -183,6 +234,19 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
       isString(value.payload.href) &&
       (value.payload.text === undefined || isString(value.payload.text))
     );
+  }
+
+  if (value.type === 'host.imageInserted') {
+    return (
+      isObject(value.payload) &&
+      isString(value.payload.path) &&
+      isString(value.payload.webviewUri) &&
+      isString(value.payload.filename)
+    );
+  }
+
+  if (value.type === 'host.imageRejected') {
+    return isObject(value.payload) && isString(value.payload.reason);
   }
 
   if (value.type === 'host.error') {

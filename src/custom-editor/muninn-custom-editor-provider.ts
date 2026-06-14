@@ -1,13 +1,28 @@
+import path from 'node:path';
 import * as vscode from 'vscode';
+import MarkdownIt from 'markdown-it';
 import { ConfigService } from '../services/config-service';
 import { Logger } from '../services/logger';
 import { isMermaidIntegrationActive } from '../integrations/mermaid-adapter';
 import { t } from '../utils/l10n';
 import { DEFAULT_WEBVIEW_STRINGS, type WebviewStrings } from '../shared/webview-strings';
+import {
+  appendDeduplicationSuffix,
+  formatPasteImageFileName,
+  getImageDestinationDirectory,
+  getMarkdownImagePath,
+  resolveMarkdownImageUri,
+  sanitizeImageFileName,
+  validateImageAsset,
+  type ImageInsertKind,
+  type ImageValidationFailure,
+} from './image-assets';
 import { DocumentSync } from './document-sync';
 import {
   HostToViewMessage,
+  ImageUriMap,
   isViewToHostMessage,
+  SerializedMarkdownPayload,
   ToolbarMode,
   ViewEditorCommand,
   ViewToHostMessage,
@@ -29,6 +44,11 @@ const getLocalizedWebviewStrings = (): WebviewStrings => {
 const serializeForInlineScript = (value: unknown): string =>
   JSON.stringify(value).replaceAll('<', String.raw`\u003c`);
 
+const markdownItParser = MarkdownIt('commonmark', {
+  html: false,
+  linkify: true,
+});
+
 type EditorSession = {
   document: vscode.TextDocument;
   panel: vscode.WebviewPanel;
@@ -40,6 +60,17 @@ type EditorSession = {
 type SessionSettings = {
   mermaidEnabled: boolean;
   toolbarMode: ToolbarMode;
+};
+
+type HostMarkdownPayload = SerializedMarkdownPayload & {
+  imageSources: ImageUriMap;
+};
+
+type ImageSourceInput = {
+  kind: ImageInsertKind | 'command';
+  name?: string;
+  mime?: string;
+  bytes: Uint8Array;
 };
 
 export class MuninnCustomEditorProvider
@@ -81,7 +112,7 @@ export class MuninnCustomEditorProvider
   ): Promise<void> {
     webviewPanel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
+      localResourceRoots: this.getLocalResourceRoots(document.uri),
     };
     webviewPanel.webview.html = this.getHtml(webviewPanel.webview);
 
@@ -141,6 +172,40 @@ export class MuninnCustomEditorProvider
     });
   }
 
+  async insertImageInActiveEditor(): Promise<void> {
+    const session = this.getActiveSession();
+    if (!session || !session.ready) {
+      return;
+    }
+
+    const selection = await vscode.window.showOpenDialog({
+      title: t('Insert Image'),
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: false,
+      filters: {
+        [t('Images')]: ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'],
+      },
+    });
+
+    const sourceUri = selection?.[0];
+    if (!sourceUri) {
+      return;
+    }
+
+    try {
+      const bytes = await vscode.workspace.fs.readFile(sourceUri);
+      await this.insertImageForSession(session, {
+        kind: 'command',
+        name: path.basename(sourceUri.fsPath),
+        bytes,
+      });
+    } catch (error) {
+      this.logger.error(t('Image insertion failed.'), error);
+      await this.rejectImageForSession(session, t('Could not add image. Please retry.'));
+    }
+  }
+
   async notifyConfigurationChanged(): Promise<void> {
     for (const session of this.sessions.values()) {
       if (!session.ready) {
@@ -167,7 +232,7 @@ export class MuninnCustomEditorProvider
         await this.postMessage(session.panel.webview, {
           type: 'host.init',
           payload: {
-            ...session.sync.getSnapshot(),
+            ...this.getHostMarkdownPayload(session),
             ...settings,
           },
         });
@@ -181,6 +246,10 @@ export class MuninnCustomEditorProvider
       }
       case 'view.requestLinkInput': {
         await this.requestLinkInputForSession(session, message.payload.selectedText);
+        return;
+      }
+      case 'view.requestImageInsert': {
+        await this.handleRequestedImageInsert(session, message.payload);
         return;
       }
       case 'view.applyDocument': {
@@ -198,7 +267,7 @@ export class MuninnCustomEditorProvider
           });
           await this.postMessage(session.panel.webview, {
             type: 'host.documentChanged',
-            payload: session.sync.getSnapshot(),
+            payload: this.getHostMarkdownPayload(session),
           });
         }
         return;
@@ -272,7 +341,7 @@ export class MuninnCustomEditorProvider
       }
       void this.postMessage(session.panel.webview, {
         type: 'host.documentChanged',
-        payload: snapshot,
+        payload: this.withImageSources(snapshot, session),
       });
     }
   }
@@ -358,6 +427,147 @@ export class MuninnCustomEditorProvider
     }
   }
 
+  private async handleRequestedImageInsert(
+    session: EditorSession,
+    payload: Extract<ViewToHostMessage, { type: 'view.requestImageInsert' }>['payload'],
+  ): Promise<void> {
+    let bytes: Uint8Array;
+    try {
+      bytes = Buffer.from(payload.bytesBase64, 'base64');
+    } catch {
+      await this.rejectImageForSession(session, t('Could not read image data.'));
+      return;
+    }
+
+    await this.insertImageForSession(session, {
+      kind: payload.kind,
+      name: payload.name,
+      mime: payload.mime,
+      bytes,
+    });
+  }
+
+  private async insertImageForSession(
+    session: EditorSession,
+    input: ImageSourceInput,
+  ): Promise<void> {
+    const validation = validateImageAsset({
+      byteLength: input.bytes.byteLength,
+      name: input.name,
+      mime: input.mime,
+    });
+    if (!validation.ok) {
+      await this.rejectImageForSession(session, this.formatImageRejection(validation.reason));
+      return;
+    }
+
+    const destinationDirectory = getImageDestinationDirectory(
+      session.document.uri,
+      this.configService.getImageDestination(session.document.uri),
+    );
+    const requestedFileName =
+      input.kind === 'paste'
+        ? formatPasteImageFileName(new Date(), validation.extension)
+        : sanitizeImageFileName(input.name ?? 'image', validation.extension);
+
+    try {
+      await vscode.workspace.fs.createDirectory(destinationDirectory);
+      const imageUri = await this.getAvailableImageUri(destinationDirectory, requestedFileName);
+      await vscode.workspace.fs.writeFile(imageUri, input.bytes);
+
+      const markdownPath = getMarkdownImagePath(session.document.uri, imageUri);
+      await this.postMessage(session.panel.webview, {
+        type: 'host.imageInserted',
+        payload: {
+          path: markdownPath,
+          webviewUri: session.panel.webview.asWebviewUri(imageUri).toString(),
+          filename: path.basename(imageUri.fsPath),
+        },
+      });
+    } catch (error) {
+      this.logger.error(t('Image insertion failed.'), error);
+      await this.rejectImageForSession(session, t('Could not add image. Please retry.'));
+    }
+  }
+
+  private async getAvailableImageUri(
+    directory: vscode.Uri,
+    requestedFileName: string,
+  ): Promise<vscode.Uri> {
+    let suffix = 0;
+    while (true) {
+      const fileName =
+        suffix === 0 ? requestedFileName : appendDeduplicationSuffix(requestedFileName, suffix);
+      const candidate = vscode.Uri.joinPath(directory, fileName);
+      try {
+        await vscode.workspace.fs.stat(candidate);
+        suffix += 1;
+      } catch {
+        return candidate;
+      }
+    }
+  }
+
+  private async rejectImageForSession(session: EditorSession, reason: string): Promise<void> {
+    await this.postMessage(session.panel.webview, {
+      type: 'host.imageRejected',
+      payload: { reason },
+    });
+  }
+
+  private formatImageRejection(reason: ImageValidationFailure): string {
+    if (reason === 'tooLarge') {
+      return t('Images must be 10 MB or smaller.');
+    }
+    if (reason === 'empty') {
+      return t('Image data is empty.');
+    }
+    return t('Unsupported image type. Use PNG, JPG, JPEG, GIF, SVG, or WEBP.');
+  }
+
+  private getLocalResourceRoots(documentUri: vscode.Uri): vscode.Uri[] {
+    const workspaceRoots = vscode.workspace.workspaceFolders?.map((folder) => folder.uri) ?? [];
+    return [
+      vscode.Uri.joinPath(this.extensionUri, 'media'),
+      vscode.Uri.file(path.dirname(documentUri.fsPath)),
+      ...workspaceRoots,
+    ];
+  }
+
+  private getHostMarkdownPayload(session: EditorSession): HostMarkdownPayload {
+    return this.withImageSources(session.sync.getSnapshot(), session);
+  }
+
+  private withImageSources(
+    payload: SerializedMarkdownPayload,
+    session: EditorSession,
+  ): HostMarkdownPayload {
+    return {
+      ...payload,
+      imageSources: this.createImageUriMap(
+        payload.markdown,
+        session.document.uri,
+        session.panel.webview,
+      ),
+    };
+  }
+
+  private createImageUriMap(
+    markdown: string,
+    documentUri: vscode.Uri,
+    webview: vscode.Webview,
+  ): ImageUriMap {
+    const imageSources: ImageUriMap = {};
+    for (const source of collectMarkdownImageSources(markdown)) {
+      const imageUri = resolveMarkdownImageUri(documentUri, source);
+      if (!imageUri) {
+        continue;
+      }
+      imageSources[source] = webview.asWebviewUri(imageUri).toString();
+    }
+    return imageSources;
+  }
+
   private getHtml(webview: vscode.Webview): string {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.extensionUri, 'media', 'editor-webview.js'),
@@ -393,3 +603,20 @@ export class MuninnCustomEditorProvider
 
 const createNonce = (): string =>
   Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
+const collectMarkdownImageSources = (markdown: string): string[] => {
+  const sources = new Set<string>();
+  for (const token of markdownItParser.parse(markdown, {})) {
+    const children = token.children ?? [];
+    for (const child of children) {
+      if (child.type !== 'image') {
+        continue;
+      }
+      const source = child.attrGet('src');
+      if (source) {
+        sources.add(source);
+      }
+    }
+  }
+  return [...sources];
+};

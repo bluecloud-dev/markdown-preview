@@ -11,11 +11,18 @@ type HostMessageHandlers = {
     revision: number;
     mermaidEnabled: boolean;
     toolbarMode: ToolbarMode;
+    imageSources: Record<string, string>;
   }) => void;
-  onDocumentChanged: (payload: { markdown: string; revision: number }) => void;
+  onDocumentChanged: (payload: {
+    markdown: string;
+    revision: number;
+    imageSources: Record<string, string>;
+  }) => void;
   onExecuteCommand: (command: ViewEditorCommand) => void;
   onSettingsChanged: (payload: { mermaidEnabled: boolean; toolbarMode: ToolbarMode }) => void;
   onInsertLink: (payload: { href: string; text?: string }) => void;
+  onImageInserted: (payload: { path: string; webviewUri: string; filename: string }) => void;
+  onImageRejected: (payload: { reason: string }) => void;
   onError: (payload: { code: 'revision_mismatch' | 'apply_failed'; message: string }) => void;
 };
 
@@ -42,6 +49,14 @@ export const dispatchHostMessage = (
     }
     case 'host.insertLink': {
       handlers.onInsertLink(message.payload);
+      return;
+    }
+    case 'host.imageInserted': {
+      handlers.onImageInserted(message.payload);
+      return;
+    }
+    case 'host.imageRejected': {
+      handlers.onImageRejected(message.payload);
       return;
     }
     case 'host.error': {

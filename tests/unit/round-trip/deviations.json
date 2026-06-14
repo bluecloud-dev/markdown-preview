@@ -182,6 +182,13 @@
     "issue": "#282"
   },
   {
+    "fixture": "images--inserted.md",
+    "category": "images",
+    "kind": "final-newline-only",
+    "rootCause": "prosemirror-markdown serialize() emits no trailing newline; the construct content itself round-trips byte-identically",
+    "issue": "#282"
+  },
+  {
     "fixture": "line-endings--crlf (synthesized)",
     "category": "line-endings",
     "kind": "construct",

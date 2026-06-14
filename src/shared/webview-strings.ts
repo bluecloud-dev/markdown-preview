@@ -52,6 +52,8 @@ export type WebviewStrings = {
   statusInsertedMermaid: string;
   statusInsertedTable: string;
   statusInsertedCodeBlock: string;
+  statusImageAddedTemplate: string;
+  statusInsertImageFailed: string;
   statusAwaitingLinkInput: string;
   statusInsertedLink: string;
   statusRemovedLink: string;
@@ -150,6 +152,8 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   statusInsertedMermaid: 'Inserted Mermaid block.',
   statusInsertedTable: 'Inserted table.',
   statusInsertedCodeBlock: 'Inserted code block. Set language from block header.',
+  statusImageAddedTemplate: 'Image added: {0}',
+  statusInsertImageFailed: 'Could not read image. Please retry.',
   statusAwaitingLinkInput: 'Awaiting link input…',
   statusInsertedLink: 'Inserted link.',
   statusRemovedLink: 'Removed link.',

@@ -181,6 +181,11 @@ body {
   font-family: var(--vscode-editor-font-family, monospace);
 }
 
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
+
 .muninn-mermaid-preview-panel {
   border: 1px solid var(--vscode-editorWidget-border);
   border-radius: 8px;
