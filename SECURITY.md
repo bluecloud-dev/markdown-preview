@@ -30,7 +30,7 @@ Please include as much of the following as you can:
 - Impact assessment, including what data or capability could be exposed or modified.
 - Proof-of-concept details, if available.
 
-You should receive an initial response within 72 hours. Confirmed vulnerabilities will be triaged privately, fixed on a branch or private fork when needed, and disclosed after a patched release or mitigation is available.
+Maintainers will respond as soon as practical. Confirmed vulnerabilities will be triaged privately, fixed on a branch or private fork when needed, and disclosed after a patched release or mitigation is available.
 
 ## Credit and Disclosure
 
