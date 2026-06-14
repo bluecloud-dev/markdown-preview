@@ -209,6 +209,7 @@ const mermaidPreview = new MermaidPreviewController({
   panel: mermaidPreviewPanel,
   body: mermaidPreviewBody,
   getSelectedMermaidSource: () => selectCodeBlockSource(isMermaidCodeBlockNode),
+  setStatus,
   renderDelayMs: 120,
 });
 

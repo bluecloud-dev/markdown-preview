@@ -29,6 +29,7 @@ export type WebviewStrings = {
   toolbarMoreLabel: string;
   toolbarMoreTitle: string;
   mermaidPreviewTitle: string;
+  mermaidPreviewAriaLabel: string;
   statusReady: string;
   commandLabelBold: string;
   commandLabelItalic: string;
@@ -88,6 +89,10 @@ export type WebviewStrings = {
   statusTableSourceApplyFailed: string;
   mermaidDisabledMessage: string;
   mermaidNoSvgOutput: string;
+  mermaidDiagramAriaLabel: string;
+  mermaidDiagramAriaLabelTemplate: string;
+  statusMermaidPreviewShown: string;
+  statusMermaidPreviewHidden: string;
 };
 
 export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
@@ -121,6 +126,7 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   toolbarMoreLabel: 'More',
   toolbarMoreTitle: 'Show advanced toolbar actions',
   mermaidPreviewTitle: 'Mermaid Preview',
+  mermaidPreviewAriaLabel: 'Mermaid diagram preview',
   statusReady: 'Ready',
   commandLabelBold: 'Bold',
   commandLabelItalic: 'Italic',
@@ -182,4 +188,8 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   mermaidDisabledMessage:
     'Mermaid preview is disabled for this workspace. Enable muninn.integrations.mermaid.enabled and trust the workspace, or allow Mermaid in restricted workspaces.',
   mermaidNoSvgOutput: 'Mermaid rendered no SVG output.',
+  mermaidDiagramAriaLabel: 'Mermaid diagram',
+  mermaidDiagramAriaLabelTemplate: 'Mermaid diagram: {0}',
+  statusMermaidPreviewShown: 'Diagram preview shown',
+  statusMermaidPreviewHidden: 'Diagram preview hidden',
 };

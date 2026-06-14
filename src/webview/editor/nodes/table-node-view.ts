@@ -279,7 +279,7 @@ class GenericCodeBlockNodeView implements NodeView {
       return;
     }
 
-    this.mermaidPreview.innerHTML = sanitizeMermaidSvg(result.svg);
+    this.mermaidPreview.innerHTML = sanitizeMermaidSvg(result.svg, source);
   }
 
   private resolveNodePosition(): number | undefined {
