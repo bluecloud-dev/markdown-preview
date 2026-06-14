@@ -14,17 +14,6 @@ const waitForSampleMarkdown = (predicate, errorMessage) =>
 const executeCommandAndWaitForSampleMarkdown = (command, predicate, errorMessage) =>
   executeWorkbenchCommandAndWaitForWorkspaceFileText('sample.md', command, predicate, errorMessage);
 
-const isRetryableWebviewError = (error) => {
-  const message = String(error?.message ?? error).toLowerCase();
-  return (
-    message.includes('stale element') ||
-    message.includes('invalid session id') ||
-    message.includes('detached') ||
-    message.includes('frame') ||
-    message.includes('target closed')
-  );
-};
-
 const isTableInPreviewMode = async () => {
   let previewVisible = false;
   await withCustomEditorWebview(async () => {
@@ -43,55 +32,44 @@ const isTableInPreviewMode = async () => {
 };
 
 const applyTableSourceFromWebview = async (source, mode) => {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      await withCustomEditorWebview(async () => {
-        const tableNode = await browser.$('[data-testid="muninn-table-node"]');
-        const sourceToggle = await tableNode.$('[data-testid="muninn-table-toggle-source"]');
-        const sourceTextarea = await tableNode.$('[data-testid="muninn-table-source-text"]');
-        const tableGrid = await tableNode.$('.muninn-table-node-grid');
-        if (!(await sourceTextarea.isDisplayed())) {
-          await sourceToggle.click();
-          await sourceTextarea.waitForDisplayed({ timeout: 5_000 });
-          await expect(tableGrid).not.toBeDisplayed();
-        }
-
-        await sourceTextarea.click();
-        await sourceTextarea.clearValue();
-        await sourceTextarea.setValue(source);
-
-        if (mode === 'button') {
-          const applySourceButton = await tableNode.$('[data-testid="muninn-table-apply-source"]');
-          await applySourceButton.waitForEnabled({ timeout: 5_000 });
-          await applySourceButton.click();
-        } else {
-          const applyShortcut =
-            process.platform === 'darwin' ? ['Meta', 'Enter'] : ['Control', 'Enter'];
-          await browser.keys(applyShortcut);
-        }
-      });
-
-      await browser.waitUntil(
-        async () => {
-          try {
-            return await isTableInPreviewMode();
-          } catch {
-            return false;
-          }
-        },
-        {
-          timeout: 10_000,
-          timeoutMsg: 'Expected table source mode to close and grid mode to return after apply.',
-        },
-      );
-      return;
-    } catch (error) {
-      if (!isRetryableWebviewError(error) || attempt === 2) {
-        throw error;
-      }
-      await browser.pause(300);
+  await withCustomEditorWebview(async () => {
+    const tableNode = await browser.$('[data-testid="muninn-table-node"]');
+    const sourceToggle = await tableNode.$('[data-testid="muninn-table-toggle-source"]');
+    const sourceTextarea = await tableNode.$('[data-testid="muninn-table-source-text"]');
+    const tableGrid = await tableNode.$('.muninn-table-node-grid');
+    if (!(await sourceTextarea.isDisplayed())) {
+      await sourceToggle.click();
+      await sourceTextarea.waitForDisplayed({ timeout: 5_000 });
+      await expect(tableGrid).not.toBeDisplayed();
     }
-  }
+
+    await sourceTextarea.click();
+    await sourceTextarea.clearValue();
+    await sourceTextarea.setValue(source);
+
+    if (mode === 'button') {
+      const applySourceButton = await tableNode.$('[data-testid="muninn-table-apply-source"]');
+      await applySourceButton.waitForEnabled({ timeout: 5_000 });
+      await applySourceButton.click();
+    } else {
+      const applyShortcut = process.platform === 'darwin' ? ['Meta', 'Enter'] : ['Control', 'Enter'];
+      await browser.keys(applyShortcut);
+    }
+  });
+
+  await browser.waitUntil(
+    async () => {
+      try {
+        return await isTableInPreviewMode();
+      } catch {
+        return false;
+      }
+    },
+    {
+      timeout: 10_000,
+      timeoutMsg: 'Expected table source mode to close and grid mode to return after apply.',
+    },
+  );
 };
 
 describe('Table node view workflow', () => {

@@ -85,6 +85,19 @@ export const waitForCustomEditor = async (fileName) => {
   );
 };
 
+const waitForActiveCustomEditor = async () => {
+  await browser.waitUntil(
+    async () => {
+      const state = await readEditorState();
+      return state.activeCustomViewType === 'muninn.markdownEditor';
+    },
+    {
+      timeout: 20_000,
+      timeoutMsg: 'Expected Muninn custom editor to be active.',
+    },
+  );
+};
+
 export const waitForRawEditor = async (fileName) => {
   await browser.waitUntil(
     async () => {
@@ -118,9 +131,13 @@ export const waitForWorkspaceFileText = async (
   fileName,
   predicate,
   errorMessage,
-  { attempts = 10, interval = 200 } = {},
+  { attempts = 10, interval = 200, beforeRead } = {},
 ) => {
   for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (beforeRead) {
+      await beforeRead();
+    }
+
     const text = await readWorkspaceFileText(fileName);
     if (predicate(text)) {
       return text;
@@ -139,9 +156,11 @@ export const executeWorkbenchCommandUntilWorkspaceFileText = async (
   { attempts = 8, interval = 200 } = {},
 ) => {
   for (let attempt = 0; attempt < attempts; attempt += 1) {
+    await waitForCustomEditorWebviewReady();
     await executeWorkbenchCommand(command);
     await browser.pause(interval);
 
+    await waitForCustomEditorWebviewReady();
     const text = await readWorkspaceFileText(fileName);
     if (predicate(text)) {
       return text;
@@ -159,17 +178,54 @@ const hasWebviewAppRoot = async () => {
   }
 };
 
-const runWithOpenWebviewIfAppRoot = async (webview, runInWebview) => {
-  await webview.open();
-  try {
-    if (!(await hasWebviewAppRoot())) {
-      return false;
+export const isRetryableWebviewError = (error) => {
+  const message = String(error?.message ?? error).toLowerCase();
+  return (
+    message.includes('stale element') ||
+    message.includes('invalid session id') ||
+    message.includes('detached') ||
+    message.includes('frame') ||
+    message.includes('target closed') ||
+    message.includes('target window already closed') ||
+    message.includes('no such window') ||
+    message.includes('web view not found')
+  );
+};
+
+const runWithRetryableWebviewErrors = async (operationName, run) => {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await run();
+    } catch (error) {
+      if (!isRetryableWebviewError(error) || attempt === 2) {
+        throw error;
+      }
+
+      console.warn(
+        `[wdio] Retrying ${operationName} after transient webview lifecycle error (${attempt + 1}/3): ${
+          error?.message ?? error
+        }`,
+      );
+      await browser.pause(300);
     }
-    await runInWebview();
-    return true;
-  } finally {
-    await webview.close();
   }
+
+  throw new Error(`Retry loop for ${operationName} exited unexpectedly.`);
+};
+
+const runWithOpenWebviewIfAppRoot = async (webview, runInWebview) => {
+  return runWithRetryableWebviewErrors('open custom editor webview', async () => {
+    await webview.open();
+    try {
+      if (!(await hasWebviewAppRoot())) {
+        return false;
+      }
+      await runInWebview();
+      return true;
+    } finally {
+      await webview.close();
+    }
+  });
 };
 
 export const runInCustomEditorWebviewIfAvailable = async (runInWebview) => {
@@ -186,22 +242,24 @@ export const runInCustomEditorWebviewIfAvailable = async (runInWebview) => {
 };
 
 export const withCustomEditorWebview = async (runInWebview) => {
-  await browser.waitUntil(
-    async () => {
-      const workbench = await getWorkbench();
-      const webviews = await workbench.getAllWebviews();
-      return webviews.length > 0;
-    },
-    {
-      timeout: 15_000,
-      timeoutMsg: 'Expected active custom editor webview.',
-    },
-  );
+  await runWithRetryableWebviewErrors('run in custom editor webview', async () => {
+    await browser.waitUntil(
+      async () => {
+        const workbench = await getWorkbench();
+        const webviews = await workbench.getAllWebviews();
+        return webviews.length > 0;
+      },
+      {
+        timeout: 15_000,
+        timeoutMsg: 'Expected active custom editor webview.',
+      },
+    );
 
-  const ranInWebview = await runInCustomEditorWebviewIfAvailable(runInWebview);
-  if (!ranInWebview) {
-    throw new Error('Active custom editor webview context not found.');
-  }
+    const ranInWebview = await runInCustomEditorWebviewIfAvailable(runInWebview);
+    if (!ranInWebview) {
+      throw new Error('Active custom editor webview context not found.');
+    }
+  });
 };
 
 export const waitForCustomEditorWebviewReady = async () => {
@@ -209,9 +267,7 @@ export const waitForCustomEditorWebviewReady = async () => {
     const editor = await browser.$('.ProseMirror');
     await editor.waitForDisplayed({ timeout: 5_000 });
   });
-  // Closing a VS Code webview detaches its inner frame asynchronously. Avoid
-  // dispatching commands while WebDriver is still processing that detach event.
-  await browser.pause(500);
+  await waitForActiveCustomEditor();
 };
 
 export const executeWorkbenchCommandAndWaitForWorkspaceFileText = async (
@@ -222,7 +278,9 @@ export const executeWorkbenchCommandAndWaitForWorkspaceFileText = async (
 ) => {
   await waitForCustomEditorWebviewReady();
   await executeWorkbenchCommand(command);
-  return waitForWorkspaceFileText(fileName, predicate, errorMessage);
+  return waitForWorkspaceFileText(fileName, predicate, errorMessage, {
+    beforeRead: waitForCustomEditorWebviewReady,
+  });
 };
 
 export const executeWorkbenchCommandOnceAndWaitForWorkspaceFileText = async (
@@ -234,5 +292,69 @@ export const executeWorkbenchCommandOnceAndWaitForWorkspaceFileText = async (
 ) => {
   await waitForCustomEditorWebviewReady();
   await executeWorkbenchCommand(command);
-  return waitForWorkspaceFileText(fileName, predicate, errorMessage, options);
+  return waitForWorkspaceFileText(fileName, predicate, errorMessage, {
+    ...options,
+    beforeRead: waitForCustomEditorWebviewReady,
+  });
+};
+
+const readWebviewTitle = async (webview, index) => {
+  let opened = false;
+  try {
+    await webview.open();
+    opened = true;
+    const title = await browser.execute(() => document.title);
+    await webview.close();
+    opened = false;
+    return title || `webview-${index + 1}: empty title`;
+  } catch (error) {
+    if (opened) {
+      try {
+        await webview.close();
+      } catch {
+        // Best-effort diagnostics should not hide the original failure.
+      }
+    }
+    return `webview-${index + 1}: title unavailable (${error?.message ?? error})`;
+  }
+};
+
+export const readWebviewInventory = async () => {
+  try {
+    const workbench = await getWorkbench();
+    const webviews = await workbench.getAllWebviews();
+    const titles = [];
+
+    for (let index = 0; index < webviews.length; index += 1) {
+      titles.push(await readWebviewTitle(webviews[index], index));
+    }
+
+    return { count: webviews.length, titles };
+  } catch (error) {
+    return {
+      count: null,
+      titles: [],
+      error: error?.message ?? String(error),
+    };
+  }
+};
+
+export const readE2EDiagnostics = async (error) => {
+  let editorState = null;
+  let editorStateError = null;
+
+  try {
+    editorState = await readEditorState();
+  } catch (stateError) {
+    editorStateError = stateError?.message ?? String(stateError);
+  }
+
+  return {
+    failureKind: isRetryableWebviewError(error)
+      ? 'runner-window-loss-or-transient-webview-lifecycle'
+      : 'application-or-assertion-failure',
+    editorState,
+    editorStateError,
+    webviews: await readWebviewInventory(),
+  };
 };
