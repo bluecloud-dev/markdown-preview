@@ -50,7 +50,7 @@ export const bootstrapEditorApp = (): EditorBootstrap => {
     <button type="button" class="muninn-toolbar-more" data-testid="muninn-toolbar-more" aria-expanded="false" title="${getHtmlString('toolbarMoreTitle')}">${getHtmlString('toolbarMoreLabel')}</button>
   </div>
   <div class="muninn-editor-shell" id="editor-shell">
-    <section id="mermaid-preview-panel" class="muninn-mermaid-preview-panel" hidden>
+    <section id="mermaid-preview-panel" class="muninn-mermaid-preview-panel" aria-label="${getHtmlString('mermaidPreviewAriaLabel')}" hidden>
       <div class="muninn-mermaid-preview-header">
         <strong>${getHtmlString('mermaidPreviewTitle')}</strong>
       </div>

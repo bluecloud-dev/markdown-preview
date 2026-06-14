@@ -1,10 +1,11 @@
 import { renderMermaidDiagram } from './renderers/mermaid-renderer';
-import { escapeHtml, getString } from './localization';
+import { escapeHtml, formatString, getString } from './localization';
 
 type MermaidPreviewOptions = {
   panel: HTMLElement;
   body: HTMLDivElement;
   getSelectedMermaidSource: () => string | undefined;
+  setStatus: (message: string) => void;
   renderDelayMs: number;
 };
 
@@ -42,12 +43,12 @@ export class MermaidPreviewController {
   private async render(): Promise<void> {
     const source = this.options.getSelectedMermaidSource();
     if (!source) {
-      this.options.panel.hidden = true;
+      this.setPanelHidden(true);
       this.options.body.innerHTML = '';
       return;
     }
 
-    this.options.panel.hidden = false;
+    this.setPanelHidden(false);
     if (!this.enabled) {
       this.options.body.textContent = getString('mermaidDisabledMessage');
       return;
@@ -65,9 +66,100 @@ export class MermaidPreviewController {
       return;
     }
 
-    this.options.body.innerHTML = sanitizeMermaidSvg(result.svg);
+    this.options.body.innerHTML = sanitizeMermaidSvg(result.svg, source);
+  }
+
+  private setPanelHidden(hidden: boolean): void {
+    if (this.options.panel.hidden === hidden) {
+      return;
+    }
+
+    this.options.panel.hidden = hidden;
+    this.options.setStatus(
+      hidden ? getString('statusMermaidPreviewHidden') : getString('statusMermaidPreviewShown'),
+    );
   }
 }
+
+const stripMermaidLabelQuotes = (label: string): string =>
+  label
+    .trim()
+    .replaceAll(/^["'`]+|["'`]+$/g, '')
+    .trim();
+
+const getMermaidDiagramType = (line: string): string | undefined => {
+  const [keyword, direction] = line.split(/\s+/);
+  if (keyword === 'graph' || keyword === 'flowchart') {
+    return direction ? `${keyword} ${direction}` : keyword;
+  }
+  if (
+    /^(?:[A-Z]?\w+Diagram(?:-v2)?|gantt|gitGraph|journey|mindmap|pie|timeline)$/.test(keyword ?? '')
+  ) {
+    return keyword;
+  }
+  return undefined;
+};
+
+const findMermaidSubjectLabel = (
+  diagramType: string,
+  lines: readonly string[],
+): string | undefined => {
+  for (const line of lines) {
+    const graphMatch =
+      diagramType.startsWith('graph ') || diagramType.startsWith('flowchart ')
+        ? /\b[\w-]+\s*(?:\[\s*([^\]]+?)\s*\]|\(\s*([^)]+?)\s*\)|\{\s*([^}]+?)\s*\})/.exec(line)
+        : undefined;
+    const sequenceDeclaration =
+      diagramType === 'sequenceDiagram'
+        ? /^(?:participant|actor)\s+(?:(\S+)\s+as\s+)?(.+)$/i.exec(line)
+        : undefined;
+    const sequenceMessage =
+      diagramType === 'sequenceDiagram'
+        ? /^([\w-]+)\s*(?:-{1,2}|={1,2})[)>x-]/.exec(line)
+        : undefined;
+    const classMatch = diagramType === 'classDiagram' ? /^class\s+([\w$-]+)/.exec(line) : undefined;
+    const label = stripMermaidLabelQuotes(
+      graphMatch?.[1] ??
+        graphMatch?.[2] ??
+        graphMatch?.[3] ??
+        sequenceDeclaration?.[2] ??
+        sequenceDeclaration?.[1] ??
+        sequenceMessage?.[1] ??
+        classMatch?.[1] ??
+        '',
+    );
+    if (label.length > 0) {
+      return label;
+    }
+  }
+  return undefined;
+};
+
+export const getMermaidDiagramDescription = (source: string): string | undefined => {
+  const lines = source
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith('%%'));
+  const firstLine = lines[0];
+  if (!firstLine) {
+    return undefined;
+  }
+
+  const diagramType = getMermaidDiagramType(firstLine);
+  if (!diagramType) {
+    return undefined;
+  }
+
+  const subjectLabel = findMermaidSubjectLabel(diagramType, lines.slice(1));
+  return subjectLabel ? `${diagramType}: ${subjectLabel}` : diagramType;
+};
+
+export const getMermaidDiagramAccessibleLabel = (source: string): string => {
+  const description = getMermaidDiagramDescription(source);
+  return description
+    ? formatString(getString('mermaidDiagramAriaLabelTemplate'), description)
+    : getString('mermaidDiagramAriaLabel');
+};
 
 const parseSvgElement = (rawSvg: string): Element | undefined => {
   const documentParser = new DOMParser().parseFromString(rawSvg, 'image/svg+xml');
@@ -122,8 +214,34 @@ const convertForeignObjectLabel = (foreignObject: Element): void => {
   foreignObject.remove();
 };
 
+export const applyDiagramA11y = (svgElement: SVGElement, source: string): void => {
+  for (const node of svgElement.querySelectorAll('desc,title')) {
+    node.remove();
+  }
+
+  svgElement.removeAttribute('aria-describedby');
+  for (const element of svgElement.querySelectorAll('[aria-describedby]')) {
+    element.removeAttribute('aria-describedby');
+  }
+
+  const label = getMermaidDiagramAccessibleLabel(source);
+  svgElement.setAttribute('role', 'img');
+  svgElement.setAttribute('aria-label', label);
+
+  const ownerDocument =
+    svgElement.ownerDocument ?? (typeof document === 'undefined' ? undefined : document);
+  const title = ownerDocument?.createElementNS?.('http://www.w3.org/2000/svg', 'title');
+  if (!title) {
+    return;
+  }
+
+  title.textContent = label;
+  svgElement.insertBefore(title, svgElement.firstChild);
+};
+
 export const sanitizeMermaidSvg = (
   rawSvg: string,
+  source = '',
   parse: (source: string) => Element | undefined = parseSvgElement,
 ): string => {
   const svgElement = parse(rawSvg);
@@ -157,5 +275,6 @@ export const sanitizeMermaidSvg = (
     }
   }
 
+  applyDiagramA11y(svgElement as SVGElement, source);
   return svgElement.outerHTML;
 };
