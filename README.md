@@ -45,6 +45,11 @@ Muninn provides a reading-first Markdown experience in VS Code with a custom edi
 - `muninn.integrations.mermaid.allowInUntrustedWorkspaces`
 - `muninn.toolbar.mode` (`basic` or `advanced`)
 
+## Security
+
+- [Security policy](SECURITY.md)
+- [Security posture](docs/SECURITY_POSTURE.md)
+
 ## Development
 
 ```bash
