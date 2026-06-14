@@ -43,5 +43,5 @@
   "configuration.integrations.mermaid.enabled.description": "Enable inline Mermaid rendering inside the Muninn custom markdown editor.",
   "configuration.integrations.mermaid.allowInUntrustedWorkspaces.description": "Allow Mermaid rendering in restricted workspaces (disabled by default for safety).",
   "configuration.toolbar.mode.description": "Choose the Muninn toolbar mode. Basic shows core actions, advanced shows the full authoring toolbar.",
-  "configuration.images.destination.description": "Folder for pasted, dropped, and picked image files, relative to the current markdown document."
+  "configuration.images.destination.description": "Folder for pasted, dropped, and picked image files, relative to the current Markdown document."
 }

@@ -1,5 +1,6 @@
 import type {
   HostToViewMessage,
+  ImageUriMap,
   ToolbarMode,
   ViewEditorCommand,
 } from '../../custom-editor/protocol';
@@ -11,12 +12,12 @@ type HostMessageHandlers = {
     revision: number;
     mermaidEnabled: boolean;
     toolbarMode: ToolbarMode;
-    imageSources: Record<string, string>;
+    imageSources: ImageUriMap;
   }) => void;
   onDocumentChanged: (payload: {
     markdown: string;
     revision: number;
-    imageSources: Record<string, string>;
+    imageSources: ImageUriMap;
   }) => void;
   onExecuteCommand: (command: ViewEditorCommand) => void;
   onSettingsChanged: (payload: { mermaidEnabled: boolean; toolbarMode: ToolbarMode }) => void;

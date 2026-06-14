@@ -46,7 +46,7 @@ Muninn provides a reading-first Markdown experience in VS Code with a custom edi
 - `muninn.integrations.mermaid.enabled`
 - `muninn.integrations.mermaid.allowInUntrustedWorkspaces`
 - `muninn.toolbar.mode` (`basic` or `advanced`)
-- `muninn.images.destination` (`images/` by default, relative to the current markdown document)
+- `muninn.images.destination` (`images/` by default, relative to the current Markdown document)
 
 ## Security
 
