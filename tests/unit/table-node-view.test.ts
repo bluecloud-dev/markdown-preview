@@ -4,6 +4,8 @@ import {
   DEFAULT_TABLE_SOURCE,
   getTableGridAriaLabel,
   getTableNodeDocumentIndex,
+  shouldDeferTableCellKeyboardNavigation,
+  shouldNavigateTableCellHorizontally,
   TABLE_FENCE_LANGUAGE,
   type MarkdownTable,
 } from '../../src/webview/editor/nodes/table-node-view';
@@ -19,6 +21,17 @@ const createTableNode = () =>
     { params: TABLE_FENCE_LANGUAGE },
     schema.text(DEFAULT_TABLE_SOURCE),
   );
+
+const createInputState = (
+  value: string,
+  selectionStart: number,
+  selectionEnd: number,
+): HTMLInputElement =>
+  ({
+    value,
+    selectionStart,
+    selectionEnd,
+  }) as HTMLInputElement;
 
 describe('table node view accessibility helpers', () => {
   it('formats localized grid names from the parsed table model', () => {
@@ -57,5 +70,34 @@ describe('table node view accessibility helpers', () => {
     expect(tablePositions).to.have.length(2);
     expect(getTableNodeDocumentIndex(documentNode, tablePositions[0])).to.equal(1);
     expect(getTableNodeDocumentIndex(documentNode, tablePositions[1])).to.equal(2);
+  });
+});
+
+describe('table cell keyboard helpers', () => {
+  it('lets IME composition keystrokes stay native', () => {
+    expect(shouldDeferTableCellKeyboardNavigation({ isComposing: true })).to.equal(true);
+    expect(shouldDeferTableCellKeyboardNavigation({ isComposing: false })).to.equal(false);
+  });
+
+  it('moves left or right only at collapsed text boundaries', () => {
+    expect(
+      shouldNavigateTableCellHorizontally(createInputState('Score', 0, 0), 'ArrowLeft'),
+    ).to.equal(true);
+    expect(
+      shouldNavigateTableCellHorizontally(createInputState('Score', 5, 5), 'ArrowRight'),
+    ).to.equal(true);
+
+    expect(
+      shouldNavigateTableCellHorizontally(createInputState('Score', 1, 1), 'ArrowLeft'),
+    ).to.equal(false);
+    expect(
+      shouldNavigateTableCellHorizontally(createInputState('Score', 4, 4), 'ArrowRight'),
+    ).to.equal(false);
+    expect(
+      shouldNavigateTableCellHorizontally(createInputState('Score', 0, 5), 'ArrowLeft'),
+    ).to.equal(false);
+    expect(shouldNavigateTableCellHorizontally(createInputState('Score', 0, 0), 'Home')).to.equal(
+      false,
+    );
   });
 });

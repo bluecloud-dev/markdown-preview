@@ -50,6 +50,38 @@ type TableNodeViewOptions = {
   setStatus: (message: string) => void;
 };
 
+type TableCellCoordinates = {
+  row: number;
+  col: number;
+};
+
+type TableCellTextSelection = Pick<HTMLInputElement, 'selectionEnd' | 'selectionStart' | 'value'>;
+
+export const shouldDeferTableCellKeyboardNavigation = (
+  event: Pick<KeyboardEvent, 'isComposing'>,
+): boolean => event.isComposing;
+
+export const shouldNavigateTableCellHorizontally = (
+  input: TableCellTextSelection,
+  key: string,
+): boolean => {
+  const selectionStart = input.selectionStart;
+  const selectionEnd = input.selectionEnd;
+  if (typeof selectionStart !== 'number' || typeof selectionEnd !== 'number') {
+    return false;
+  }
+  if (selectionStart !== selectionEnd) {
+    return false;
+  }
+  if (key === 'ArrowLeft') {
+    return selectionStart === 0;
+  }
+  if (key === 'ArrowRight') {
+    return selectionStart === input.value.length;
+  }
+  return false;
+};
+
 const createSourceShortcutHintId = (): string => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `muninn-table-source-hint-${crypto.randomUUID()}`;
@@ -328,6 +360,7 @@ class TableCodeBlockNodeView implements NodeView {
   private sourceDraft = '';
   private sourceDirty = false;
   private normalizedCurrentSource = '';
+  private pendingFocus: TableCellCoordinates | undefined;
 
   constructor(
     private node: ProseMirrorNode,
@@ -441,6 +474,7 @@ class TableCodeBlockNodeView implements NodeView {
     if (!isTableCodeBlockNode(node)) {
       return false;
     }
+    this.pendingFocus ??= this.getFocusedCellCoordinates();
     this.node = node;
     this.normalizedCurrentSource = normalizeTableSource(this.node.textContent);
     this.render();
@@ -508,12 +542,16 @@ class TableCodeBlockNodeView implements NodeView {
     tableElement.append(body);
 
     this.gridContainer.replaceChildren(tableElement);
+    this.restorePendingFocus(table);
   }
 
   private createCellInput(value: string, rowIndex: number, columnIndex: number): HTMLInputElement {
     const input = document.createElement('input');
+    const logicalRowIndex = this.toLogicalRowIndex(rowIndex);
     input.type = 'text';
     input.className = 'muninn-table-node-cell';
+    input.dataset.tableRow = String(logicalRowIndex);
+    input.dataset.tableColumn = String(columnIndex);
     input.setAttribute(
       'aria-label',
       rowIndex < 0
@@ -521,33 +559,94 @@ class TableCodeBlockNodeView implements NodeView {
         : formatString(getString('tableRowColumnLabelTemplate'), rowIndex + 1, columnIndex + 1),
     );
     input.value = value;
+    input.addEventListener('focus', () => {
+      if (this.pendingFocus?.row === logicalRowIndex && this.pendingFocus.col === columnIndex) {
+        this.pendingFocus = undefined;
+      }
+    });
     input.addEventListener('change', () => {
+      this.pendingFocus ??= this.getFocusedCellCoordinates();
       this.updateCell(rowIndex, columnIndex, input.value);
     });
     input.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter') {
+      if (shouldDeferTableCellKeyboardNavigation(event)) {
         return;
       }
-      event.preventDefault();
-      input.blur();
+
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const table = parseMarkdownTable(this.node.textContent);
+        const target = this.getVerticalTargetCell(table, logicalRowIndex, columnIndex, {
+          direction: event.shiftKey ? -1 : 1,
+        });
+        this.commitCellAndFocus(input, rowIndex, columnIndex, target);
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        input.value = value;
+        input.focus();
+        return;
+      }
+
+      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        const table = parseMarkdownTable(this.node.textContent);
+        const target = this.getVerticalTargetCell(table, logicalRowIndex, columnIndex, {
+          direction: event.key === 'ArrowUp' ? -1 : 1,
+        });
+        this.moveFocusToCell(target);
+        return;
+      }
+
+      if (
+        (event.key === 'ArrowLeft' || event.key === 'ArrowRight') &&
+        shouldNavigateTableCellHorizontally(input, event.key)
+      ) {
+        event.preventDefault();
+        const table = parseMarkdownTable(this.node.textContent);
+        const target = this.getHorizontalTargetCell(table, logicalRowIndex, columnIndex, {
+          direction: event.key === 'ArrowLeft' ? -1 : 1,
+        });
+        this.moveFocusToCell(target);
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        this.pendingFocus = this.getTabTargetCell(
+          parseMarkdownTable(this.node.textContent),
+          logicalRowIndex,
+          columnIndex,
+          event.shiftKey,
+        );
+      }
     });
     return input;
   }
 
-  private updateCell(rowIndex: number, columnIndex: number, value: string): void {
+  private updateCell(rowIndex: number, columnIndex: number, value: string): boolean {
     const table = parseMarkdownTable(this.node.textContent);
     if (rowIndex < 0) {
+      if (table.headers[columnIndex] === value) {
+        return false;
+      }
       table.headers[columnIndex] = value;
     } else {
       if (!table.rows[rowIndex]) {
-        return;
+        return false;
+      }
+      if (table.rows[rowIndex][columnIndex] === value) {
+        return false;
       }
       table.rows[rowIndex][columnIndex] = value;
     }
     this.applyTable(table, getString('statusTableUpdated'));
+    return true;
   }
 
   private addRow(): void {
+    this.pendingFocus ??= this.getFocusedCellCoordinates();
     const table = parseMarkdownTable(this.node.textContent);
     const columnCount = Math.max(2, table.headers.length);
     table.rows.push(Array.from({ length: columnCount }, () => ''));
@@ -555,6 +654,7 @@ class TableCodeBlockNodeView implements NodeView {
   }
 
   private addColumn(): void {
+    this.pendingFocus ??= this.getFocusedCellCoordinates();
     const table = parseMarkdownTable(this.node.textContent);
     const nextColumn = table.headers.length + 1;
     table.headers.push(formatString(getString('tableNewColumnHeaderTemplate'), nextColumn));
@@ -604,6 +704,7 @@ class TableCodeBlockNodeView implements NodeView {
   private applySourceFromTextarea(): void {
     const normalized = normalizeTableSource(this.sourceDraft);
     if (normalized !== this.normalizedCurrentSource) {
+      this.pendingFocus = { row: 0, col: 0 };
       const applied = this.applySource(normalized, getString('statusTableSourceApplied'));
       if (!applied) {
         this.setSourceFeedback('error', getString('statusTableSourceApplyFailed'));
@@ -621,6 +722,137 @@ class TableCodeBlockNodeView implements NodeView {
 
   private applyTable(table: MarkdownTable, statusMessage: string): void {
     this.applySource(serializeMarkdownTable(table), statusMessage);
+  }
+
+  private commitCellAndFocus(
+    input: HTMLInputElement,
+    rowIndex: number,
+    columnIndex: number,
+    target: TableCellCoordinates,
+  ): void {
+    this.pendingFocus = target;
+    if (this.updateCell(rowIndex, columnIndex, input.value)) {
+      return;
+    }
+
+    this.pendingFocus = undefined;
+    this.focusCell(target);
+  }
+
+  private moveFocusToCell(target: TableCellCoordinates): void {
+    this.pendingFocus = target;
+    this.focusCell(target);
+    if (this.pendingFocus?.row === target.row && this.pendingFocus.col === target.col) {
+      this.pendingFocus = undefined;
+    }
+  }
+
+  private toLogicalRowIndex(rowIndex: number): number {
+    return rowIndex + 1;
+  }
+
+  private getVerticalTargetCell(
+    table: MarkdownTable,
+    row: number,
+    col: number,
+    { direction }: { direction: -1 | 1 },
+  ): TableCellCoordinates {
+    return this.coerceCellCoordinates(table, { row: row + direction, col });
+  }
+
+  private getHorizontalTargetCell(
+    table: MarkdownTable,
+    row: number,
+    col: number,
+    { direction }: { direction: -1 | 1 },
+  ): TableCellCoordinates {
+    return this.coerceCellCoordinates(table, { row, col: col + direction });
+  }
+
+  private getTabTargetCell(
+    table: MarkdownTable,
+    row: number,
+    col: number,
+    shiftKey: boolean,
+  ): TableCellCoordinates | undefined {
+    const columnCount = table.headers.length;
+    const totalRows = table.rows.length + 1;
+    const linearIndex = row * columnCount + col + (shiftKey ? -1 : 1);
+    if (linearIndex < 0 || linearIndex >= totalRows * columnCount) {
+      return undefined;
+    }
+
+    return {
+      row: Math.floor(linearIndex / columnCount),
+      col: linearIndex % columnCount,
+    };
+  }
+
+  private coerceCellCoordinates(
+    table: MarkdownTable,
+    coordinates: TableCellCoordinates,
+  ): TableCellCoordinates {
+    return {
+      row: Math.min(Math.max(coordinates.row, 0), table.rows.length),
+      col: Math.min(Math.max(coordinates.col, 0), Math.max(table.headers.length - 1, 0)),
+    };
+  }
+
+  private getFocusedCellCoordinates(): TableCellCoordinates | undefined {
+    const activeElement = document.activeElement;
+    if (
+      !(activeElement instanceof HTMLInputElement) ||
+      !this.gridContainer.contains(activeElement)
+    ) {
+      return undefined;
+    }
+
+    return this.readCellCoordinates(activeElement);
+  }
+
+  private readCellCoordinates(input: HTMLInputElement): TableCellCoordinates | undefined {
+    const row = Number(input.dataset.tableRow);
+    const col = Number(input.dataset.tableColumn);
+    if (!Number.isInteger(row) || !Number.isInteger(col)) {
+      return undefined;
+    }
+    return { row, col };
+  }
+
+  private restorePendingFocus(table: MarkdownTable): void {
+    const target = this.pendingFocus;
+    if (!target) {
+      return;
+    }
+
+    this.pendingFocus = undefined;
+    this.focusCell(this.coerceCellCoordinates(table, target));
+  }
+
+  private focusCell(target: TableCellCoordinates): boolean {
+    const input = this.gridContainer.querySelector<HTMLInputElement>(
+      `.muninn-table-node-cell[data-table-row="${target.row}"][data-table-column="${target.col}"]`,
+    );
+    if (!input) {
+      return false;
+    }
+
+    const focusInput = (): void => {
+      input.focus();
+      input.select();
+    };
+
+    focusInput();
+    setTimeout(() => {
+      const activeElement = document.activeElement;
+      if (
+        activeElement !== input &&
+        (activeElement === document.body || !this.gridContainer.contains(activeElement))
+      ) {
+        focusInput();
+      }
+    }, 0);
+    return true;
   }
 
   private applySource(source: string, statusMessage: string): boolean {
