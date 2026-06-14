@@ -74,6 +74,7 @@ export type WebviewStrings = {
   tableApplySourceButton: string;
   tableApplySourceTitle: string;
   tableSourceHint: string;
+  tableGridAriaLabelTemplate: string;
   tableHeaderColumnLabelTemplate: string;
   tableNewColumnHeaderTemplate: string;
   tableRowColumnLabelTemplate: string;
@@ -166,6 +167,7 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   tableApplySourceButton: 'Apply Source',
   tableApplySourceTitle: 'Apply source (Ctrl/Cmd+Enter)',
   tableSourceHint: 'Edit Markdown table source. Press Ctrl/Cmd+Enter to apply changes.',
+  tableGridAriaLabelTemplate: 'Table {0}: {1} columns, {2} rows',
   tableHeaderColumnLabelTemplate: 'Header column {0}',
   tableNewColumnHeaderTemplate: 'Column {0}',
   tableRowColumnLabelTemplate: 'Row {0} column {1}',
