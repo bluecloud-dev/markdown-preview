@@ -95,7 +95,7 @@ describe('DocumentSync', () => {
     });
   });
 
-  it('skips workspace edits when markdown is unchanged', async () => {
+  it('skips workspace edits when markdown is unchanged and reports the no-op', async () => {
     const uri = vscode.Uri.file('/workspace/unchanged.md');
     const document = {
       uri,
@@ -108,7 +108,30 @@ describe('DocumentSync', () => {
 
     const sync = new DocumentSync(document);
     const result = await sync.applyDocument('# unchanged', 0);
-    expect(result).to.deep.equal({ ok: true });
+    expect(result).to.deep.equal({ ok: true, applied: false });
+  });
+
+  it('treats a serialization that only drops the final newline as a no-op', async () => {
+    const appliedEdits: InspectableWorkspaceEdit[] = [];
+    workspaceWithApplyEdit.applyEdit = async (edit: vscode.WorkspaceEdit) => {
+      appliedEdits.push(edit as InspectableWorkspaceEdit);
+      return true;
+    };
+
+    const uri = vscode.Uri.file('/workspace/newline-only.md');
+    const document = {
+      uri,
+      getText: () => '# unchanged\n',
+      lineCount: 2,
+      lineAt: (line: number) => ({
+        range: { end: new vscode.Position(line, line === 0 ? 11 : 0) },
+      }),
+    } as unknown as vscode.TextDocument;
+
+    const sync = new DocumentSync(document);
+    const result = await sync.applyDocument('# unchanged', 0);
+    expect(result).to.deep.equal({ ok: true, applied: false });
+    expect(appliedEdits.length).to.equal(0);
   });
 
   it('applies markdown edits and reports host failures', async () => {
@@ -130,7 +153,7 @@ describe('DocumentSync', () => {
 
     const sync = new DocumentSync(document);
     const success = await sync.applyDocument('# after', 0);
-    expect(success).to.deep.equal({ ok: true });
+    expect(success).to.deep.equal({ ok: true, applied: true });
     expect(appliedEdits.length).to.equal(1);
     expect(appliedEdits[0]?.replacements.length).to.equal(1);
     expect(appliedEdits[0]?.replacements[0]?.uri.toString()).to.equal(uri.toString());
@@ -168,7 +191,9 @@ describe('DocumentSync', () => {
         applied: '# after',
       },
       { name: 'empty document', current: '', serialized: '# after', applied: '# after' },
-      { name: 'single newline document', current: '\n', serialized: '', applied: '\n' },
+      // Reconciling '' against a current '\n' yields '\n' — identical to the
+      // document, so no edit must be applied at all.
+      { name: 'single newline document', current: '\n', serialized: '', applied: undefined },
     ];
 
     for (const testCase of cases) {
@@ -187,9 +212,16 @@ describe('DocumentSync', () => {
       const beforeCount = appliedEdits.length;
       const result = await sync.applyDocument(testCase.serialized, 0);
 
-      expect(result, testCase.name).to.deep.equal({ ok: true });
-      expect(appliedEdits.length, testCase.name).to.equal(beforeCount + 1);
-      expect(appliedEdits.at(-1)?.replacements[0]?.text, testCase.name).to.equal(testCase.applied);
+      if (testCase.applied === undefined) {
+        expect(result, testCase.name).to.deep.equal({ ok: true, applied: false });
+        expect(appliedEdits.length, testCase.name).to.equal(beforeCount);
+      } else {
+        expect(result, testCase.name).to.deep.equal({ ok: true, applied: true });
+        expect(appliedEdits.length, testCase.name).to.equal(beforeCount + 1);
+        expect(appliedEdits.at(-1)?.replacements[0]?.text, testCase.name).to.equal(
+          testCase.applied,
+        );
+      }
     }
   });
 });

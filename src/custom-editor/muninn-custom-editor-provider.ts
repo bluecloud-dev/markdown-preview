@@ -200,6 +200,16 @@ export class MuninnCustomEditorProvider
             type: 'host.documentChanged',
             payload: session.sync.getSnapshot(),
           });
+          return;
+        }
+        if (!applyResult.applied) {
+          // No workspace edit was needed, so no onDidChangeTextDocument echo
+          // will fire. Reply with the snapshot anyway: the webview sync
+          // controller stays latched until the host answers every apply.
+          await this.postMessage(session.panel.webview, {
+            type: 'host.documentChanged',
+            payload: session.sync.getSnapshot(),
+          });
         }
         return;
       }

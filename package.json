@@ -488,7 +488,8 @@
       "tests/**",
       "out/src/types/config.js",
       "out/src/custom-editor/muninn-custom-editor-provider.js",
-      "out/src/webview/**"
+      "out/src/webview/**",
+      "!out/src/webview/editor/sync.js"
     ],
     "reporter": [
       "text",

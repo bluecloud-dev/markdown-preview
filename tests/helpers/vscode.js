@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const path = require('path');
 
 class Uri {
   constructor(value, scheme, fsPath) {
@@ -15,6 +16,10 @@ class Uri {
     const [scheme, rest = ''] = value.split(':');
     const fsPath = rest.startsWith('/') ? rest : `/${rest}`;
     return new Uri(value, scheme, fsPath);
+  }
+
+  static joinPath(base, ...segments) {
+    return Uri.file(path.posix.join(base.fsPath, ...segments));
   }
 
   toString() {

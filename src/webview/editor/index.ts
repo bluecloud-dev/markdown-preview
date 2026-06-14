@@ -830,6 +830,9 @@ const detachHostMessageListener = attachHostMessageListener({
 });
 
 window.addEventListener('beforeunload', () => {
+  // Best-effort: dispose() cancels a scheduled apply, which would drop the
+  // last debounce window of typing on tab close. Post it first.
+  syncController.flushApply(serializeMarkdownForHost);
   detachHostMessageListener();
   syncController.dispose();
   mermaidPreview.dispose();
