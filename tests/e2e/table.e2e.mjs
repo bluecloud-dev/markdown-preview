@@ -14,6 +14,24 @@ const waitForSampleMarkdown = (predicate, errorMessage) =>
 const executeCommandAndWaitForSampleMarkdown = (command, predicate, errorMessage) =>
   executeWorkbenchCommandAndWaitForWorkspaceFileText('sample.md', command, predicate, errorMessage);
 
+const expectTableGridSemantics = async ({ columnCount, rowCount, tableIndex = 1 }) => {
+  await withCustomEditorWebview(async () => {
+    const tableNode = await browser.$('[data-testid="muninn-table-node"]');
+    const gridTable = await tableNode.$('.muninn-table-node-grid-table');
+    await gridTable.waitForDisplayed({ timeout: 5_000 });
+    await expect(gridTable).toHaveAttribute(
+      'aria-label',
+      `Table ${tableIndex}: ${columnCount} columns, ${rowCount} rows`,
+    );
+
+    const headerCells = await gridTable.$$('th');
+    expect(headerCells.length).toBe(columnCount);
+    for (const headerCell of headerCells) {
+      await expect(headerCell).toHaveAttribute('scope', 'col');
+    }
+  });
+};
+
 const isTableInPreviewMode = async () => {
   let previewVisible = false;
   await withCustomEditorWebview(async () => {
@@ -52,7 +70,8 @@ const applyTableSourceFromWebview = async (source, mode) => {
       await applySourceButton.waitForEnabled({ timeout: 5_000 });
       await applySourceButton.click();
     } else {
-      const applyShortcut = process.platform === 'darwin' ? ['Meta', 'Enter'] : ['Control', 'Enter'];
+      const applyShortcut =
+        process.platform === 'darwin' ? ['Meta', 'Enter'] : ['Control', 'Enter'];
       await browser.keys(applyShortcut);
     }
   });
@@ -97,6 +116,7 @@ describe('Table node view workflow', () => {
       await expect(deleteButton).toHaveAttribute('aria-label', 'Delete table');
       await expect(deleteButton).toHaveElementClass('muninn-button-danger');
     });
+    await expectTableGridSemantics({ columnCount: 2, rowCount: 1 });
 
     await executeCommandAndWaitForSampleMarkdown(
       'muninn.addTableColumn',
@@ -109,6 +129,7 @@ describe('Table node view workflow', () => {
       (text) => /\|\s*\|\s*\|\s*\|/.test(text),
       'Expected add-table-row command to persist in markdown.',
     );
+    await expectTableGridSemantics({ columnCount: 3, rowCount: 2 });
 
     const text = await readWorkspaceFileText('sample.md');
     expect(text).not.toContain('```muninn-table');
@@ -133,6 +154,7 @@ describe('Table node view workflow', () => {
       (text) => text.includes('| Name | Score |') && text.includes('| Alice | 7 |'),
       'Expected Apply Source button path to persist edited markdown table source.',
     );
+    await expectTableGridSemantics({ columnCount: 2, rowCount: 1 });
 
     await applyTableSourceFromWebview(
       ['| Name | Score |', '| --- | --- |', '| Ben | 9 |'].join('\n'),
@@ -144,5 +166,6 @@ describe('Table node view workflow', () => {
       'Expected Ctrl/Cmd+Enter source-apply path to persist edited markdown table source.',
     );
     expect(text).not.toContain('```muninn-table');
+    await expectTableGridSemantics({ columnCount: 2, rowCount: 1 });
   });
 });

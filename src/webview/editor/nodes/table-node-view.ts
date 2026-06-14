@@ -78,6 +78,38 @@ const buildReplacementNode = (
 ): ProseMirrorNode =>
   schema.nodes.code_block.create(attributes, source.length > 0 ? [schema.text(source)] : undefined);
 
+export const getTableGridAriaLabel = (tableIndex: number, table: MarkdownTable): string =>
+  formatString(
+    getString('tableGridAriaLabelTemplate'),
+    tableIndex,
+    table.headers.length,
+    table.rows.length,
+  );
+
+export const getTableNodeDocumentIndex = (
+  documentNode: ProseMirrorNode,
+  tablePosition: number,
+): number => {
+  let tableIndex = 0;
+  let matchedIndex: number | undefined;
+
+  documentNode.descendants((node, position) => {
+    if (!isTableCodeBlockNode(node)) {
+      return true;
+    }
+
+    tableIndex += 1;
+    if (position !== tablePosition) {
+      return true;
+    }
+
+    matchedIndex = tableIndex;
+    return false;
+  });
+
+  return matchedIndex ?? 1;
+};
+
 class GenericCodeBlockNodeView implements NodeView {
   readonly dom: HTMLDivElement;
   readonly contentDOM: HTMLElement;
@@ -447,11 +479,16 @@ class TableCodeBlockNodeView implements NodeView {
   private renderGrid(table: MarkdownTable): void {
     const tableElement = document.createElement('table');
     tableElement.className = 'muninn-table-node-grid-table';
+    tableElement.setAttribute(
+      'aria-label',
+      getTableGridAriaLabel(this.getCurrentTableDocumentIndex(), table),
+    );
 
     const head = document.createElement('thead');
     const headRow = document.createElement('tr');
     for (const [columnIndex, value] of table.headers.entries()) {
       const th = document.createElement('th');
+      th.setAttribute('scope', 'col');
       th.append(this.createCellInput(value, -1, columnIndex));
       headRow.append(th);
     }
@@ -607,7 +644,16 @@ class TableCodeBlockNodeView implements NodeView {
     return true;
   }
 
-  private resolveNodePosition(): number | undefined {
+  private getCurrentTableDocumentIndex(): number {
+    const position = this.resolveCurrentNodePosition();
+    if (position === undefined) {
+      return 1;
+    }
+
+    return getTableNodeDocumentIndex(this.view.state.doc, position);
+  }
+
+  private resolveCurrentNodePosition(): number | undefined {
     try {
       const position = this.getPos();
       if (typeof position === 'number') {
@@ -615,6 +661,24 @@ class TableCodeBlockNodeView implements NodeView {
       }
     } catch {
       // Fallback below handles transient node-view position races.
+    }
+
+    let matchedPosition: number | undefined;
+    this.view.state.doc.descendants((node, position) => {
+      if (!isTableCodeBlockNode(node) || !node.eq(this.node)) {
+        return true;
+      }
+
+      matchedPosition = position;
+      return false;
+    });
+    return matchedPosition;
+  }
+
+  private resolveNodePosition(): number | undefined {
+    const currentPosition = this.resolveCurrentNodePosition();
+    if (currentPosition !== undefined) {
+      return currentPosition;
     }
 
     let matchedPosition: number | undefined;
