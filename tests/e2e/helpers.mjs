@@ -160,7 +160,7 @@ export const executeWorkbenchCommandUntilWorkspaceFileText = async (
     await executeWorkbenchCommand(command);
     await browser.pause(interval);
 
-    await waitForCustomEditorWebviewReady();
+    await waitForActiveCustomEditor();
     const text = await readWorkspaceFileText(fileName);
     if (predicate(text)) {
       return text;
@@ -188,7 +188,8 @@ export const isRetryableWebviewError = (error) => {
     message.includes('target closed') ||
     message.includes('target window already closed') ||
     message.includes('no such window') ||
-    message.includes('web view not found')
+    message.includes('web view not found') ||
+    message.includes('active custom editor webview context not found')
   );
 };
 
@@ -279,7 +280,7 @@ export const executeWorkbenchCommandAndWaitForWorkspaceFileText = async (
   await waitForCustomEditorWebviewReady();
   await executeWorkbenchCommand(command);
   return waitForWorkspaceFileText(fileName, predicate, errorMessage, {
-    beforeRead: waitForCustomEditorWebviewReady,
+    beforeRead: waitForActiveCustomEditor,
   });
 };
 
@@ -294,7 +295,7 @@ export const executeWorkbenchCommandOnceAndWaitForWorkspaceFileText = async (
   await executeWorkbenchCommand(command);
   return waitForWorkspaceFileText(fileName, predicate, errorMessage, {
     ...options,
-    beforeRead: waitForCustomEditorWebviewReady,
+    beforeRead: waitForActiveCustomEditor,
   });
 };
 
@@ -349,12 +350,18 @@ export const readE2EDiagnostics = async (error) => {
     editorStateError = stateError?.message ?? String(stateError);
   }
 
+  const webviews = await readWebviewInventory();
+  const isRunnerWindowLoss =
+    isRetryableWebviewError(error) ||
+    isRetryableWebviewError(editorStateError) ||
+    isRetryableWebviewError(webviews.error);
+
   return {
-    failureKind: isRetryableWebviewError(error)
+    failureKind: isRunnerWindowLoss
       ? 'runner-window-loss-or-transient-webview-lifecycle'
       : 'application-or-assertion-failure',
     editorState,
     editorStateError,
-    webviews: await readWebviewInventory(),
+    webviews,
   };
 };
