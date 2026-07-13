@@ -144,6 +144,9 @@ body {
 }
 
 .muninn-editor-shell {
+  --muninn-content-gutter: 22px;
+  --muninn-content-width: 70ch;
+
   flex: 1;
   overflow: auto;
   outline: 2px solid transparent;
@@ -156,8 +159,12 @@ body {
 }
 
 .ProseMirror {
+  box-sizing: border-box;
+  width: calc(100% - (var(--muninn-content-gutter) * 2));
+  max-width: var(--muninn-content-width);
   min-height: 100%;
-  padding: 18px 22px 40px;
+  margin: 0 auto;
+  padding: 18px 0 40px;
   outline: none;
   line-height: 1.6;
 }
@@ -181,10 +188,18 @@ body {
   font-family: var(--vscode-editor-font-family, monospace);
 }
 
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
+
 .muninn-mermaid-preview-panel {
+  box-sizing: border-box;
+  width: calc(100% - (var(--muninn-content-gutter) * 2));
+  max-width: var(--muninn-content-width);
   border: 1px solid var(--vscode-editorWidget-border);
   border-radius: 8px;
-  margin: 10px 12px;
+  margin: 10px auto;
   background: color-mix(in srgb, var(--vscode-editorWidget-background) 86%, transparent);
   overflow: hidden;
 }
@@ -292,7 +307,11 @@ body {
 }
 
 .muninn-table-node-actions button.muninn-button-danger:hover {
-  background: color-mix(in srgb, var(--vscode-errorForeground) 12%, var(--vscode-button-secondaryBackground));
+  background: color-mix(
+    in srgb,
+    var(--vscode-errorForeground) 12%,
+    var(--vscode-button-secondaryBackground)
+  );
 }
 
 .muninn-table-node-actions button:focus-visible,
@@ -440,6 +459,33 @@ body {
 
 .muninn-code-node-body code {
   font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.muninn-front-matter-node {
+  margin: 0.9em 0;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--vscode-editorWidget-background) 90%, transparent);
+}
+
+.muninn-front-matter-node-header {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--vscode-editorWidget-border);
+}
+
+.muninn-front-matter-node-header strong {
+  font-size: 12px;
+}
+
+.muninn-front-matter-node-body {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 0;
+  background: var(--vscode-textCodeBlock-background);
+  color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-editor-font-family, monospace);
+  white-space: pre-wrap;
 }
 
 .muninn-code-node-mermaid-preview {

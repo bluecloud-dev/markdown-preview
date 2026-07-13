@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -45,6 +45,11 @@ jobs:
       - name: Unit tests with coverage
         run: npm run coverage
 
+      - name: Round-trip report freshness
+        run: |
+          node ./scripts/generate-roundtrip-report.js
+          git diff --exit-code -- docs/ROUNDTRIP_REPORT.md tests/unit/round-trip/KNOWN_DEVIATIONS.md
+
       - name: Install xvfb
         run: |
           sudo apt-get update
@@ -63,7 +68,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -84,6 +89,10 @@ jobs:
         run: brew install ffmpeg
 
       - name: Run UI E2E tests
+        # Temporary #280 quarantine: keep collecting macOS E2E artifacts while
+        # WebDriver/VS Code window loss is isolated. Remove after 3 consecutive
+        # green e2e-macos runs.
+        continue-on-error: true
         run: env E2E_VIDEO=1 npm run test:e2e
 
       - name: Upload E2E artifacts
