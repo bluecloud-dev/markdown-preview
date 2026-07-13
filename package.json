@@ -510,7 +510,7 @@
     "prettier": "^3.9.1",
     "sinon": "^22.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "wdio-video-reporter": "^6.2.0",
     "wdio-vscode-service": "^6.1.4",
     "webdriverio": "^8.46.0"
