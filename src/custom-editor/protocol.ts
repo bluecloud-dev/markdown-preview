@@ -1,5 +1,9 @@
+import type { ContentWidthSetting } from '../types/config';
+
 export type DocumentRevision = number;
 export type ToolbarMode = 'basic' | 'advanced';
+export type ImageInsertKind = 'paste' | 'drop';
+export type ImageUriMap = Record<string, string>;
 
 export type ViewEditorCommand =
   | 'toggleBold'
@@ -21,13 +25,18 @@ export type HostToViewMessage =
   | {
       type: 'host.init';
       payload: SerializedMarkdownPayload & {
+        fileName: string;
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
+        contentWidth: ContentWidthSetting;
+        imageSources: ImageUriMap;
       };
     }
   | {
       type: 'host.documentChanged';
-      payload: SerializedMarkdownPayload;
+      payload: SerializedMarkdownPayload & {
+        imageSources: ImageUriMap;
+      };
     }
   | {
       type: 'host.executeCommand';
@@ -40,6 +49,7 @@ export type HostToViewMessage =
       payload: {
         mermaidEnabled: boolean;
         toolbarMode: ToolbarMode;
+        contentWidth: ContentWidthSetting;
       };
     }
   | {
@@ -47,6 +57,20 @@ export type HostToViewMessage =
       payload: {
         href: string;
         text?: string;
+      };
+    }
+  | {
+      type: 'host.imageInserted';
+      payload: {
+        path: string;
+        webviewUri: string;
+        filename: string;
+      };
+    }
+  | {
+      type: 'host.imageRejected';
+      payload: {
+        reason: string;
       };
     }
   | {
@@ -76,6 +100,15 @@ export type ViewToHostMessage =
       payload: {
         selectedText?: string;
       };
+    }
+  | {
+      type: 'view.requestImageInsert';
+      payload: {
+        kind: ImageInsertKind;
+        name?: string;
+        mime?: string;
+        bytesBase64: string;
+      };
     };
 
 export type SerializedMarkdownPayload = {
@@ -87,6 +120,13 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
 const isString = (value: unknown): value is string => typeof value === 'string';
+const isImageUriMap = (value: unknown): value is ImageUriMap => {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  return Object.entries(value).every(([key, mapValue]) => isString(key) && isString(mapValue));
+};
 
 const isSerializedMarkdownPayload = (value: unknown): value is SerializedMarkdownPayload => {
   if (!isObject(value)) {
@@ -119,6 +159,11 @@ const isViewEditorCommand = (value: unknown): value is ViewEditorCommand =>
 const isToolbarMode = (value: unknown): value is ToolbarMode =>
   value === 'basic' || value === 'advanced';
 
+const isContentWidthSetting = (value: unknown): value is ContentWidthSetting =>
+  value === 'comfortable' ||
+  value === 'full' ||
+  (typeof value === 'number' && Number.isFinite(value) && value >= 40 && value <= 120);
+
 export const isViewToHostMessage = (value: unknown): value is ViewToHostMessage => {
   if (!isObject(value) || !isString(value.type)) {
     return false;
@@ -143,6 +188,16 @@ export const isViewToHostMessage = (value: unknown): value is ViewToHostMessage 
     );
   }
 
+  if (value.type === 'view.requestImageInsert') {
+    return (
+      isObject(value.payload) &&
+      (value.payload.kind === 'paste' || value.payload.kind === 'drop') &&
+      (value.payload.name === undefined || isString(value.payload.name)) &&
+      (value.payload.mime === undefined || isString(value.payload.mime)) &&
+      isString(value.payload.bytesBase64)
+    );
+  }
+
   return false;
 };
 
@@ -156,13 +211,21 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
     return (
       isSerializedMarkdownPayload(payload) &&
       isObject(payload) &&
+      isString((payload as { fileName?: unknown }).fileName) &&
       typeof (payload as { mermaidEnabled?: unknown }).mermaidEnabled === 'boolean' &&
-      isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode)
+      isToolbarMode((payload as { toolbarMode?: unknown }).toolbarMode) &&
+      isContentWidthSetting((payload as { contentWidth?: unknown }).contentWidth) &&
+      isImageUriMap((payload as { imageSources?: unknown }).imageSources)
     );
   }
 
   if (value.type === 'host.documentChanged') {
-    return isSerializedMarkdownPayload(value.payload);
+    const payload = value.payload;
+    return (
+      isSerializedMarkdownPayload(payload) &&
+      isObject(payload) &&
+      isImageUriMap((payload as { imageSources?: unknown }).imageSources)
+    );
   }
 
   if (value.type === 'host.executeCommand') {
@@ -173,7 +236,8 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
     return (
       isObject(value.payload) &&
       typeof value.payload.mermaidEnabled === 'boolean' &&
-      isToolbarMode(value.payload.toolbarMode)
+      isToolbarMode(value.payload.toolbarMode) &&
+      isContentWidthSetting(value.payload.contentWidth)
     );
   }
 
@@ -183,6 +247,19 @@ export const isHostToViewMessage = (value: unknown): value is HostToViewMessage 
       isString(value.payload.href) &&
       (value.payload.text === undefined || isString(value.payload.text))
     );
+  }
+
+  if (value.type === 'host.imageInserted') {
+    return (
+      isObject(value.payload) &&
+      isString(value.payload.path) &&
+      isString(value.payload.webviewUri) &&
+      isString(value.payload.filename)
+    );
+  }
+
+  if (value.type === 'host.imageRejected') {
+    return isObject(value.payload) && isString(value.payload.reason);
   }
 
   if (value.type === 'host.error') {

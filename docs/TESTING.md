@@ -23,7 +23,25 @@ This guide documents the complete automated and manual QA strategy for Muninn fo
 | `npm run test:e2e`         | Desktop UI E2E tests with WDIO                                   |
 | `npm run test:e2e:headed`  | Desktop UI E2E tests (same suite, explicit local run entrypoint) |
 | `npm run test:web`         | Web test status check (currently not supported)                  |
+| `npm run test:roundtrip`   | Round-trip corpus run + regenerate conformance report docs       |
 | `npm run coverage`         | Unit coverage run                                                |
+
+## Round-Trip Golden Corpus (`tests/unit/round-trip/`)
+
+Enforces the prime directive: `markdown → ProseMirror → markdown` must be byte-identical
+(`unwrapTablesForHost(serialize(parse(wrapTablesForEditor(input)))) === input`).
+
+- Fixtures: `tests/unit/round-trip/fixtures/*.md`, named `<category>--<case>.md`. Byte-fragile
+  cases (CRLF, trailing spaces, missing final newline) are synthesized in `corpus.ts` instead of
+  stored, so editors and format-on-save hooks cannot silently normalize them.
+- The mocha suite (part of `npm run coverage`) asserts byte equality for strict fixtures and,
+  for entries listed in `deviations.json`, asserts the fixture fails in **exactly** the documented
+  way (`final-newline-only` vs `construct`). A deviation that drifts or quietly starts passing
+  fails the suite.
+- Never edit a fixture to make it pass. If a construct cannot round-trip, add a record to
+  `deviations.json` with a root cause and tracking issue, then run `npm run test:roundtrip` to
+  regenerate `tests/unit/round-trip/KNOWN_DEVIATIONS.md` and `docs/ROUNDTRIP_REPORT.md`
+  (CI fails if the committed docs are stale).
 
 ## Integration Tests (`@vscode/test-cli`)
 

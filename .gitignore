@@ -50,6 +50,6 @@ logs/
 .claude
 .codex
 .vscode-test
-AGENTS.md
+# AGENTS.md is committed: canonical AI-agent instructions (CLAUDE.md stays local-only)
 CLAUDE.md
 settings.json

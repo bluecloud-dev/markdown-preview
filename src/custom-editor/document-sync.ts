@@ -5,6 +5,14 @@ type ApplyResult =
   | { ok: true }
   | { ok: false; code: 'revision_mismatch' | 'apply_failed'; message: string };
 
+export const reconcileTrailingNewlineForApply = (
+  currentMarkdown: string,
+  serializedMarkdown: string,
+): string =>
+  currentMarkdown.endsWith('\n') && !serializedMarkdown.endsWith('\n')
+    ? `${serializedMarkdown}\n`
+    : serializedMarkdown;
+
 export class DocumentSync {
   private revision = 0;
 
@@ -40,8 +48,9 @@ export class DocumentSync {
       return { ok: true };
     }
 
+    const markdownToApply = reconcileTrailingNewlineForApply(this.document.getText(), markdown);
     const workspaceEdit = new vscode.WorkspaceEdit();
-    workspaceEdit.replace(this.document.uri, this.getFullRange(), markdown);
+    workspaceEdit.replace(this.document.uri, this.getFullRange(), markdownToApply);
     const applied = await vscode.workspace.applyEdit(workspaceEdit);
     if (!applied) {
       return {

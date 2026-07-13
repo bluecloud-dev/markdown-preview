@@ -1,0 +1,25 @@
+import type { NodeType } from 'prosemirror-model';
+import type { EditorState, Transaction } from 'prosemirror-state';
+import { TextSelection } from 'prosemirror-state';
+
+export const getImageAltTextFromSelection = (state: EditorState): string => {
+  const { from, to } = state.selection;
+  return from === to ? '' : state.doc.textBetween(from, to, ' ');
+};
+
+export const createImageInsertionTransaction = (
+  state: EditorState,
+  imageNodeType: NodeType,
+  source: string,
+): Transaction => {
+  const insertAt = state.selection.from;
+  const imageNode = imageNodeType.create({
+    src: source,
+    alt: getImageAltTextFromSelection(state),
+  });
+  const transaction = state.tr.replaceSelectionWith(imageNode, false);
+  const nextPosition = Math.min(transaction.doc.content.size, insertAt + imageNode.nodeSize);
+  return transaction
+    .setSelection(TextSelection.near(transaction.doc.resolve(nextPosition), 1))
+    .scrollIntoView();
+};

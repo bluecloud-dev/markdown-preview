@@ -6,10 +6,10 @@ This guide covers packaging and publishing for `muninn-vscode`.
 
 We follow SemVer:
 
-- `X.Y.Z` for stable releases
-- `X.Y.Z-alpha.N` / `beta.N` / `rc.N` for pre-release tracks
+- `X.Y.Z` for stable releases (even minor)
+- Pre-release: plain `X.Y.Z` with an ODD minor (current stream `1.99.x`), published with `vsce publish --pre-release` — the Marketplace rejects semver pre-release suffixes (`-alpha.N`) in the manifest version
 
-Current track is preview (`2.0.0-alpha.1`).
+Current track is pre-release (`1.99.x`); GA ships as exactly `2.0.0`. Decision record: issue #243 (2026-06-11).
 
 ## Pre-Release Checklist
 

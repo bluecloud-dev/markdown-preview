@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
-import { DocumentSync } from '../../src/custom-editor/document-sync';
+import {
+  DocumentSync,
+  reconcileTrailingNewlineForApply,
+} from '../../src/custom-editor/document-sync';
 
 let expect: Chai.ExpectStatic;
 
@@ -25,6 +28,14 @@ describe('DocumentSync', () => {
 
   afterEach(() => {
     workspaceWithApplyEdit.applyEdit = originalApplyEdit;
+  });
+
+  it('reconciles serializer-dropped final newlines without inventing new ones', () => {
+    expect(reconcileTrailingNewlineForApply('# before\n', '# after')).to.equal('# after\n');
+    expect(reconcileTrailingNewlineForApply('# before\n', '# after\n')).to.equal('# after\n');
+    expect(reconcileTrailingNewlineForApply('# before', '# after')).to.equal('# after');
+    expect(reconcileTrailingNewlineForApply('', '# after')).to.equal('# after');
+    expect(reconcileTrailingNewlineForApply('\n', '')).to.equal('\n');
   });
 
   it('returns snapshots and increments revision for matching document changes', () => {
@@ -134,5 +145,51 @@ describe('DocumentSync', () => {
       code: 'apply_failed',
       message: 'VS Code failed to apply the markdown update.',
     });
+  });
+
+  it('preserves the current document final-newline state when applying serialized markdown', async () => {
+    const appliedEdits: InspectableWorkspaceEdit[] = [];
+    workspaceWithApplyEdit.applyEdit = async (edit: vscode.WorkspaceEdit) => {
+      appliedEdits.push(edit as InspectableWorkspaceEdit);
+      return true;
+    };
+
+    const cases = [
+      {
+        name: 'had final newline',
+        current: '# before\n',
+        serialized: '# after',
+        applied: '# after\n',
+      },
+      {
+        name: 'had no final newline',
+        current: '# before',
+        serialized: '# after',
+        applied: '# after',
+      },
+      { name: 'empty document', current: '', serialized: '# after', applied: '# after' },
+      { name: 'single newline document', current: '\n', serialized: '', applied: '\n' },
+    ];
+
+    for (const testCase of cases) {
+      const uri = vscode.Uri.file(`/workspace/${testCase.name.replaceAll(' ', '-')}.md`);
+      const lines = testCase.current.split('\n');
+      const document = {
+        uri,
+        getText: () => testCase.current,
+        lineCount: lines.length,
+        lineAt: (line: number) => ({
+          range: { end: new vscode.Position(line, lines[line]?.length ?? 0) },
+        }),
+      } as unknown as vscode.TextDocument;
+
+      const sync = new DocumentSync(document);
+      const beforeCount = appliedEdits.length;
+      const result = await sync.applyDocument(testCase.serialized, 0);
+
+      expect(result, testCase.name).to.deep.equal({ ok: true });
+      expect(appliedEdits.length, testCase.name).to.equal(beforeCount + 1);
+      expect(appliedEdits.at(-1)?.replacements[0]?.text, testCase.name).to.equal(testCase.applied);
+    }
   });
 });

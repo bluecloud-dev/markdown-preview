@@ -116,6 +116,15 @@ exports.config = {
     fs.mkdirSync(targetDir, { recursive: true });
 
     try {
+      const { readE2EDiagnostics } = await import('./tests/e2e/helpers.mjs');
+      const diagnostics = await readE2EDiagnostics(result.error);
+      console.warn(`[wdio] Failure diagnostics for "${testName}": ${JSON.stringify(diagnostics)}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`[wdio] Failed to collect diagnostics for "${testName}": ${message}`);
+    }
+
+    try {
       const screenshotBase64 = await browser.takeScreenshot();
       if (typeof screenshotBase64 === 'string' && screenshotBase64.length > 0) {
         fs.writeFileSync(
