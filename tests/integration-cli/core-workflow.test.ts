@@ -168,8 +168,7 @@ describe('Integration CLI: core workflow', () => {
     const quickPickStub = sinon.stub(vscode.window, 'showQuickPick').callsFake(async (items) => {
       const typedItems = items as ReadonlyArray<{ command?: string }>;
       return typedItems.find((item) => item.command === 'insertTable') as
-        | vscode.QuickPickItem
-        | undefined;
+        vscode.QuickPickItem | undefined;
     });
 
     let commandApplied = false;
