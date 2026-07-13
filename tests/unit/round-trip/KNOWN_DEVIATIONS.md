@@ -9,13 +9,16 @@ honestly, never silently normalized away (#245). The test suite additionally ass
 that each deviation fails in exactly the way documented here, so an entry that drifts
 (or quietly starts passing) breaks CI.
 
-Output samples are verbatim. Independently of each listed cause, the serializer also
-drops the final newline everywhere (#282).
+Output samples are verbatim. Independently of each listed cause, the pure webview
+serializer still drops the final newline (#282). The host save path reconciles that
+state in `DocumentSync.applyDocument()` so real files that already end in `\n` keep
+their final newline, while files without one do not gain one.
 
-## Final-newline-only deviations (#282) — 28 fixtures
+## Final-newline-only deviations (#282) — 32 fixtures
 
 These fixtures round-trip their construct byte-identically and differ only by the
-missing trailing newline — one serializer defect shared by all of them:
+missing trailing newline in the pure codec — a serializer defect reconciled by the host
+save path:
 
 - `blockquotes--nested.md`
 - `breaks--hard-backslash.md`
@@ -25,9 +28,13 @@ missing trailing newline — one serializer defect shared by all of them:
 - `emphasis--adjacent-nested.md`
 - `emphasis--asterisk.md`
 - `emphasis--intraword-underscores.md`
+- `front-matter--empty.md`
+- `front-matter--rich.md`
+- `front-matter--yaml.md`
 - `headings--atx.md`
 - `html--inline.md`
 - `images--inline.md`
+- `images--inserted.md`
 - `links--autolink.md`
 - `links--bare-url.md`
 - `links--inline.md`
@@ -46,7 +53,7 @@ missing trailing newline — one serializer defect shared by all of them:
 - `thematic-breaks--dashes.md`
 - `unicode--emoji-cjk.md`
 
-## Construct deviations — 24 fixtures
+## Construct deviations — 23 fixtures
 
 ### `blockquotes--lazy.md` (#283)
 
@@ -184,31 +191,6 @@ Escaped \*not emphasis\*, an escaped \# not a heading, and \[not a link\].
 
 ````markdown
 Escaped \*not emphasis\*, an escaped # not a heading, and \[not a link\].
-````
-
-### `front-matter--yaml.md` (#289)
-
-**Root cause**: no front-matter support; the opening --- parses as a thematic break and the closing --- turns the YAML body into a setext heading.
-
-**Input**:
-
-````markdown
----
-title: Muninn
-tags: [notes, markdown]
----
-
-# Document body
-````
-
-**Output**:
-
-````markdown
----
-
-## title: Muninn tags: \[notes, markdown\]
-
-# Document body
 ````
 
 ### `headings--atx-closing-hashes.md` (#284)
