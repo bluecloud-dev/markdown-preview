@@ -28,8 +28,12 @@ export type WebviewStrings = {
   toolbarButtonSourceLabel: string;
   toolbarMoreLabel: string;
   toolbarMoreTitle: string;
+  editorAriaLabel: string;
+  editorAriaLabelTemplate: string;
   mermaidPreviewTitle: string;
+  mermaidPreviewAriaLabel: string;
   statusReady: string;
+  statusErrorTemplate: string;
   commandLabelBold: string;
   commandLabelItalic: string;
   commandLabelHeading1: string;
@@ -51,6 +55,8 @@ export type WebviewStrings = {
   statusInsertedMermaid: string;
   statusInsertedTable: string;
   statusInsertedCodeBlock: string;
+  statusImageAddedTemplate: string;
+  statusInsertImageFailed: string;
   statusAwaitingLinkInput: string;
   statusInsertedLink: string;
   statusRemovedLink: string;
@@ -62,6 +68,8 @@ export type WebviewStrings = {
   statusCodeLanguageUpdateFailed: string;
   statusCodeLanguagePlainText: string;
   statusCodeLanguageSetTemplate: string;
+  frontMatterLabel: string;
+  frontMatterAriaLabel: string;
   tableTitle: string;
   tableAddRowButton: string;
   tableAddColumnButton: string;
@@ -72,6 +80,7 @@ export type WebviewStrings = {
   tableApplySourceButton: string;
   tableApplySourceTitle: string;
   tableSourceHint: string;
+  tableGridAriaLabelTemplate: string;
   tableHeaderColumnLabelTemplate: string;
   tableNewColumnHeaderTemplate: string;
   tableRowColumnLabelTemplate: string;
@@ -81,10 +90,15 @@ export type WebviewStrings = {
   statusTableDeleteFailed: string;
   statusTableDeleted: string;
   tableBackToPreviewButton: string;
+  tableSourceFeedbackAppliedTemplate: string;
   statusTableSourceApplied: string;
   statusTableSourceApplyFailed: string;
   mermaidDisabledMessage: string;
   mermaidNoSvgOutput: string;
+  mermaidDiagramAriaLabel: string;
+  mermaidDiagramAriaLabelTemplate: string;
+  statusMermaidPreviewShown: string;
+  statusMermaidPreviewHidden: string;
 };
 
 export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
@@ -117,8 +131,12 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   toolbarButtonSourceLabel: 'Source',
   toolbarMoreLabel: 'More',
   toolbarMoreTitle: 'Show advanced toolbar actions',
+  editorAriaLabel: 'Markdown editor',
+  editorAriaLabelTemplate: 'Markdown editor — {0}',
   mermaidPreviewTitle: 'Mermaid Preview',
+  mermaidPreviewAriaLabel: 'Mermaid diagram preview',
   statusReady: 'Ready',
+  statusErrorTemplate: 'Error: {0}',
   commandLabelBold: 'Bold',
   commandLabelItalic: 'Italic',
   commandLabelHeading1: 'Heading 1',
@@ -141,6 +159,8 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   statusInsertedMermaid: 'Inserted Mermaid block.',
   statusInsertedTable: 'Inserted table.',
   statusInsertedCodeBlock: 'Inserted code block. Set language from block header.',
+  statusImageAddedTemplate: 'Image added: {0}',
+  statusInsertImageFailed: 'Could not read image. Please retry.',
   statusAwaitingLinkInput: 'Awaiting link input…',
   statusInsertedLink: 'Inserted link.',
   statusRemovedLink: 'Removed link.',
@@ -152,6 +172,8 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   statusCodeLanguageUpdateFailed: 'Could not update code block language. Please retry.',
   statusCodeLanguagePlainText: 'Code block language set to plain text.',
   statusCodeLanguageSetTemplate: 'Code block language set to {0}.',
+  frontMatterLabel: 'Front matter',
+  frontMatterAriaLabel: 'Front matter metadata block',
   tableTitle: 'Table',
   tableAddRowButton: 'Add Row',
   tableAddColumnButton: 'Add Column',
@@ -162,6 +184,7 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   tableApplySourceButton: 'Apply Source',
   tableApplySourceTitle: 'Apply source (Ctrl/Cmd+Enter)',
   tableSourceHint: 'Edit Markdown table source. Press Ctrl/Cmd+Enter to apply changes.',
+  tableGridAriaLabelTemplate: 'Table {0}: {1} columns, {2} rows',
   tableHeaderColumnLabelTemplate: 'Header column {0}',
   tableNewColumnHeaderTemplate: 'Column {0}',
   tableRowColumnLabelTemplate: 'Row {0} column {1}',
@@ -171,9 +194,14 @@ export const DEFAULT_WEBVIEW_STRINGS: WebviewStrings = {
   statusTableDeleteFailed: 'Could not delete table. Please retry.',
   statusTableDeleted: 'Deleted table.',
   tableBackToPreviewButton: 'Back to Preview',
-  statusTableSourceApplied: 'Applied table source.',
+  tableSourceFeedbackAppliedTemplate: 'Applied: {0}',
+  statusTableSourceApplied: 'Table source applied.',
   statusTableSourceApplyFailed: 'Could not apply table source. Please retry.',
   mermaidDisabledMessage:
     'Mermaid preview is disabled for this workspace. Enable muninn.integrations.mermaid.enabled and trust the workspace, or allow Mermaid in restricted workspaces.',
   mermaidNoSvgOutput: 'Mermaid rendered no SVG output.',
+  mermaidDiagramAriaLabel: 'Mermaid diagram',
+  mermaidDiagramAriaLabelTemplate: 'Mermaid diagram: {0}',
+  statusMermaidPreviewShown: 'Diagram preview shown',
+  statusMermaidPreviewHidden: 'Diagram preview hidden',
 };

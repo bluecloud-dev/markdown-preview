@@ -1,5 +1,5 @@
 import { escapeHtml } from '../../src/webview/editor/localization';
-import { sanitizeMermaidSvg } from '../../src/webview/editor/preview';
+import { getMermaidDiagramDescription, sanitizeMermaidSvg } from '../../src/webview/editor/preview';
 
 let expect: Chai.ExpectStatic;
 
@@ -17,6 +17,16 @@ type MockSanitizableElement = {
   removeAttribute: (name: string) => void;
   toHtml: () => string;
 };
+
+const createTitleElement = (): Element =>
+  ({
+    attributes: [],
+    tagName: 'title',
+    textContent: '',
+    remove(): void {},
+    removeAttribute(): void {},
+    setAttribute(): void {},
+  }) as unknown as Element;
 
 const createSanitizableElement = (
   tagName: string,
@@ -46,11 +56,81 @@ const createSanitizableElement = (
   };
 };
 
+const createMockSvgElement = (options?: {
+  blockedNodes?: Element[];
+  attributeNodes?: MockSanitizableElement[];
+  descNodes?: Element[];
+  describedElements?: MockSanitizableElement[];
+  extraMarkup?: () => string;
+}): Element => {
+  const attributes = new Map<string, string>();
+  let titleText: string | undefined;
+
+  const svgElement = {
+    attributes: [] as MockAttribute[],
+    firstChild: undefined,
+    ownerDocument: {
+      createElementNS(): Element {
+        return createTitleElement();
+      },
+    },
+    querySelectorAll(selector: string): Element[] {
+      if (selector === 'script,foreignObject,iframe,object,embed') {
+        return options?.blockedNodes ?? [];
+      }
+      if (selector === '*') {
+        return (options?.attributeNodes ?? []) as unknown as Element[];
+      }
+      if (selector === 'desc,title') {
+        return options?.descNodes ?? [];
+      }
+      if (selector === '[aria-describedby]') {
+        return (options?.describedElements ?? []) as unknown as Element[];
+      }
+      return [];
+    },
+    setAttribute(name: string, value: string): void {
+      attributes.set(name, value);
+    },
+    removeAttribute(name: string): void {
+      attributes.delete(name);
+    },
+    insertBefore(node: Element): void {
+      titleText = node.textContent ?? '';
+    },
+    get outerHTML(): string {
+      const serializedAttributes = [...attributes.entries()]
+        .map(([name, value]) => `${name}="${value}"`)
+        .join(' ');
+      const startTag = serializedAttributes ? `<svg ${serializedAttributes}>` : '<svg>';
+      const titleMarkup = titleText === undefined ? '' : `<title>${titleText}</title>`;
+      const body = options?.extraMarkup?.() ?? '';
+      return `${startTag}${titleMarkup}${body}</svg>`;
+    },
+  };
+
+  return svgElement as unknown as Element;
+};
+
 const missingSvgParser = (): Element | undefined => {
   return;
 };
 
 describe('preview sanitization', () => {
+  it('derives concise diagram descriptions from Mermaid source', () => {
+    expect(getMermaidDiagramDescription('graph TD\nA[Start] --> B[End]')).to.equal(
+      'graph TD: Start',
+    );
+    expect(
+      getMermaidDiagramDescription('sequenceDiagram\nparticipant Alice\nAlice->>Bob: Hello'),
+    ).to.equal('sequenceDiagram: Alice');
+    expect(getMermaidDiagramDescription('classDiagram\nclass Animal')).to.equal(
+      'classDiagram: Animal',
+    );
+    expect(getMermaidDiagramDescription('not a diagram')).to.equal(undefined);
+    expect(getMermaidDiagramDescription('   \n')).to.equal(undefined);
+  });
+
   it('escapes HTML content for safe error rendering', () => {
     expect(escapeHtml(`<script>alert('x')</script>&"`)).to.equal(
       '&lt;script&gt;alert(&#039;x&#039;)&lt;/script&gt;&amp;&quot;',
@@ -58,7 +138,7 @@ describe('preview sanitization', () => {
   });
 
   it('returns a user-visible error when SVG output is missing', () => {
-    const result = sanitizeMermaidSvg('<not-svg/>', missingSvgParser);
+    const result = sanitizeMermaidSvg('<not-svg/>', '', missingSvgParser);
     expect(result).to.equal(
       '<div class="muninn-mermaid-error">Mermaid rendered no SVG output.</div>',
     );
@@ -83,23 +163,16 @@ describe('preview sanitization', () => {
       href: 'https://example.com/diagram.svg',
     });
 
-    const svgElement = {
-      querySelectorAll(selector: string): Element[] {
-        if (selector === 'script,foreignObject,iframe,object,embed') {
-          return [blockedNode as unknown as Element];
-        }
-        if (selector === '*') {
-          return [unsafeLink as unknown as Element, safeLink as unknown as Element];
-        }
-        return [];
-      },
-      get outerHTML(): string {
+    const svgElement = createMockSvgElement({
+      blockedNodes: [blockedNode as unknown as Element],
+      attributeNodes: [unsafeLink, safeLink],
+      extraMarkup: () => {
         const blockedMarkup = blockedNode.removed ? '' : '<script>alert(1)</script>';
-        return `<svg>${blockedMarkup}${unsafeLink.toHtml()}${safeLink.toHtml()}</svg>`;
+        return `${blockedMarkup}${unsafeLink.toHtml()}${safeLink.toHtml()}`;
       },
-    } as unknown as Element;
+    });
 
-    const result = sanitizeMermaidSvg('<svg/>', () => svgElement);
+    const result = sanitizeMermaidSvg('<svg/>', 'graph TD\nA[Start]', () => svgElement);
 
     expect(blockedNode.removed).to.equal(true);
     expect(result).to.not.include('<script>');
@@ -109,6 +182,35 @@ describe('preview sanitization', () => {
     expect(result).to.include('class="unsafe-link"');
     expect(result).to.include('class="safe-link"');
     expect(result).to.include('href="https://example.com/diagram.svg"');
+    expect(result).to.include('role="img"');
+    expect(result).to.include('aria-label="Mermaid diagram: graph TD: Start"');
+    expect(result).to.include('<title>Mermaid diagram: graph TD: Start</title>');
+  });
+
+  it('removes Mermaid descriptions and dangling aria-describedby attributes', () => {
+    const descNode = {
+      removed: false,
+      remove(): void {
+        this.removed = true;
+      },
+    } as Element & { removed: boolean };
+    const describedNode = createSanitizableElement('g', {
+      'aria-describedby': 'mermaid-desc',
+    });
+    const svgElement = createMockSvgElement({
+      descNodes: [descNode],
+      describedElements: [describedNode],
+      attributeNodes: [describedNode],
+      extraMarkup: () =>
+        `${descNode.removed ? '' : '<desc>Old description</desc>'}${describedNode.toHtml()}`,
+    });
+
+    const result = sanitizeMermaidSvg('<svg/>', 'not a diagram', () => svgElement);
+
+    expect(descNode.removed).to.equal(true);
+    expect(result).to.not.include('<desc>');
+    expect(result).to.not.include('aria-describedby=');
+    expect(result).to.include('aria-label="Mermaid diagram"');
   });
 
   it('converts foreignObject labels into svg text fallback nodes', () => {
@@ -162,12 +264,24 @@ describe('preview sanitization', () => {
     };
 
     const svgElement = {
+      firstChild: undefined,
+      ownerDocument: {
+        createElementNS(): Element {
+          return createTitleElement();
+        },
+      },
+      setAttribute(): void {},
+      removeAttribute(): void {},
+      insertBefore(): void {},
       querySelectorAll(selector: string): Element[] {
         if (selector === 'script,foreignObject,iframe,object,embed') {
           return [foreignObject as unknown as Element];
         }
         if (selector === '*') {
           return insertedLabel ? [insertedLabel as unknown as Element] : [];
+        }
+        if (selector === 'desc,title' || selector === '[aria-describedby]') {
+          return [];
         }
         return [];
       },
@@ -176,7 +290,7 @@ describe('preview sanitization', () => {
       },
     } as unknown as Element;
 
-    const result = sanitizeMermaidSvg('<svg/>', () => svgElement);
+    const result = sanitizeMermaidSvg('<svg/>', 'graph TD\nA[Start]', () => svgElement);
 
     expect(insertedLabel).to.not.equal(undefined);
     expect(insertedLabel?.textContent).to.equal('Start');
