@@ -13,6 +13,7 @@ Welcome to the **Muninn for VS Code** extension engineering documentation. This 
 | [DEVELOPMENT.md](DEVELOPMENT.md)                                               | Setup guide, development workflow, and debugging tips        | New Contributors         |
 | [TESTING.md](TESTING.md)                                                       | Test structure, running tests, and writing new tests         | Developers, QA           |
 | [RELEASE.md](RELEASE.md)                                                       | Release process checklist and versioning guidelines          | Maintainers              |
+| [SECURITY_POSTURE.md](SECURITY_POSTURE.md)                                     | Code-cited security posture and maintainer review checklist  | Maintainers, Security    |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                                       | Common issues and solutions for developers                   | All                      |
 | [ROADMAP.md](ROADMAP.md)                                                       | Feature roadmap and milestone planning                       | All                      |
 | [BRAND_NAMING_CONTRACT.md](BRAND_NAMING_CONTRACT.md)                           | Canonical naming, IDs, and logo rules for the Muninn suite   | Maintainers, Product     |
@@ -30,6 +31,7 @@ Welcome to the **Muninn for VS Code** extension engineering documentation. This 
 - **Getting Started:** Begin with [GETTING_STARTED.md](GETTING_STARTED.md) for a guided first run
 - **Environment Setup:** Use [DEVELOPMENT.md](DEVELOPMENT.md) for day-to-day workflow
 - **Understanding the Code:** Read [ARCHITECTURE.md](ARCHITECTURE.md) for the big picture
+- **Security Posture:** Review [SECURITY_POSTURE.md](SECURITY_POSTURE.md) before publishing security claims
 - **Running Tests:** See [TESTING.md](TESTING.md) for test commands and structure
 - **Releasing:** Follow [RELEASE.md](RELEASE.md) when preparing a release
 

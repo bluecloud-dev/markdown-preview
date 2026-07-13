@@ -11,11 +11,15 @@ import type {
   ViewEditorCommand,
   ViewToHostMessage,
 } from '../../custom-editor/protocol';
+import { createAnnouncer } from './announcements';
 import { bootstrapEditorApp } from './bootstrap';
+import { applyContentWidth } from './content-width';
+import { createImageInsertionTransaction } from './image-insertion';
 import { formatString, getString } from './localization';
 import { markdownParser, schema, serializeToHostMarkdown } from './markdown-codec';
 import { wrapTablesForEditor } from './markdown-transforms';
 import { attachHostMessageListener } from './messages';
+import { getEditorViewAttributes } from './editor-accessibility';
 import { createFrontMatterNodeViewConstructor } from './nodes/front-matter-node-view';
 import { isMermaidCodeBlockNode } from './nodes/mermaid-node';
 import { createCodeBlockNodeViewConstructor, isTableCodeBlockNode } from './nodes/table-node-view';
@@ -27,6 +31,7 @@ import {
   serializeMarkdownTable,
   TABLE_FENCE_LANGUAGE,
 } from './tables/markdown-table-utilities';
+import { attachToolbarRovingFocus } from './toolbar-roving-focus';
 
 declare function acquireVsCodeApi(): {
   postMessage: (message: ViewToHostMessage) => void;
@@ -36,8 +41,8 @@ const vscode = acquireVsCodeApi();
 
 const ADVANCED_TOOLBAR_COMMANDS = new Set<string>([
   'setHeading3',
-  'toggleBulletList',
-  'toggleNumberedList',
+  'setParagraph',
+  'insertCodeBlock',
   'insertMermaidBlock',
 ]);
 
@@ -92,18 +97,33 @@ const formatCommandFailure = (command: string): string => {
   return formatString(getString('commandFailureGenericTemplate'), label);
 };
 
-const { editorContainer, statusLine, mermaidPreviewPanel, mermaidPreviewBody, toolbarButtons } =
-  bootstrapEditorApp();
+const {
+  editorContainer,
+  editorShell,
+  toolbar,
+  statusLine,
+  alertLine,
+  mermaidPreviewPanel,
+  mermaidPreviewBody,
+  toolbarButtons,
+} = bootstrapEditorApp();
 const moreButton = document.querySelector<HTMLButtonElement>('[data-testid="muninn-toolbar-more"]');
+const toolbarRovingFocus = attachToolbarRovingFocus(toolbar);
 
 let view: EditorView | undefined;
 let toolbarMode: ToolbarMode = 'basic';
 let advancedActionsVisible = false;
 let lastMermaidInsertAt = 0;
+let imageSources = new Map<string, string>();
+let documentFileName = '';
 
-const setStatus = (message: string): void => {
-  statusLine.textContent = message;
+const announce = createAnnouncer({ statusLine, alertLine });
+
+const setImageSources = (sources: Record<string, string>): void => {
+  imageSources = new Map(Object.entries(sources));
 };
+
+const getRenderedImageSource = (source: string): string => imageSources.get(source) ?? source;
 
 const updateAdvancedToolbarVisibility = (): void => {
   const showAdvancedActions = toolbarMode === 'advanced' || advancedActionsVisible;
@@ -119,6 +139,8 @@ const updateAdvancedToolbarVisibility = (): void => {
     moreButton.hidden = toolbarMode === 'advanced';
     moreButton.setAttribute('aria-expanded', advancedActionsVisible ? 'true' : 'false');
   }
+
+  toolbarRovingFocus.revalidateCurrentStop(moreButton ?? undefined);
 };
 
 const getFirstAdvancedToolbarButton = (): HTMLButtonElement | undefined => {
@@ -209,6 +231,7 @@ const mermaidPreview = new MermaidPreviewController({
   panel: mermaidPreviewPanel,
   body: mermaidPreviewBody,
   getSelectedMermaidSource: () => selectCodeBlockSource(isMermaidCodeBlockNode),
+  announce,
   renderDelayMs: 120,
 });
 
@@ -230,6 +253,48 @@ const parseMarkdown = (markdown: string): EditorState =>
       }),
       keymap(baseKeymap),
       new Plugin({
+        props: {
+          handlePaste: (_editorView, event) => {
+            const file = getFirstImageFile(event.clipboardData?.files);
+            if (!file) {
+              return false;
+            }
+            event.preventDefault();
+            void requestImageInsert('paste', file);
+            return true;
+          },
+          handleDOMEvents: {
+            dragover: (_editorView, event) => {
+              if (!hasImageTransfer(event.dataTransfer)) {
+                return false;
+              }
+              event.preventDefault();
+              return true;
+            },
+            drop: (editorView, event) => {
+              const file = getFirstImageFile(event.dataTransfer?.files);
+              if (!file) {
+                return false;
+              }
+              event.preventDefault();
+              const position = editorView.posAtCoords({
+                left: event.clientX,
+                top: event.clientY,
+              });
+              if (!position) {
+                return true;
+              }
+              editorView.dispatch(
+                editorView.state.tr.setSelection(
+                  TextSelection.create(editorView.state.doc, position.pos),
+                ),
+              );
+              editorView.focus();
+              void requestImageInsert('drop', file);
+              return true;
+            },
+          },
+        },
         view: () => ({
           update: () => {
             updateToolbarState();
@@ -239,6 +304,64 @@ const parseMarkdown = (markdown: string): EditorState =>
       }),
     ],
   });
+
+const getFirstImageFile = (fileList?: FileList | null): File | undefined => {
+  if (!fileList) {
+    return undefined;
+  }
+  return [...fileList].find(
+    (file) => file.type.startsWith('image/') || /\.(?:png|jpe?g|gif|svg|webp)$/i.test(file.name),
+  );
+};
+
+const hasImageFile = (fileList?: FileList | null): boolean =>
+  getFirstImageFile(fileList) !== undefined;
+
+const hasImageTransfer = (dataTransfer?: DataTransfer | null): boolean => {
+  if (!dataTransfer) {
+    return false;
+  }
+  if (hasImageFile(dataTransfer.files)) {
+    return true;
+  }
+  return [...dataTransfer.items].some(
+    (item) => item.kind === 'file' && item.type.startsWith('image/'),
+  );
+};
+
+const readFileAsBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      if (typeof reader.result !== 'string') {
+        reject(new Error('Expected FileReader data URL result.'));
+        return;
+      }
+      const [, base64 = ''] = reader.result.split(',', 2);
+      resolve(base64);
+    });
+    reader.addEventListener('error', () => {
+      reject(reader.error ?? new Error('Could not read image file.'));
+    });
+    reader.readAsDataURL(file);
+  });
+
+const requestImageInsert = async (kind: 'paste' | 'drop', file: File): Promise<void> => {
+  try {
+    const bytesBase64 = await readFileAsBase64(file);
+    vscode.postMessage({
+      type: 'view.requestImageInsert',
+      payload: {
+        kind,
+        name: file.name,
+        mime: file.type,
+        bytesBase64,
+      },
+    });
+  } catch {
+    announce(getString('statusInsertImageFailed'), { kind: 'error' });
+  }
+};
 
 const getWordSelection = (state: EditorState): TextSelection | undefined => {
   if (!state.selection.empty) {
@@ -464,7 +587,7 @@ const insertMermaidBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: 'mermaid' }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus(getString('statusInsertedMermaid'));
+  announce(getString('statusInsertedMermaid'), { kind: 'status' });
   return true;
 };
 
@@ -477,7 +600,7 @@ const insertTableBlock = (): boolean => {
   const node = schema.nodes.code_block.create({ params: TABLE_FENCE_LANGUAGE }, content);
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
-  setStatus(getString('statusInsertedTable'));
+  announce(getString('statusInsertedTable'), { kind: 'status' });
   return true;
 };
 
@@ -490,7 +613,7 @@ const insertCodeBlock = (): boolean => {
   const transaction = view.state.tr.replaceSelectionWith(node, false).scrollIntoView();
   view.dispatch(transaction);
 
-  setStatus(getString('statusInsertedCodeBlock'));
+  announce(getString('statusInsertedCodeBlock'), { kind: 'status' });
   return true;
 };
 
@@ -498,7 +621,7 @@ const addTableRow = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus(getString('commandFailureAddRowNoTable'));
+    announce(getString('commandFailureAddRowNoTable'), { kind: 'error' });
     return false;
   }
 
@@ -512,7 +635,7 @@ const addTableColumn = (): boolean => {
   const selectedTable =
     findSelectedCodeBlock(isTableCodeBlockNode) ?? findFirstCodeBlock(isTableCodeBlockNode);
   if (!selectedTable) {
-    setStatus(getString('commandFailureAddColumnNoTable'));
+    announce(getString('commandFailureAddColumnNoTable'), { kind: 'error' });
     return false;
   }
 
@@ -544,7 +667,7 @@ const requestLinkInput = (): boolean => {
       selectedText: selectedText?.trim().length ? selectedText.trim() : undefined,
     },
   });
-  setStatus(getString('statusAwaitingLinkInput'));
+  announce(getString('statusAwaitingLinkInput'), { kind: 'status' });
   return true;
 };
 
@@ -570,8 +693,44 @@ const insertLinkFromHost = (href: string, text?: string): boolean => {
     .setSelection(TextSelection.create(transaction.doc, to, to))
     .scrollIntoView();
   view.dispatch(transaction);
-  setStatus(getString('statusInsertedLink'));
+  announce(getString('statusInsertedLink'), { kind: 'status' });
   return true;
+};
+
+const insertImageFromHost = (source: string, webviewUri: string, filename: string): boolean => {
+  if (!view) {
+    return false;
+  }
+
+  imageSources.set(source, webviewUri);
+  const state = view.state;
+  view.dispatch(createImageInsertionTransaction(state, schema.nodes.image, source));
+  announce(formatString(getString('statusImageAddedTemplate'), filename), { kind: 'status' });
+  return true;
+};
+
+const createImageNodeView = (
+  node: ProseMirrorNode,
+): { dom: HTMLImageElement; update: (nextNode: ProseMirrorNode) => boolean } => {
+  const dom = document.createElement('img');
+  const updateImage = (imageNode: ProseMirrorNode): void => {
+    const source = typeof imageNode.attrs.src === 'string' ? imageNode.attrs.src : '';
+    const alt = typeof imageNode.attrs.alt === 'string' ? imageNode.attrs.alt : '';
+    dom.src = getRenderedImageSource(source);
+    dom.alt = alt;
+  };
+  updateImage(node);
+
+  return {
+    dom,
+    update: (nextNode) => {
+      if (nextNode.type !== node.type) {
+        return false;
+      }
+      updateImage(nextNode);
+      return true;
+    },
+  };
 };
 
 const executeEditorCommand = (command: ViewEditorCommand): boolean => {
@@ -608,7 +767,7 @@ const executeEditorCommand = (command: ViewEditorCommand): boolean => {
       if (isMarkActive(schema.marks.link)) {
         const removed = runInlineMarkCommand(toggleMark(schema.marks.link));
         if (removed) {
-          setStatus(getString('statusRemovedLink'));
+          announce(getString('statusRemovedLink'), { kind: 'status' });
         }
         return removed;
       }
@@ -652,7 +811,7 @@ for (const [command, button] of toolbarButtons.entries()) {
 
     const executed = executeEditorCommand(command as ViewEditorCommand);
     if (!executed) {
-      setStatus(formatCommandFailure(command));
+      announce(formatCommandFailure(command), { kind: 'error' });
     }
     if (executed && TRANSIENT_ACTIVE_COMMANDS.has(command)) {
       button.classList.add('is-active');
@@ -749,15 +908,19 @@ const updateToolbarState = (): void => {
   );
 };
 
-const applyHostMarkdown = (hostMarkdown: string): void => {
+const applyHostMarkdown = (hostMarkdown: string, fileName = documentFileName): void => {
+  documentFileName = fileName;
+  const editorViewAttributes = getEditorViewAttributes(documentFileName);
   const editorMarkdown = wrapTablesForEditor(hostMarkdown);
 
   if (!view) {
     view = new EditorView(editorContainer, {
       state: parseMarkdown(editorMarkdown),
+      attributes: editorViewAttributes,
       nodeViews: {
-        code_block: createCodeBlockNodeViewConstructor({ setStatus }),
+        code_block: createCodeBlockNodeViewConstructor({ announce }),
         front_matter: createFrontMatterNodeViewConstructor(),
+        image: createImageNodeView,
       },
       dispatchTransaction(transaction) {
         if (!view) {
@@ -775,6 +938,7 @@ const applyHostMarkdown = (hostMarkdown: string): void => {
     return;
   }
 
+  view.setProps({ attributes: editorViewAttributes });
   const currentHostMarkdown = serializeMarkdownForHost();
   if (currentHostMarkdown === hostMarkdown) {
     return;
@@ -791,13 +955,16 @@ const detachHostMessageListener = attachHostMessageListener({
   onInit: (payload) => {
     syncController.setRevision(payload.revision);
     mermaidPreview.setEnabled(payload.mermaidEnabled);
+    applyContentWidth(editorShell, payload.contentWidth);
+    setImageSources(payload.imageSources);
     setToolbarMode(payload.toolbarMode);
-    applyHostMarkdown(payload.markdown);
-    setStatus(getString('statusConnected'));
+    applyHostMarkdown(payload.markdown, payload.fileName);
+    announce(getString('statusConnected'), { kind: 'status' });
     view?.focus();
   },
   onDocumentChanged: (payload) => {
     const shouldRetry = syncController.handleHostDocumentChanged(payload.revision);
+    setImageSources(payload.imageSources);
     applyHostMarkdown(payload.markdown);
     if (shouldRetry) {
       syncController.queueApply(serializeMarkdownForHost);
@@ -806,23 +973,33 @@ const detachHostMessageListener = attachHostMessageListener({
   onExecuteCommand: (command) => {
     const executed = executeEditorCommand(command);
     if (!executed) {
-      setStatus(formatCommandFailure(command));
+      announce(formatCommandFailure(command), { kind: 'error' });
     }
   },
   onSettingsChanged: (payload) => {
     mermaidPreview.setEnabled(payload.mermaidEnabled);
+    applyContentWidth(editorShell, payload.contentWidth);
     setToolbarMode(payload.toolbarMode);
     schedulePreviewRender();
   },
   onInsertLink: (payload) => {
     const inserted = insertLinkFromHost(payload.href, payload.text);
     if (!inserted) {
-      setStatus(getString('statusInsertLinkFailed'));
+      announce(getString('statusInsertLinkFailed'), { kind: 'error' });
     }
+  },
+  onImageInserted: (payload) => {
+    const inserted = insertImageFromHost(payload.path, payload.webviewUri, payload.filename);
+    if (!inserted) {
+      announce(getString('statusInsertImageFailed'), { kind: 'error' });
+    }
+  },
+  onImageRejected: (payload) => {
+    announce(payload.reason, { kind: 'error' });
   },
   onError: (payload) => {
     const shouldRetry = syncController.handleHostError();
-    setStatus(payload.message);
+    announce(payload.message, { kind: 'error' });
     if (shouldRetry) {
       syncController.queueApply(serializeMarkdownForHost);
     }
