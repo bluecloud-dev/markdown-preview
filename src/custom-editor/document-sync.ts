@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 import { SerializedMarkdownPayload } from './protocol';
 
 type ApplyResult =
-  | { ok: true }
-  | { ok: false; code: 'revision_mismatch' | 'apply_failed'; message: string };
+  { ok: true } | { ok: false; code: 'revision_mismatch' | 'apply_failed'; message: string };
 
 export const reconcileTrailingNewlineForApply = (
   currentMarkdown: string,
