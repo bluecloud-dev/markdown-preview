@@ -17,9 +17,13 @@ scripts/**
 node_modules/**
 **/*.ts
 **/*.map
+media/bundle-metadata.json
+assets/hero.png
+assets/icon-source.png
 *.vsix
 *.log
 .gitignore
+.gitattributes
 .editorconfig
 .vscode-test.mjs
 MANUAL_QA.md

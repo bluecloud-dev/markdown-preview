@@ -8,7 +8,14 @@ before(async () => {
 });
 
 type PackageJson = {
+  version: string;
+  preview?: boolean;
+  repository: { url: string };
+  bugs: { url: string };
+  homepage: string;
+  badges: Array<{ url: string; href: string }>;
   contributes: {
+    customEditors: Array<{ viewType: string; priority?: string }>;
     commands: Array<{ command: string; enablement?: string }>;
     keybindings: Array<{ command: string; key: string; mac?: string; when?: string }>;
     menus: {
@@ -20,10 +27,17 @@ type PackageJson = {
   };
 };
 
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
+
 const loadPackageJson = (): PackageJson => {
-  const packagePath = path.resolve(__dirname, '..', '..', '..', 'package.json');
+  const packagePath = path.join(repoRoot, 'package.json');
   return JSON.parse(fs.readFileSync(packagePath, 'utf8')) as PackageJson;
 };
+
+const readRepoFile = (relativePath: string): string =>
+  fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
+
+const GITHUB_REPOSITORY_SLUG = 'bluecloud-dev/markdown-preview';
 
 describe('package contributions', () => {
   it('contributes reading-first focus and section navigation commands', () => {
@@ -108,5 +122,58 @@ describe('package contributions', () => {
       mac: 'cmd+alt+c',
       when: 'activeCustomEditorId == muninn.markdownEditor',
     });
+  });
+});
+
+describe('marketplace release metadata', () => {
+  it('uses a plain major.minor.patch version the VS Marketplace accepts', () => {
+    // vsce refuses to publish semver prerelease tags such as 2.0.0-alpha.1.
+    expect(loadPackageJson().version).to.match(/^\d+\.\d+\.\d+$/);
+  });
+
+  it('carries the Preview flag while the extension is pre-1.0', () => {
+    const packageJson = loadPackageJson();
+    if (packageJson.version.startsWith('0.')) {
+      expect(packageJson.preview, 'pre-1.0 releases must set "preview": true').to.equal(true);
+    }
+  });
+
+  it('has a CHANGELOG section matching the manifest version', () => {
+    // release.yml extracts release notes by searching for this exact header.
+    const { version } = loadPackageJson();
+    const header = `## [${version}]`;
+    const hasSection = readRepoFile('CHANGELOG.md')
+      .split('\n')
+      .some((line) => line.startsWith(header));
+
+    expect(hasSection, `CHANGELOG.md must contain a "${header}" section`).to.equal(true);
+  });
+
+  it('points every marketplace URL at the real GitHub repository', () => {
+    const packageJson = loadPackageJson();
+    const urls = [
+      packageJson.repository.url,
+      packageJson.bugs.url,
+      packageJson.homepage,
+      ...packageJson.badges.flatMap((badge) => [badge.url, badge.href]),
+    ];
+
+    for (const url of urls) {
+      expect(url, `${url} must reference ${GITHUB_REPOSITORY_SLUG}`).to.contain(
+        GITHUB_REPOSITORY_SLUG,
+      );
+    }
+  });
+
+  it('documents the same markdown ownership the manifest declares', () => {
+    const packageJson = loadPackageJson();
+    const customEditor = packageJson.contributes.customEditors.find(
+      (editor) => editor.viewType === 'muninn.markdownEditor',
+    );
+
+    // "default" means VS Code opens matching files in Muninn automatically, so the docs must not
+    // claim users have to reach for Reopen With… first.
+    expect(customEditor?.priority).to.equal('default');
+    expect(readRepoFile('README.md')).to.contain('default editor for');
   });
 });

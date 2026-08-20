@@ -2,6 +2,12 @@
 
 Muninn is a reading-first markdown workspace for specs, ADRs, RFCs, and long-form developer docs inside VS Code. It opens markdown in a desktop custom editor that keeps the reading surface clean while still supporting routine authoring without bouncing out to raw source for every change.
 
+![Muninn for VS Code](https://raw.githubusercontent.com/bluecloud-dev/markdown-preview/main/assets/hero.png)
+
+> **Preview release.** Muninn is published with the Marketplace Preview flag while the reading and authoring surfaces settle. It is stable enough for daily use, but commands, settings, and defaults may still change before `1.0.0`. Feedback and bug reports are welcome in [issues](https://github.com/bluecloud-dev/markdown-preview/issues).
+
+Muninn registers itself as the **default editor for `.md` and `.markdown`** files. To open a file in the plain text editor instead, use `Reopen With…` and pick `Text Editor`, or use the `Open Raw Markdown` button in the editor title bar.
+
 ## Product Shape
 
 - Desktop-first VS Code custom editor for `.md` and `.markdown`
@@ -62,11 +68,13 @@ Run `npm run coverage` when changing host-side services or document sync behavio
 
 ## Docs
 
-- [Getting Started](./docs/GETTING_STARTED.md)
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Roadmap](./docs/ROADMAP.md)
-- [Testing](./docs/TESTING.md)
-- [Contributing](./CONTRIBUTING.md)
+- [Getting Started](https://github.com/bluecloud-dev/markdown-preview/blob/main/docs/GETTING_STARTED.md)
+- [Architecture](https://github.com/bluecloud-dev/markdown-preview/blob/main/docs/ARCHITECTURE.md)
+- [Roadmap](https://github.com/bluecloud-dev/markdown-preview/blob/main/docs/ROADMAP.md)
+- [Testing](https://github.com/bluecloud-dev/markdown-preview/blob/main/docs/TESTING.md)
+- [Changelog](https://github.com/bluecloud-dev/markdown-preview/blob/main/CHANGELOG.md)
+- [Migrating from `blueclouddev.markdown-preview`](https://github.com/bluecloud-dev/markdown-preview/blob/main/docs/MIGRATION_FROM_MARKDOWN_PREVIEW.md)
+- [Contributing](https://github.com/bluecloud-dev/markdown-preview/blob/main/CONTRIBUTING.md)
 
 ## License
 

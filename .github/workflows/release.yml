@@ -24,6 +24,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fail fast: a tag/manifest mismatch otherwise surfaces much later as a confusing
+      # "could not find changelog section" error, after the tag has already been burned.
+      - name: Verify tag matches manifest version
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          node <<'NODE'
+          const { version } = require('./package.json');
+          const tagVersion = (process.env.TAG_NAME || '').replace(/^v/, '');
+
+          if (!tagVersion) throw new Error('Missing tag name/version');
+          if (version !== tagVersion) {
+            throw new Error(`Tag ${process.env.TAG_NAME} does not match package.json version ${version}`);
+          }
+          if (!/^\d+\.\d+\.\d+$/.test(version)) {
+            throw new Error(`The VS Marketplace does not accept prerelease versions: ${version}`);
+          }
+
+          console.log(`Releasing ${version}${require('./package.json').preview ? ' (Preview)' : ''}`);
+          NODE
+
       - name: Lint
         run: npm run lint
 

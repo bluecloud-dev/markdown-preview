@@ -3,131 +3,59 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+Muninn for VS Code (`blueclouddev.muninn-vscode`) is a new Marketplace listing and starts its
+version history at `0.1.0`. The release history of its predecessor listing
+`blueclouddev.markdown-preview` is preserved in
+[`docs/CHANGELOG-markdown-preview.md`](./docs/CHANGELOG-markdown-preview.md).
+
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-20
+
+First public preview release of Muninn for VS Code: a reading-first markdown workspace for specs,
+ADRs, RFCs, and long-form developer documentation.
+
+This release is published with the Marketplace **Preview** flag while the reading and authoring
+surfaces settle. Commands, settings, and the webview protocol may still change before `1.0.0`.
+
 ### Added
 
-- Focus mode as a workspace-persisted UI state through `muninn.toggleFocusMode`
-- Native Explorer `Muninn Outline` view and `muninn.goToSection` navigation
-- Host-owned markdown heading parsing and typed webview section reveal messages
-- Keyboard-first authoring shortcuts for links, headings, paragraph, lists, tables, Mermaid, and code blocks
+- Desktop custom editor (`muninn.markdownEditor`) for `.md` and `.markdown`, registered as the
+  default editor for those files
+- Single-pane reading surface with a built-in authoring toolbar
+- Focus mode as workspace-persisted UI state through `muninn.toggleFocusMode`
+- Native Explorer `Muninn Outline` view and `muninn.goToSection` navigation, driven by host-owned
+  markdown heading parsing and typed webview section reveal messages
+- Keyboard-first authoring commands and shortcuts for bold, italic, headings, paragraph, lists,
+  links, code blocks, tables, and Mermaid blocks
 - Toolbar selection feedback for the active block, list, table, code, and inline mark state
-- Bundle metadata and a budget gate for the initial webview payload
-- esbuild bundling pipeline for a single runtime entrypoint
-- Brand naming contract for the Muninn suite
-- Migration guide from `blueclouddev.markdown-preview` to `blueclouddev.muninn-vscode`
+- `muninn.toolbar.mode` to choose authoring density: `basic` for the reading-oriented toolbar,
+  `advanced` for expanded editing controls
+- Source-preserving table editing that round-trips back to markdown
+- Trust-aware Mermaid rendering, disabled by default in restricted workspaces and gated by
+  `muninn.integrations.mermaid.enabled` and
+  `muninn.integrations.mermaid.allowInUntrustedWorkspaces`
+- Raw markdown escape hatch via `muninn.openRawMarkdown`
+- `muninn.inspectConfiguration` for effective-settings diagnostics in the output channel
+- esbuild bundling pipeline with code-split webview chunks, generated bundle metadata, and a budget
+  gate on the initial webview payload
+- Localization scaffolding via `package.nls.json` and `l10n/bundle.l10n.json`
+- Migration guide from `blueclouddev.markdown-preview`
 
-### Changed
+### Security
 
-- Marketplace metadata (category, banner, badges) and description refresh
-- Packaging now uses bundled output in `dist/extension.js`
-- `muninn.toolbar.mode` now describes authoring density only: `basic` is the default reading-oriented toolbar and `advanced` adds expanded editing controls
-- Mermaid rendering now loads from split webview chunks instead of the initial editor payload
-- Webview editor code is split into runtime, formatting command, table command, and toolbar state modules
-- Rebrand to **Muninn for VS Code** across UI, docs, and release metadata
-- Extension ID and package name changed to `blueclouddev.muninn-vscode`
-- Command/config/context namespaces changed from `markdownReader.*` to `muninn.*`
+- Strict webview CSP with a per-render nonce and `localResourceRoots` limited to `media/`
+- No telemetry of any kind, enforced in CI by `npm run check:no-telemetry`
 
-### Fixed
+### Notes for users of `blueclouddev.markdown-preview`
 
-- Markdown open debounce now matches documented 75ms behavior
-- Paragraph command feedback is idempotent when the selection is already in a paragraph
-- Command-driven table row and column edits now report successful status feedback
-
-### Deprecated
-
-- `blueclouddev.markdown-preview` listing is now migration-only and no longer receives feature updates
-
-### Removed
-- `muninn.editorAssociations` setting and the activation-time sync that wrote to `workbench.editorAssociations`. Ownership of `.md`/`.markdown` now comes from the custom editor contribution alone.
-
-### Breaking
-- New workspaces no longer have `.md`/`.markdown` auto-registered with `muninn.markdownEditor` on first activation. Use `Reopen With…` and pick `Muninn Markdown Editor`, or set `workbench.editorAssociations` manually. Existing workspaces that already have the association are unaffected — Muninn no longer touches that setting either way.
-
-### Internal
-- One-time cleanup of the orphaned `muninn.editorAssociationsAdded` `workspaceState` key for users upgrading from previous versions.
-
-## [2.0.0] - 2026-02-21
-
-### Changed
-
-- First major rebrand release under the Muninn suite identity
-
-### Breaking
-
-- New extension identifier: `blueclouddev.muninn-vscode`
-- Hard namespace break:
-  - Settings: `markdownReader.*` → `muninn.*`
-  - Commands: `markdownReader.*` → `muninn.*`
-  - Context keys: `markdownReader.*` → `muninn.*`
-- Existing user/workspace settings and custom keybindings using `markdownReader.*` must be migrated manually
-
-## [1.0.1] - 2025-12-28
-
-### Fixed
-
-- Ensure exit edit mode closes the correct markdown editor tab(s)
-- Clear pending open debounces when the file handler is disposed
-
-## [1.0.0] - 2025-12-27
-
-### Added
-
-- Conflict marker detection that opens files directly in edit mode
-- Preview failure fallback with an Open in Editor action and Output channel logging
-- Status bar announcements for edit/preview mode transitions
-- Performance validation tests for preview open and mode switching targets
-- Marketplace metadata improvements (keywords, license)
-- Expanded README with installation, accessibility notes, and troubleshooting details
-- Developer docs (architecture, testing, release, troubleshooting, getting started)
-- Manual acceptance checklist for quickstart scenarios and accessibility flows
-
-### Changed
-
-- Debounced markdown file open handling to reduce rapid event churn
-- Binary preview warning text aligned with specification wording
-- Localized command titles, submenu labels, and settings descriptions
-
-## [0.4.0] - 2025-12-27
-
-### Added
-
-- Configuration settings for enablement, exclusion patterns, and max file size
-- Inspect Configuration command for effective settings diagnostics
-- Configuration integration tests for exclusions, disabled state, and workspace overrides
-
-### Changed
-
-- Configuration cache reloads and context updates when settings change
-
-## [0.3.0] - 2025-12-27
-
-### Added
-
-- Format context menu with heading and code submenus in edit mode
-- Keyboard shortcuts for toggle edit mode, bold, and italic (edit mode only)
-- Context menu and shortcut coverage in integration tests
-
-## [0.2.0] - 2025-12-27
-
-### Added
-
-- Formatting toolbar actions in edit mode for bold, italic, strikethrough, lists, code, links, and headings
-- Formatting commands with selection-aware placeholder handling
-- URL prompt placeholder for link insertion
-
-### Changed
-
-- Formatting commands now require an active markdown editor
-- Settings resolve per resource/workspace scope
-
-## [0.1.0] - 2025-12-27
-
-### Added
-
-- Preview markdown files by default using VS Code's native renderer
-- Edit mode split view with Done button and toggle command
-- Large file handling with opt-in preview and per-file opt-out
-- Binary markdown detection fallback with warning
-- One-time welcome message with quick-start link
-- Localization scaffolding for user-facing strings
+- Muninn is a **separate** Marketplace listing. Installing it does not upgrade or remove the
+  predecessor extension; uninstall `blueclouddev.markdown-preview` to avoid two extensions
+  competing for markdown.
+- Settings, commands, and context keys use the `muninn.*` namespace. `markdownReader.*` settings and
+  custom keybindings must be migrated manually.
+- Muninn does not write to `workbench.editorAssociations`. It claims `.md` and `.markdown` through
+  its custom editor contribution instead, which keeps activation lazy and leaves your workspace
+  settings untouched. To opt out, use `Reopen With…` and pick `Text Editor`, or set
+  `workbench.editorAssociations` yourself.
+- `blueclouddev.markdown-preview` is migration-only and no longer receives feature updates.
