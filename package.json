@@ -30,30 +30,30 @@
   },
   "badges": [
     {
-      "url": "https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml/badge.svg",
-      "href": "https://github.com/bluecloud-dev/markdown-preview/actions/workflows/ci.yml",
+      "url": "https://github.com/bluecloud-dev/muninn-vscode/actions/workflows/ci.yml/badge.svg",
+      "href": "https://github.com/bluecloud-dev/muninn-vscode/actions/workflows/ci.yml",
       "description": "CI"
     },
     {
-      "url": "https://img.shields.io/github/v/release/bluecloud-dev/markdown-preview?include_prereleases&label=release",
-      "href": "https://github.com/bluecloud-dev/markdown-preview/releases",
+      "url": "https://img.shields.io/github/v/release/bluecloud-dev/muninn-vscode?include_prereleases&label=release",
+      "href": "https://github.com/bluecloud-dev/muninn-vscode/releases",
       "description": "Latest release"
     },
     {
-      "url": "https://img.shields.io/github/license/bluecloud-dev/markdown-preview",
-      "href": "https://github.com/bluecloud-dev/markdown-preview/blob/main/LICENSE",
+      "url": "https://img.shields.io/github/license/bluecloud-dev/muninn-vscode",
+      "href": "https://github.com/bluecloud-dev/muninn-vscode/blob/main/LICENSE",
       "description": "License"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/bluecloud-dev/markdown-preview.git"
+    "url": "https://github.com/bluecloud-dev/muninn-vscode.git"
   },
   "bugs": {
-    "url": "https://github.com/bluecloud-dev/markdown-preview/issues"
+    "url": "https://github.com/bluecloud-dev/muninn-vscode/issues"
   },
-  "homepage": "https://github.com/bluecloud-dev/markdown-preview#readme",
-  "qna": "https://github.com/bluecloud-dev/markdown-preview/issues",
+  "homepage": "https://github.com/bluecloud-dev/muninn-vscode#readme",
+  "qna": "https://github.com/bluecloud-dev/muninn-vscode/issues",
   "main": "./dist/extension.js",
   "l10n": "./l10n",
   "extensionKind": [

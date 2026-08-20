@@ -37,7 +37,7 @@ const loadPackageJson = (): PackageJson => {
 const readRepoFile = (relativePath: string): string =>
   fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
 
-const GITHUB_REPOSITORY_SLUG = 'bluecloud-dev/markdown-preview';
+const GITHUB_REPOSITORY_SLUG = 'bluecloud-dev/muninn-vscode';
 
 describe('package contributions', () => {
   it('contributes reading-first focus and section navigation commands', () => {
