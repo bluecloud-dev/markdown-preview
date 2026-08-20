@@ -45,7 +45,9 @@ describe('image asset helpers', () => {
   });
 
   it('derives pasted names and original-file dedupe names', () => {
-    expect(formatPasteImageFileName(new Date('2026-06-14T09:08:07Z'), 'png')).to.equal(
+    // formatPasteImageFileName renders local wall-clock time, so the fixture must be built from
+    // local components. A UTC instant makes this assertion pass only in a UTC timezone.
+    expect(formatPasteImageFileName(new Date(2026, 5, 14, 9, 8, 7), 'png')).to.equal(
       'image-20260614-090807.png',
     );
     expect(sanitizeImageFileName('../Screen Shot.png', 'png')).to.equal('Screen Shot.png');
