@@ -1,0 +1,14 @@
+# Normalize all text files to LF in the repository and in the working tree.
+#
+# .editorconfig (end_of_line = lf) and Prettier both require LF. Without this,
+# a Windows checkout with core.autocrlf=true produces CRLF working files, which
+# makes `npm run format:check` fail and makes the round-trip fixture tests in
+# tests/unit/round-trip report every fixture as diverging.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.vsix binary
